@@ -100,6 +100,18 @@ private const float WireThickness = 1.5
 
  [float](https://learn.microsoft.com/dotnet/api/system.single)
 
+### <a id="Cube_CubeWindow_hasSpace"></a> hasSpace
+
+Whether [LastSpace](Cube.CubeWindow.md#Cube_CubeWindow_LastSpace) holds a real frame's cube, so its rotation can be reused.
+
+```csharp
+private bool hasSpace
+```
+
+#### Field Value
+
+ [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
 ### <a id="Cube_CubeWindow_yaw"></a> yaw
 
 The view's current yaw; kept between frames so a vertical camera doesn't spin the view.
@@ -275,6 +287,19 @@ internal static float LineThickness { get; }
 #### Property Value
 
  [float](https://learn.microsoft.com/dotnet/api/system.single)
+
+### <a id="Cube_CubeWindow_Orientation"></a> Orientation
+
+How the view turns (PROJECT.md, "View"): Camera (default) follows the game camera, North up stays fixed.
+Settable so the bridge can test both; the settings window (#20) will drive it.
+
+```csharp
+internal OrientationMode Orientation { get; set; }
+```
+
+#### Property Value
+
+ [OrientationMode](Cube.Core.OrientationMode.md)
 
 ### <a id="Cube_CubeWindow_Palette"></a> Palette
 

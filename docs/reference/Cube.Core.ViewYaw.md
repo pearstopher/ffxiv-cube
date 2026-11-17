@@ -25,6 +25,20 @@ so no game angle convention is assumed.
 
 ## Fields
 
+### <a id="Cube_Core_ViewYaw_ChangeThreshold"></a> ChangeThreshold
+
+Smallest yaw change, in radians (about 0.1°), that turns the view. Smaller changes, such as camera jitter or
+float noise while the camera is still, keep the previous yaw so the rotation isn't recomputed (PROJECT.md,
+"Efficiency and memory": recompute only when inputs change). Far below what a pixel shows at any window size.
+
+```csharp
+public const float ChangeThreshold = 0.002
+```
+
+#### Field Value
+
+ [float](https://learn.microsoft.com/dotnet/api/system.single)
+
 ### <a id="Cube_Core_ViewYaw_MinHorizontalLength"></a> MinHorizontalLength
 
 Below this horizontal length the camera is looking (almost) straight up or down and its heading is
@@ -99,3 +113,28 @@ The yaw to keep if the direction is (almost) vertical.
 #### Returns
 
  [float](https://learn.microsoft.com/dotnet/api/system.single)
+
+### <a id="Cube_Core_ViewYaw_Settle_System_Single_System_Single_"></a> Settle\(float, float\)
+
+Keeps the previous yaw unless the new one differs by at least [ChangeThreshold](Cube.Core.ViewYaw.md#Cube_Core_ViewYaw_ChangeThreshold), measured the
+short way round (so −π and π count as equal).
+
+```csharp
+public static float Settle(float previous, float next)
+```
+
+#### Parameters
+
+`previous` [float](https://learn.microsoft.com/dotnet/api/system.single)
+
+The yaw in use.
+
+`next` [float](https://learn.microsoft.com/dotnet/api/system.single)
+
+This frame's wanted yaw.
+
+#### Returns
+
+ [float](https://learn.microsoft.com/dotnet/api/system.single)
+
+<code class="paramref">previous</code> or <code class="paramref">next</code>.

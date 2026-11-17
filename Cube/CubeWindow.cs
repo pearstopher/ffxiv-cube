@@ -39,6 +39,9 @@ internal sealed class CubeWindow : Window
     /// <summary>The view's current yaw; kept between frames so a vertical camera doesn't spin the view.</summary>
     private float yaw;
 
+    /// <summary>Whether <see cref="LastSpace"/> holds a real frame's cube, so its rotation can be reused.</summary>
+    private bool hasSpace;
+
     /// <summary>Creates the window, closed, with a sensible minimum size.</summary>
     public CubeWindow()
         : base("Cube###CubeMain")
@@ -118,6 +121,12 @@ internal sealed class CubeWindow : Window
     /// <summary>Colours per player relation. Defaults until the settings window (#20) makes them configurable.</summary>
     internal PlayerPalette Palette { get; } = PlayerPalette.Default;
 
+    /// <summary>
+    /// How the view turns (PROJECT.md, "View"): Camera (default) follows the game camera, North up stays fixed.
+    /// Settable so the bridge can test both; the settings window (#20) will drive it.
+    /// </summary>
+    internal OrientationMode Orientation { get; set; } = OrientationMode.Camera;
+
     /// <summary>Whether other players get name labels. On until the settings window (#20) adds the toggle.</summary>
     internal bool ShowLabels { get; } = true;
 
@@ -149,17 +158,27 @@ internal sealed class CubeWindow : Window
     /// <summary>The plugin's per-frame draw path: builds the frame with Core and draws it.</summary>
     private void DrawContents()
     {
-        if (CameraReader.TryGetForward(out var forward))
+        // North up never reads the camera. With no camera (or one looking straight down) the forward vector is zero
+        // and FromForward keeps the previous yaw.
+        var forward = Vector3.Zero;
+        if (this.Orientation == OrientationMode.Camera)
         {
-            this.yaw = ViewYaw.For(OrientationMode.Camera, forward, this.yaw);
+            CameraReader.TryGetForward(out forward);
         }
+
+        var yaw = ViewYaw.Settle(this.yaw, ViewYaw.For(this.Orientation, forward, this.yaw));
 
         // The cube fills the content region and keeps its shape on resize: Fit uses one scale for both axes.
         var regionMin = ImGui.GetCursorScreenPos();
         var regionSize = ImGui.GetContentRegionAvail();
-        // The cube is centred on the local player and follows them every frame (PROJECT.md, "Cube").
+        // The cube is centred on the local player and follows them every frame (PROJECT.md, "Cube"). The rotation
+        // is only recomputed when the yaw has actually changed.
         this.LastHadLocalPlayer = PlayerReader.TryGetLocalPosition(out var centre);
-        var space = new CubeSpace(centre, CubeSpace.DefaultEdge, this.yaw);
+        var space = this.hasSpace && yaw == this.yaw
+            ? this.LastSpace.Recentred(centre, CubeSpace.DefaultEdge)
+            : new CubeSpace(centre, CubeSpace.DefaultEdge, yaw);
+        this.yaw = yaw;
+        this.hasSpace = true;
         var projection = ViewProjection.Fit(regionMin, regionSize, space.HalfEdge, Elevation);
 
         this.Players.Begin(space);

@@ -114,6 +114,20 @@ public class CubeSpaceTests
     }
 
     [Fact]
+    public void Recentred_cube_keeps_the_view_rotation_and_moves_with_the_player()
+    {
+        var moved = Player + new Vector3(10, 2, -7);
+        var fresh = new CubeSpace(moved, 60, 0.9f);
+
+        var recentred = new CubeSpace(Player, 40, 0.9f).Recentred(moved, 60);
+
+        Assert.Equal(fresh.Centre, recentred.Centre);
+        Assert.Equal(fresh.Edge, recentred.Edge);
+        Assert.Equal(fresh.Yaw, recentred.Yaw);
+        Assert.Equal(fresh.ToView(moved + new Vector3(3, 1, 4)), recentred.ToView(moved + new Vector3(3, 1, 4)));
+    }
+
+    [Fact]
     public void Looking_south_mirrors_north_up()
     {
         var space = new CubeSpace(Player, 40, MathF.PI);
