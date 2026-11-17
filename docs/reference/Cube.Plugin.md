@@ -110,6 +110,30 @@ private readonly BridgeRunner? testBridge
 
  [BridgeRunner](Cube.TestBridge.BridgeRunner.md)?
 
+### <a id="Cube_Plugin_uiErrors"></a> uiErrors
+
+Exceptions caught in the command and the Dalamud UI buttons.
+
+```csharp
+private readonly ErrorReporter uiErrors
+```
+
+#### Field Value
+
+ [ErrorReporter](Cube.ErrorReporter.md)
+
+### <a id="Cube_Plugin_unloadErrors"></a> unloadErrors
+
+How many unload steps failed; reported in the unload line.
+
+```csharp
+private int unloadErrors
+```
+
+#### Field Value
+
+ [int](https://learn.microsoft.com/dotnet/api/system.int32)
+
 ### <a id="Cube_Plugin_windowSystem"></a> windowSystem
 
 Dalamud's window manager for this plugin's windows.
@@ -219,18 +243,25 @@ internal static IDalamudPluginInterface PluginInterface { get; private set; }
 
 ### <a id="Cube_Plugin_Dispose"></a> Dispose\(\)
 
-Unregisters everything, each part even if an earlier one fails.
+Unregisters everything the constructor registered (the command, the three UI callbacks, both windows, and in
+Debug the bridge's framework hook and file watcher), each part even if an earlier one fails. The plugin changes
+nothing in the game, so there is nothing else to restore.
 
 ```csharp
 public void Dispose()
 ```
 
+#### Remarks
+
+The last line is <code>Cube unloaded</code>, or <code>Cube unloaded with N error(s)</code> if any step failed; the in-game
+test script fails on the latter.
+
 ### <a id="Cube_Plugin_DisposeSafely_System_Action_System_String_"></a> DisposeSafely\(Action, string\)
 
-Runs one cleanup step and logs, rather than throws, if it fails.
+Runs one cleanup step and logs and counts, rather than throws, if it fails.
 
 ```csharp
-private static void DisposeSafely(Action step, string name)
+private void DisposeSafely(Action step, string name)
 ```
 
 #### Parameters
@@ -271,7 +302,7 @@ private void SaveConfiguration()
 
 ### <a id="Cube_Plugin_ToggleCubeWindow"></a> ToggleCubeWindow\(\)
 
-Shows the window if hidden, hides it if shown.
+Shows the cube window if hidden, hides it if shown (Dalamud's "open" button for the plugin).
 
 ```csharp
 private void ToggleCubeWindow()
@@ -279,7 +310,7 @@ private void ToggleCubeWindow()
 
 ### <a id="Cube_Plugin_ToggleSettingsWindow"></a> ToggleSettingsWindow\(\)
 
-Shows or hides the settings window.
+Shows or hides the settings window (Dalamud's settings button for the plugin).
 
 ```csharp
 private void ToggleSettingsWindow()

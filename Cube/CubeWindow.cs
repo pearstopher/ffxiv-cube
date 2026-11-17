@@ -166,18 +166,38 @@ internal sealed class CubeWindow : Window
     internal int LastLabelCount { get; private set; }
 #endif
 
+    /// <summary>Exceptions caught while drawing; the bridge checks there were none.</summary>
+    internal ErrorReporter Errors { get; } = new("Cube window");
+
     /// <summary>Draws the window's contents, measuring the cost in Debug builds.</summary>
     public override void Draw()
     {
 #if DEBUG
         var startBytes = GC.GetAllocatedBytesForCurrentThread();
         var startTicks = Stopwatch.GetTimestamp();
-        this.DrawContents();
+        this.SafeDrawContents();
         var elapsed = Stopwatch.GetTimestamp() - startTicks;
         this.DrawCost.Record(elapsed, GC.GetAllocatedBytesForCurrentThread() - startBytes);
 #else
-        this.DrawContents();
+        this.SafeDrawContents();
 #endif
+    }
+
+    /// <summary>
+    /// Draws, catching and logging any exception so it never reaches the game (CLAUDE.md, "Dalamud rules"). A failed
+    /// frame is simply empty. The try costs nothing when nothing is thrown.
+    /// </summary>
+    private void SafeDrawContents()
+    {
+        try
+        {
+            this.DrawContents();
+        }
+        catch (Exception ex)
+        {
+            this.DrawList.Clear();
+            this.Errors.Report(ex);
+        }
     }
 
     /// <summary>The plugin's per-frame draw path: builds the frame with Core and draws it.</summary>

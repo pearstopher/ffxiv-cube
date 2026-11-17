@@ -201,6 +201,18 @@ internal DrawList DrawList { get; }
 
  [DrawList](Cube.Core.DrawList.md)
 
+### <a id="Cube_CubeWindow_Errors"></a> Errors
+
+Exceptions caught while drawing; the bridge checks there were none.
+
+```csharp
+internal ErrorReporter Errors { get; }
+```
+
+#### Property Value
+
+ [ErrorReporter](Cube.ErrorReporter.md)
+
 ### <a id="Cube_CubeWindow_Fakes"></a> Fakes
 
 Synthetic players the test bridge can inject (#16). Empty unless a check enables them. Debug builds only.
@@ -474,6 +486,15 @@ The plugin's per-frame draw path: builds the frame with Core and draws it.
 
 ```csharp
 private void DrawContents()
+```
+
+### <a id="Cube_CubeWindow_SafeDrawContents"></a> SafeDrawContents\(\)
+
+Draws, catching and logging any exception so it never reaches the game (CLAUDE.md, "Dalamud rules"). A failed
+frame is simply empty. The try costs nothing when nothing is thrown.
+
+```csharp
+private void SafeDrawContents()
 ```
 
 ### <a id="Cube_CubeWindow_Submit_Dalamud_Bindings_ImGui_ImDrawListPtr_System_ReadOnlySpan_Cube_Core_DrawPrimitive__System_ReadOnlySpan_Cube_Core_NearbyPlayer__"></a> Submit\(ImDrawListPtr, ReadOnlySpan<DrawPrimitive\>, ReadOnlySpan<NearbyPlayer\>\)

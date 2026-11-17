@@ -38,12 +38,28 @@ internal sealed class SettingsWindow : Window
     internal long DrawCount { get; private set; }
 #endif
 
-    /// <summary>Draws the controls and applies and saves changes.</summary>
+    /// <summary>Exceptions caught while drawing; the bridge checks there were none.</summary>
+    internal ErrorReporter Errors { get; } = new("Settings window");
+
+    /// <summary>Draws the controls, catching and logging any exception so it never reaches the game.</summary>
     public override void Draw()
     {
 #if DEBUG
         this.DrawCount++;
 #endif
+        try
+        {
+            this.DrawControls();
+        }
+        catch (Exception ex)
+        {
+            this.Errors.Report(ex);
+        }
+    }
+
+    /// <summary>Draws the controls and applies and saves changes.</summary>
+    private void DrawControls()
+    {
         var c = this.config;
 
         ImGui.SetNextItemWidth(200);

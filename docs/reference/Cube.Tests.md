@@ -60,6 +60,11 @@ Checks the draw-cost measurements the in-game bridge uses for PROJECT.md's budge
 ("Efficiency and memory": under 0.5 ms per frame on average, zero bytes allocated per frame),
 and that measuring is itself allocation-free with bounded memory.
 
+ [ErrorThrottleTests](Cube.Tests.ErrorThrottleTests.md)
+
+Checks repeated errors are logged sparingly (CLAUDE.md, "Dalamud rules": every game-facing handler catches and
+logs; a handler failing every frame must not flood the log).
+
  [PlayerCubesTests](Cube.Tests.PlayerCubesTests.md)
 
 Checks players are drawn as small coloured cubes (PROJECT.md, "Players": about 1/40 of the big cube's edge, minimum

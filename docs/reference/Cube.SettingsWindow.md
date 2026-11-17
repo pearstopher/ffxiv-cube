@@ -87,6 +87,18 @@ internal long DrawCount { get; private set; }
 
  [long](https://learn.microsoft.com/dotnet/api/system.int64)
 
+### <a id="Cube_SettingsWindow_Errors"></a> Errors
+
+Exceptions caught while drawing; the bridge checks there were none.
+
+```csharp
+internal ErrorReporter Errors { get; }
+```
+
+#### Property Value
+
+ [ErrorReporter](Cube.ErrorReporter.md)
+
 ## Methods
 
 ### <a id="Cube_SettingsWindow_ApplyAndSave"></a> ApplyAndSave\(\)
@@ -99,10 +111,18 @@ private void ApplyAndSave()
 
 ### <a id="Cube_SettingsWindow_Draw"></a> Draw\(\)
 
-Draws the controls and applies and saves changes.
+Draws the controls, catching and logging any exception so it never reaches the game.
 
 ```csharp
 public override void Draw()
+```
+
+### <a id="Cube_SettingsWindow_DrawControls"></a> DrawControls\(\)
+
+Draws the controls and applies and saves changes.
+
+```csharp
+private void DrawControls()
 ```
 
 ### <a id="Cube_SettingsWindow_Track_System_Boolean_"></a> Track\(bool\)

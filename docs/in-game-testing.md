@@ -91,5 +91,6 @@ The few things the bridge can't do (clicking ImGui controls) are listed in `docs
 | Exit 2, and no `Cube loaded` line in `dalamud.log` | The dev plugin isn't set up or enabled (setup steps 2–3). |
 | Exit 2, but `Cube loaded` shows an older build | Automatic reloading is off, or the dev location points at the Release DLL. |
 | `window-opens-and-closes` fails with "game UI hidden" | The game was in a cutscene, GPose or loading screen. Run again. |
+| "dalamud.log shows errors from the last unload or since the last load" | A handler caught an exception, or an unload step failed (`Cube unloaded with N error(s)`). The lines printed say which; fix the cause. `no-errors-caught` fails for the same handler errors. |
 | `loaded-build-is-current` fails | The game is running a stale build: reload the plugin in `/xlplugins`. |
 | `dalamud.log` stopped updating | It stops at 100 MB per game session. Quiet noisy plugins' debug logging and restart the game. |

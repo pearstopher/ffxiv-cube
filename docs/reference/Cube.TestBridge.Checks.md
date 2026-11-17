@@ -50,6 +50,11 @@ Checks every other player in the cube gets exactly one name label showing their 
 top of it, and the local player gets none (PROJECT.md, "Features": other players are labelled with their names;
 "Labels": the name drawn next to the cube). Uses the standard fake players (#16) so it works with nobody around.
 
+ [NoErrorsCaughtCheck](Cube.TestBridge.Checks.NoErrorsCaughtCheck.md)
+
+Checks no game-facing handler has caught an exception since the plugin loaded (CLAUDE.md, "Dalamud rules": wrap
+every handler in try/catch and log). Runs after the other checks, so it also covers everything they exercised.
+
  [OrientationCheck](Cube.TestBridge.Checks.OrientationCheck.md)
 
 Checks both orientation modes against the live game camera (PROJECT.md, "View"): in Camera mode the view's yaw
