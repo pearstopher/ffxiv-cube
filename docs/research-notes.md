@@ -4,13 +4,14 @@ Findings about outside systems (Dalamud, the game) that the code relies on. Each
 
 ## In-game test bridge design (#7)
 
-Checked 2026-11-17 against Dalamud's source (`Dalamud/Plugin/Internal/Types/LocalDevPlugin.cs`, `master`). The game wasn't running with the dev plugin loaded, so the live spike is still pending: the first in-game run of the bridge (#8) confirms the timings below, and this section gets updated with what it measured.
+Checked 2026-11-17 against Dalamud's source (`Dalamud/Plugin/Internal/Types/LocalDevPlugin.cs`, `master`), then confirmed live the same day: the full bridge suite ran in game and the script returned exit 0 on a pass and exit 1 when a check was made to fail on purpose.
 
 ### Auto-reload timing and the build stamp
 
 - With **automatic reloading** on, Dalamud puts a `FileSystemWatcher` on the dev plugin's DLL (`NotifyFilters.LastWrite`, filtered to that one file). Each change restarts a **500 ms** timer; the reload happens 500 ms after the *last* write, so the several writes of one `dotnet build` cause one reload.
 - A reload is skipped if the plugin isn't in the `Loaded` (or a load/unload error) state, e.g. when it's disabled.
 - So after `dotnet build` finishes, expect the new build to be loaded within about 1–2 seconds, plus however long the plugin's constructor takes. The script allows far more than that (see "Unreachable game").
+- **Measured:** DLL written 12:38:45, `Cube unloaded` at 12:38:46.2, `Cube loaded` at 12:38:47.1, first bridge check passed at 12:38:47.2. About 2 seconds from build to a fresh run.
 - **Which build is loaded:** the plugin reads its DLL's last write time fresh from disk on load (`BuildInfo.ReadBuildTime`, not Dalamud's cached `FileInfo`) and logs `Cube loaded (Debug build <version>, built <time>, from <path>)`. The bridge writes the same build time into its results file. The script compares it with the write time of `Cube\bin\x64\Debug\Cube.dll` it just built: equal means the results are from this build.
 
 ### Where requests and results live
@@ -21,7 +22,6 @@ Checked 2026-11-17 against Dalamud's source (`Dalamud/Plugin/Internal/Types/Loca
   C:\Users\snows\AppData\Roaming\XIVLauncher\pluginConfigs\Cube\
   ```
 
-  (No `Cube` folder exists there yet: the plugin hasn't been loaded on this PC.)
 - The bridge uses a `test-bridge\` subfolder:
   - `request.json`: written by the script to ask for a run without rebuilding. The bridge deletes it when it starts the run.
   - `results.json`: written by the bridge. Written to `results.json.tmp` first, then moved over the old file (`File.Move(..., overwrite: true)`), so the script never reads a half-written file.
@@ -52,7 +52,7 @@ It also prints the last `Cube loaded` / `Cube unloaded` line from `dalamud.log`,
 
 ## Reading players, party and camera (#10)
 
-Checked 2026-11-17 by reading MiniMappingway (`Service/FinderService.cs`, `Manager/NaviMapManager.cs`), Mappy (`MapRenderer.GameObject.cs`, `.Player.cs`, `.GroupMember.cs`), FFXIVClientStructs (`GameObjectManager`, `GameObject`, `Character`, `Camera`, `CameraBase`, `Graphics.Scene.Camera`) and Dalamud's `UiBuilder`. The game wasn't reachable, so the conventions marked **to confirm** are measured by the bridge check `probe-players-party-camera` on its first run; this section is updated with what it reports.
+Checked 2026-11-17 by reading MiniMappingway (`Service/FinderService.cs`, `Manager/NaviMapManager.cs`), Mappy (`MapRenderer.GameObject.cs`, `.Player.cs`, `.GroupMember.cs`), FFXIVClientStructs (`GameObjectManager`, `GameObject`, `Character`, `Camera`, `CameraBase`, `Graphics.Scene.Camera`) and Dalamud's `UiBuilder`. The bridge check `probe-players-party-camera` then measured the uncertain parts live (2026-11-17); results are noted under each point.
 
 ### Enumerating players without allocating
 
@@ -61,7 +61,7 @@ Checked 2026-11-17 by reading MiniMappingway (`Service/FinderService.cs`, `Manag
   - Position: `GameObject.Position` (`Vector3`, world space, yalms).
   - Name: `GameObject.Name`, a fixed 64-byte UTF-8 buffer. Compare the bytes with the cached label's bytes and only build a new `string` when they differ (PROJECT.md: labels cached, rebuilt only when a name changes).
   - Identity for caching: `GameObject.EntityId` (or the slot index; a slot can be reused by someone else, so the cache keys on both).
-  - Local player: `IObjectTable.LocalPlayer` (one wrapper, read once per frame is acceptable only if it doesn't allocate; otherwise slot 0 of the object manager, which holds the local player; **to confirm** with the probe).
+  - Local player: `IObjectTable.LocalPlayer` (one wrapper, read once per frame is acceptable only if it doesn't allocate; otherwise slot 0 of the object manager). **Chosen and confirmed live:** `Control.Instance()->LocalPlayer` (`PlayerReader`), a raw pointer with no wrapper; `players-match-object-table` checks it is the same entity as `IObjectTable.LocalPlayer`, and it passes. The direct read and Dalamud's object table agreed on the player count (1, then 2 when someone walked by).
 - **World axes:** X east, Z south, Y up (the map uses X and Z: Mappy's `new Vector2(Position.X, Position.Z)`), so north is −Z. The cube is axis-aligned to these (PROJECT.md: north is a fixed face).
 - **Independent read for the bridge:** the bridge counts players through Dalamud's `IObjectTable` (allocations are fine in checks) and compares with the direct read; the probe check does this now, and the player-drawing checks (#15, #17) will compare positions too.
 
@@ -73,7 +73,8 @@ Checked 2026-11-17 by reading MiniMappingway (`Service/FinderService.cs`, `Manag
 
 ### Camera yaw
 
-- `CameraManager.Instance()->Camera` (`FFXIVClientStructs.FFXIV.Client.Game.Control`) is the normal in-game camera. `Camera.DirH` is its horizontal angle in radians; FFXIVClientStructs' comment says "0 is north, increases CW". **To confirm**, since character `Rotation` uses 0 = facing south (+Z).
+- `CameraManager.Instance()->Camera` (`FFXIVClientStructs.FFXIV.Client.Game.Control`) is the normal in-game camera. `Camera.DirH` is its horizontal angle in radians; FFXIVClientStructs' comment says "0 is north, increases CW". Character `Rotation` uses 0 = facing south (+Z).
+  - **Measured (one sample):** `cameraDirH` = 1.554 while the scene camera looked almost due west (forward XZ = (−7.05, +0.59)). So `DirH` is *not* the look direction under "0 north, CW" (west would be ±3π/2 / −π/2). It matches the bearing *of the camera from what it looks at* (east, π/2) to within about 4° (that bearing computed from the scene camera is 1.487). The small gap may be camera smoothing between the two structs. This ambiguity is why the scene camera vector below is the recommended source.
 - Independent source: the scene camera, `Camera.SceneCamera` (`Graphics.Scene.Camera`): `Position` and `LookAtVector` are world-space points. `forward = LookAtVector - Position` projected onto XZ gives the view direction with no angle convention to guess. **Recommended for the Camera orientation mode:** compute the yaw from that vector, so the cube's "forward on screen" is exactly where the game camera looks. The probe records both (`cameraDirH`, `sceneYawAtan2XZ`) so the relation is known.
 - Mappy's alternative (`AreaMapNumberArray.ConeRotation`, the minimap cone) is UI data and only valid while the map addon is updating; not used.
 
