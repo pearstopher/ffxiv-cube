@@ -9,7 +9,8 @@ namespace Cube.TestBridge.Checks;
 /// compares it primitive by primitive, and checks one ImGui call was issued per primitive.
 /// </summary>
 /// <remarks>
-/// The frame is the wireframe (12 edges) plus one solid cube per player in the window's player set (#17).
+/// The frame is the wireframe (12 edges) plus one solid cube per player in the window's player set (#17) and a
+/// label per other player (#18).
 /// Later features extend what <see cref="CubeWindow.BuildFrame"/> builds, not this comparison.
 /// </remarks>
 internal sealed class DrawListMatchesCoreCheck : BridgeCheck
@@ -48,7 +49,7 @@ internal sealed class DrawListMatchesCoreCheck : BridgeCheck
         }
 
         var actual = window.DrawList;
-        CubeWindow.BuildFrame(this.expected, window.LastSpace, window.LastProjection, window.Players.Items, window.Palette);
+        CubeWindow.BuildFrame(this.expected, window.LastSpace, window.LastProjection, window.Players.Items, window.Palette, window.ShowLabels);
 
         context.Metric("primitives", actual.Count);
         context.Metric("submitted", window.LastSubmitted);

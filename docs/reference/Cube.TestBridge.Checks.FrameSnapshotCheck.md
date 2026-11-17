@@ -20,7 +20,7 @@ internal sealed class FrameSnapshotCheck : BridgeCheck
 ## Remarks
 
 The format is read by <code>Cube.Snapshot.SnapshotRenderer</code>. It contains only geometry and colours; player names
-are never written (PROJECT.md, "Privacy"). Written atomically, like the results.
+are never written, only each label's length (PROJECT.md, "Privacy"). Written atomically, like the results.
 
 ## Constructors
 
@@ -42,7 +42,7 @@ The bridge folder to write into.
 #### Remarks
 
 The format is read by <code>Cube.Snapshot.SnapshotRenderer</code>. It contains only geometry and colours; player names
-are never written (PROJECT.md, "Privacy"). Written atomically, like the results.
+are never written, only each label's length (PROJECT.md, "Privacy"). Written atomically, like the results.
 
 ## Fields
 

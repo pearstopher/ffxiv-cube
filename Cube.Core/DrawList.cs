@@ -69,6 +69,14 @@ public sealed class DrawList
     public void AddQuad(Vector2 a, Vector2 b, Vector2 c, Vector2 d, float depth, uint colour, int tag = 0) =>
         this.Add(new DrawPrimitive { Kind = PrimitiveKind.Quad, A = a, B = b, C = c, D = d, Depth = depth, Colour = colour, Tag = tag });
 
+    /// <summary>Adds a player's name label (<see cref="PrimitiveKind.Label"/>).</summary>
+    /// <param name="anchor">Left end of the label, vertically centred on it (pixels).</param>
+    /// <param name="depth">Distance from the viewer: the player cube's, so the label sorts with its cube.</param>
+    /// <param name="colour">Text colour.</param>
+    /// <param name="tag">The player's index + 1; the text is that player's name.</param>
+    public void AddLabel(Vector2 anchor, float depth, uint colour, int tag) =>
+        this.Add(new DrawPrimitive { Kind = PrimitiveKind.Label, A = anchor, Depth = depth, Colour = colour, Tag = tag });
+
     /// <summary>Sorts so the farthest primitive comes first; ties keep the order they were added in.</summary>
     public void SortBackToFront() => this.items.AsSpan(0, this.Count).Sort(BackToFront);
 

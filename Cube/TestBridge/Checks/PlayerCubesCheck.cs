@@ -79,7 +79,8 @@ internal sealed class PlayerCubesCheck : BridgeCheck
                 return CheckStep.Fail($"Draw list isn't far-to-near at primitive {i}.");
             }
 
-            if (p.Tag == 0)
+            // Labels (#18) carry their player's tag too; LabelsCheck covers them.
+            if (p.Tag == 0 || p.Kind == PrimitiveKind.Label)
             {
                 continue;
             }

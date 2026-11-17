@@ -91,7 +91,7 @@ public float Depth
 
 ### <a id="Cube_Core_DrawPrimitive_Kind"></a> Kind
 
-Line or quad.
+Line, quad or label.
 
 ```csharp
 public PrimitiveKind Kind
