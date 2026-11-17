@@ -56,7 +56,9 @@ def main() -> int:
     for path in sorted(REF.glob("*.md")):
         text = path.read_text(encoding="utf-8")
         text = re.sub(r'<xref href="([^"]+)"[^>]*></xref>', lambda m: xref_to_link(m, pages), text)
-        text = re.sub(r"(https://github\.com/goatcorp/Dalamud/blob/)[0-9a-f]{40}/", r"\1master/", text)
+        # DocFX fills the ref in these links from *this* repo's checkout (a commit hash locally, "40/merge" on
+        # a PR build), so normalise whatever it is to master.
+        text = re.sub(r"(https://github\.com/goatcorp/Dalamud/blob/).+?/(Dalamud/)", r"\1master/\2", text)
         # Inherited members come from .NET and Dalamud, not this code, and change with the Dalamud version CI
         # downloads, so they'd make the committed reference go stale for no reason. Drop those sections.
         text = re.sub(r"#### Inherited Members\n.*?(?=\n#{1,4} |\Z)", "", text, flags=re.S)
