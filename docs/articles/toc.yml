@@ -1,2 +1,4 @@
 - name: README
   href: readme.md
+- name: Development guide
+  href: development.md
