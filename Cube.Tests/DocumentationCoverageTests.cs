@@ -36,7 +36,7 @@ public class DocumentationCoverageTests
     public void Every_namespace_has_an_overview_page()
     {
         var root = TestPaths.RepoRoot();
-        var namespaces = new[] { "Cube", "Cube.Core", "Cube.Tests" }
+        var namespaces = new[] { "Cube", "Cube.Core", "Cube.Snapshot", "Cube.Tests" }
             .SelectMany(project => Directory.EnumerateFiles(Path.Combine(root, project), "*.cs", SearchOption.AllDirectories))
             .Where(file => !file.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}", StringComparison.Ordinal))
             .SelectMany(File.ReadLines)

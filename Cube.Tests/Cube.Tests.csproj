@@ -22,6 +22,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Cube.Core\Cube.Core.csproj" />
+    <!-- The dev-only snapshot tool; Dalamud-free like Core, so its rasteriser and PNG writer are unit tested here too. -->
+    <ProjectReference Include="..\Cube.Snapshot\Cube.Snapshot.csproj" />
   </ItemGroup>
 
 </Project>

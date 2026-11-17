@@ -271,6 +271,18 @@ private readonly FileSystemWatcher watcher
 
 ## Properties
 
+### <a id="Cube_TestBridge_BridgeRunner_Folder"></a> Folder
+
+The bridge's folder, where checks may write their own output (e.g. the frame dump).
+
+```csharp
+public string Folder { get; }
+```
+
+#### Property Value
+
+ [string](https://learn.microsoft.com/dotnet/api/system.string)
+
 ### <a id="Cube_TestBridge_BridgeRunner_RequestPath"></a> RequestPath
 
 Full path of the request file.

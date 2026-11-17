@@ -65,6 +65,11 @@ wireframe; "Efficiency and memory": reused buffers, no per-frame allocations).
 Checks the in-game test bridge is compiled out of Release builds (CLAUDE.md, "Building and testing":
 the bridge and fake-player code must not ship), and is present in Debug builds where the in-game checks need it.
 
+ [SnapshotTests](Cube.Tests.SnapshotTests.md)
+
+Checks the dev-only snapshot renderer (PROJECT.md, "Automated testing": a dev tool turns a dumped draw list
+into a PNG) paints what the dump says, in order, and writes a valid PNG.
+
  [TestPaths](Cube.Tests.TestPaths.md)
 
 Locates files in the repository from a test's output folder, for tests that inspect the repo or build output.

@@ -15,6 +15,10 @@ improve the comments in the code instead.
 
 **The plugin: everything that touches Dalamud or the game.** It is kept as thin as possible: it reads game state, hands it to `Cube.Core` and draws the result. Entry point: `Plugin`. The cube is drawn in `CubeWindow`, a Dalamud window toggled by `/cube`. Game access is read-only (PROJECT.md, "Goal"), and every handler is released when the plugin unloads.
 
+## [Cube.Snapshot](Cube.Snapshot.md)
+
+**The snapshot tool (dev only).** PROJECT.md, "Automated testing": a small console program turns a draw list dumped by the in-game test bridge (`drawlist.json`) into a PNG, so a frame can be looked at without a screenshot of the game. `SnapshotRenderer` paints the dumped primitives in order onto a `Canvas` (convex fills and thick lines with alpha blending), and `PngWriter` encodes it with only the .NET base library. It is not shipped and the plugin doesn't reference it. Run it through `python scripts/ingame_test.py --snapshot`.
+
 ## [Cube.TestBridge.Checks](Cube.TestBridge.Checks.md)
 
 **The in-game checks (Debug builds only).** One class per behaviour checked in the running game, each naming the PROJECT.md rule it verifies: the loaded build is the one on disk, the window opens and closes, and the draw path stays within the frame-time and zero-allocation budgets. Features that touch the game add their checks here and register them in `Plugin`.

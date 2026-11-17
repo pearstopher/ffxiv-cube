@@ -62,6 +62,15 @@ internal sealed class CubeWindow : Window
     /// <summary>How many ImGui draw calls the last frame issued; the bridge checks it equals the draw list's count.</summary>
     internal int LastSubmitted { get; private set; }
 
+    /// <summary>Top-left of the last frame's drawing region, in screen pixels; the snapshot crops to this region.</summary>
+    internal Vector2 LastRegionMin { get; private set; }
+
+    /// <summary>Size of the last frame's drawing region, in pixels.</summary>
+    internal Vector2 LastRegionSize { get; private set; }
+
+    /// <summary>Thickness of the big cube's edges, in pixels; the snapshot draws lines with it.</summary>
+    internal static float LineThickness => WireThickness;
+
 #if DEBUG
     /// <summary>
     /// Time and allocations of each <see cref="Draw"/> call, read by the in-game test bridge to check
@@ -116,6 +125,8 @@ internal sealed class CubeWindow : Window
         BuildFrame(this.DrawList, space, projection);
         this.LastSpace = space;
         this.LastProjection = projection;
+        this.LastRegionMin = regionMin;
+        this.LastRegionSize = regionSize;
         this.LastSubmitted = Submit(ImGui.GetWindowDrawList(), this.DrawList.Items);
     }
 

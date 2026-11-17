@@ -22,6 +22,11 @@ Checks the window drew exactly what Core produced (PROJECT.md, "Automated testin
 match Core's output): rebuilds the last frame independently from the same cube space and projection,
 compares it primitive by primitive, and checks one ImGui call was issued per primitive.
 
+ [FrameSnapshotCheck](Cube.TestBridge.Checks.FrameSnapshotCheck.md)
+
+Dumps one frame's draw list to <code>drawlist.json</code> in the bridge folder (PROJECT.md, "Automated testing": the
+bridge dumps the frame's draw list; the snapshot tool turns it into a PNG so Claude can see what was drawn).
+
  [GameStateProbeCheck](Cube.TestBridge.Checks.GameStateProbeCheck.md)
 
 Research probe for #10 (reading players, party and camera): reads the same facts two ways and records

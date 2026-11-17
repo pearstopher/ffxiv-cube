@@ -96,7 +96,7 @@ In-game checks are automated: the Debug-only test bridge runs a suite of checks 
 python scripts/ingame_test.py
 ```
 
-Setup, exit codes and how to read the results are in `docs/in-game-testing.md`. Only what the bridge can't check goes in `docs/manual-tests.md`.
+Setup, exit codes, snapshots (`--snapshot`, rendered to a PNG by the dev-only `Cube.Snapshot` tool) and how to read the results are in `docs/in-game-testing.md`. Only what the bridge can't check goes in `docs/manual-tests.md`.
 
 The script's own decisions are unit tested: `python -m unittest discover -s scripts`.
 

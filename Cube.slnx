@@ -1,5 +1,6 @@
 <Solution>
   <Project Path="Cube.Core/Cube.Core.csproj" />
+  <Project Path="Cube.Snapshot/Cube.Snapshot.csproj" />
   <Project Path="Cube.Tests/Cube.Tests.csproj" />
   <Project Path="Cube/Cube.csproj">
     <Platform Project="x64" />

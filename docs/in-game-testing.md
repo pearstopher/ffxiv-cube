@@ -31,6 +31,14 @@ It builds the Debug plugin, then waits (up to 3 minutes, `--timeout` to change) 
 - If the build changed the DLL, Dalamud reloads the plugin about half a second later and the bridge runs on load.
 - If nothing changed (or with `--no-build`), the script writes `request.json` and the bridge runs again.
 
+Add `--snapshot` to also render the frame the bridge dumped (`drawlist.json`, from the `frame-snapshot` check) to `snapshots/snapshot.png`, with the dev-only `Cube.Snapshot` tool. `snapshots/` is git-ignored. To see what Core draws without the game at all:
+
+```sh
+dotnet run --project Cube.Snapshot -- --demo snapshots/demo.png 0.5
+```
+
+(the last number is the view's yaw in radians).
+
 | Exit code | Meaning |
 | --- | --- |
 | 0 | Every check passed. |

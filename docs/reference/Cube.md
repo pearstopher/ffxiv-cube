@@ -8,6 +8,8 @@
 
  [Cube.Game](Cube.Game.md)
 
+ [Cube.Snapshot](Cube.Snapshot.md)
+
  [Cube.TestBridge](Cube.TestBridge.md)
 
  [Cube.Tests](Cube.Tests.md)
