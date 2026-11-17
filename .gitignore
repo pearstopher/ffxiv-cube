@@ -43,6 +43,9 @@ $RECYCLE.BIN/
 *~
 *.DotSettings.user
 
+# In-game snapshots (scripts/ingame_test.py --snapshot); may show player names, never committed
+snapshots/
+
 # Generated documentation (DocFX)
 docs/_site/
 docs/api/

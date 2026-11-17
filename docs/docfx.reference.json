@@ -8,6 +8,7 @@
           "files": [
             "Cube.Core/Cube.Core.csproj",
             "Cube/Cube.csproj",
+            "Cube.Snapshot/Cube.Snapshot.csproj",
             "Cube.Tests/Cube.Tests.csproj"
           ]
         }

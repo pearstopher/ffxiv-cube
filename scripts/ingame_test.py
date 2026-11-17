@@ -13,7 +13,10 @@ Fresh results are matched by build time (after a build that changed the DLL, Dal
 the bridge runs on load) or by request id (when the DLL didn't change, the script writes request.json and
 the bridge runs again).
 
-Usage: python scripts/ingame_test.py [--no-build] [--timeout SECONDS]
+With --snapshot, the frame the bridge dumped (drawlist.json) is rendered to snapshots/snapshot.png with the dev-only
+Cube.Snapshot tool, so the drawing can be looked at. snapshots/ is git-ignored.
+
+Usage: python scripts/ingame_test.py [--no-build] [--timeout SECONDS] [--snapshot]
 """
 import argparse
 import datetime
@@ -32,6 +35,8 @@ BRIDGE = XIVLAUNCHER / "pluginConfigs" / "Cube" / "test-bridge"
 RESULTS = BRIDGE / "results.json"
 REQUEST = BRIDGE / "request.json"
 DALAMUD_LOG = XIVLAUNCHER / "dalamud.log"
+DRAWLIST = BRIDGE / "drawlist.json"
+SNAPSHOT = ROOT / "snapshots" / "snapshot.png"
 
 PASSED, FAILED, UNREACHABLE, BUILD_FAILED = 0, 1, 2, 3
 
@@ -87,10 +92,22 @@ def last_plugin_log_line() -> str | None:
     return lines[-1].strip() if lines else None
 
 
+def render_snapshot() -> bool:
+    """Renders the bridge's drawlist.json to snapshots/snapshot.png with the Cube.Snapshot tool."""
+    if not DRAWLIST.exists():
+        print(f"No draw list at {DRAWLIST}: the frame-snapshot check didn't run or failed.")
+        return False
+    SNAPSHOT.parent.mkdir(parents=True, exist_ok=True)
+    result = subprocess.run(
+        ["dotnet", "run", "--project", str(ROOT / "Cube.Snapshot"), "--", str(DRAWLIST), str(SNAPSHOT)], cwd=ROOT)
+    return result.returncode == 0
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--no-build", action="store_true", help="skip dotnet build; just ask the bridge to run")
     parser.add_argument("--timeout", type=float, default=180, help="seconds to wait for results (default 180)")
+    parser.add_argument("--snapshot", action="store_true", help="also render the dumped frame to snapshots/snapshot.png")
     args = parser.parse_args()
 
     before = DLL.stat().st_mtime if DLL.exists() else None
@@ -120,7 +137,10 @@ def main() -> int:
         if results is not None and is_fresh(results, stamp, request_id):
             print("\n".join(summary(results)))
             print(f"Results: {RESULTS}")
-            return exit_code(results)
+            code = exit_code(results)
+            if args.snapshot and not render_snapshot():
+                code = FAILED
+            return code
         time.sleep(1)
 
     print(f"Game unreachable: no results for build {stamp} within {args.timeout:.0f} s.")

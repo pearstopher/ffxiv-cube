@@ -109,6 +109,9 @@ internal sealed class BridgeRunner : IDisposable
         this.framework.Update += this.OnUpdate;
     }
 
+    /// <summary>The bridge's folder, where checks may write their own output (e.g. the frame dump).</summary>
+    public string Folder => this.folder;
+
     /// <summary>Full path of the request file.</summary>
     private string RequestPath => Path.Combine(this.folder, RequestFileName);
 

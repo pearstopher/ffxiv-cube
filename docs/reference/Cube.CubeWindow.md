@@ -143,6 +143,30 @@ internal ViewProjection LastProjection { get; private set; }
 
  [ViewProjection](Cube.Core.ViewProjection.md)
 
+### <a id="Cube_CubeWindow_LastRegionMin"></a> LastRegionMin
+
+Top-left of the last frame's drawing region, in screen pixels; the snapshot crops to this region.
+
+```csharp
+internal Vector2 LastRegionMin { get; private set; }
+```
+
+#### Property Value
+
+ [Vector2](https://learn.microsoft.com/dotnet/api/system.numerics.vector2)
+
+### <a id="Cube_CubeWindow_LastRegionSize"></a> LastRegionSize
+
+Size of the last frame's drawing region, in pixels.
+
+```csharp
+internal Vector2 LastRegionSize { get; private set; }
+```
+
+#### Property Value
+
+ [Vector2](https://learn.microsoft.com/dotnet/api/system.numerics.vector2)
+
 ### <a id="Cube_CubeWindow_LastSpace"></a> LastSpace
 
 The cube space used for the last frame drawn, so the bridge can rebuild the frame independently.
@@ -166,6 +190,18 @@ internal int LastSubmitted { get; private set; }
 #### Property Value
 
  [int](https://learn.microsoft.com/dotnet/api/system.int32)
+
+### <a id="Cube_CubeWindow_LineThickness"></a> LineThickness
+
+Thickness of the big cube's edges, in pixels; the snapshot draws lines with it.
+
+```csharp
+internal static float LineThickness { get; }
+```
+
+#### Property Value
+
+ [float](https://learn.microsoft.com/dotnet/api/system.single)
 
 ## Methods
 
