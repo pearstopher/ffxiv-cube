@@ -89,6 +89,9 @@ internal sealed class CubeWindow : Window
     /// </summary>
     /// <remarks>Holds the last 240 frames (about 4 seconds at 60 fps); fixed size, so measuring allocates nothing.</remarks>
     internal DrawCostSampler DrawCost { get; } = new(240, Stopwatch.Frequency);
+
+    /// <summary>Synthetic players the test bridge can inject (#16). Empty unless a check enables them. Debug builds only.</summary>
+    internal TestBridge.FakePlayers Fakes { get; } = new();
 #endif
 
     /// <summary>
@@ -140,6 +143,10 @@ internal sealed class CubeWindow : Window
         {
             PlayerReader.Read(this.Players);
         }
+
+#if DEBUG
+        this.Fakes.Offer(this.Players, space);
+#endif
 
         BuildFrame(this.DrawList, space, projection);
         this.LastSpace = space;

@@ -22,6 +22,12 @@ Checks the window drew exactly what Core produced (PROJECT.md, "Automated testin
 match Core's output): rebuilds the last frame independently from the same cube space and projection,
 compares it primitive by primitive, and checks one ImGui call was issued per primitive.
 
+ [FakePlayersCheck](Cube.TestBridge.Checks.FakePlayersCheck.md)
+
+Checks fake players reach the cube like real ones (PROJECT.md, "Automated testing": synthetic players so rendering
+checks work with nobody nearby; "Players": inside shown, outside not at all): with the standard fakes enabled, every
+fake inside the cube is in the window's player set with its relation, and the one outside isn't.
+
  [FrameSnapshotCheck](Cube.TestBridge.Checks.FrameSnapshotCheck.md)
 
 Dumps one frame's draw list to <code>drawlist.json</code> in the bridge folder (PROJECT.md, "Automated testing": the
