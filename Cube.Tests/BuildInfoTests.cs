@@ -10,13 +10,14 @@ namespace Cube.Tests;
 public class BuildInfoTests
 {
     private static readonly DateTime BuiltAt = new(2026, 11, 11, 10, 36, 2);
+    private static readonly Version PluginVersion = new(1, 0, 0, 0);
 
     [Fact]
-    public void Describes_configuration_time_and_path()
+    public void Describes_configuration_version_time_and_path()
     {
         Assert.Equal(
-            @"Debug build, built 2026-11-11 10:36:02, from C:\repo\Cube\bin\x64\Debug\Cube.dll",
-            BuildInfo.Describe("Debug", BuiltAt, @"C:\repo\Cube\bin\x64\Debug\Cube.dll"));
+            @"Debug build 1.0.0.0, built 2026-11-11 10:36:02, from C:\repo\Cube\bin\x64\Debug\Cube.dll",
+            BuildInfo.Describe("Debug", PluginVersion, BuiltAt, @"C:\repo\Cube\bin\x64\Debug\Cube.dll"));
     }
 
     [Theory]
@@ -25,7 +26,9 @@ public class BuildInfoTests
     [InlineData("  ")]
     public void Omits_the_path_when_unknown(string? path)
     {
-        Assert.Equal("Release build, built 2026-11-11 10:36:02", BuildInfo.Describe("Release", BuiltAt, path));
+        Assert.Equal(
+            "Release build 1.0.0.0, built 2026-11-11 10:36:02",
+            BuildInfo.Describe("Release", PluginVersion, BuiltAt, path));
     }
 
     [Fact]
@@ -60,7 +63,9 @@ public class BuildInfoTests
         try
         {
             CultureInfo.CurrentCulture = new CultureInfo("ar-SA");
-            Assert.Equal("Debug build, built 2026-11-11 10:36:02", BuildInfo.Describe("Debug", BuiltAt, null));
+            Assert.Equal(
+                "Debug build 1.0.0.0, built 2026-11-11 10:36:02",
+                BuildInfo.Describe("Debug", PluginVersion, BuiltAt, null));
         }
         finally
         {

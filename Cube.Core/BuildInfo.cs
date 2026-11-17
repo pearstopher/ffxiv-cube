@@ -9,16 +9,21 @@ namespace Cube.Core;
 public static class BuildInfo
 {
     /// <summary>
-    /// Returns text like <c>Debug build, built 2026-11-11 10:36:02, from C:\...\Cube.dll</c>.
+    /// Returns text like <c>Debug build 1.0.0.0, built 2026-11-11 10:36:02, from C:\...\Cube.dll</c>.
     /// </summary>
+    /// <remarks>
+    /// The version is included so a test report can be matched to the release or commit that
+    /// produced it; the build time tells two Debug builds of the same version apart.
+    /// </remarks>
     /// <param name="configuration">Build configuration, e.g. <c>Debug</c> or <c>Release</c>.</param>
+    /// <param name="version">The plugin's assembly version, e.g. <c>1.0.0.0</c>.</param>
     /// <param name="builtAt">When the DLL was written, in local time.</param>
     /// <param name="dllPath">Full path of the loaded DLL, if known.</param>
-    public static string Describe(string configuration, DateTime builtAt, string? dllPath)
+    public static string Describe(string configuration, Version version, DateTime builtAt, string? dllPath)
     {
         var text = string.Create(
             CultureInfo.InvariantCulture,
-            $"{configuration} build, built {builtAt:yyyy-MM-dd HH:mm:ss}");
+            $"{configuration} build {version}, built {builtAt:yyyy-MM-dd HH:mm:ss}");
 
         return string.IsNullOrWhiteSpace(dllPath) ? text : $"{text}, from {dllPath}";
     }
