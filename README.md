@@ -7,3 +7,10 @@ with nearby players as small labelled cubes.
 
 **How it works:** see the [generated documentation](https://pearstopher.github.io/ffxiv-cube/), built from
 the code's comments.
+
+**Use:** a personal project. It follows the official Dalamud plugin rules (read-only, no server traffic,
+no automation) but is not published in the official plugin repository.
+
+## License
+
+[AGPL-3.0](LICENSE.md)
