@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Dalamud.NET.Sdk version is set in global.json (msbuild-sdks), where Dependabot can keep it up to date. -->
+<Project Sdk="Dalamud.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\Cube.Core\Cube.Core.csproj" />
+  </ItemGroup>
+  <PropertyGroup>
+    <!-- The plugin version. Bump it in the release commit; the release workflow fails if the tag doesn't match (v1.2.3 -> 1.2.3.0). -->
+    <Version>1.0.0.0</Version>
+    <!-- Manifest fields (see https://github.com/goatcorp/DalamudPackager) -->
+    <Author>Ane Mora</Author>
+    <Name>Cube</Name>
+    <Punchline>See the space around you as a cube, with nearby players as small cubes.</Punchline>
+    <Description>Draws a window showing a cube of space around your character, with nearby players as small labelled cubes. It only reads what the game already knows and draws it; it never changes the game or sends anything.</Description>
+    <RepoUrl>https://github.com/pearstopher/ffxiv-cube</RepoUrl>
+    <Tags>cube;radar;players;nearby;3d;map</Tags>
+  </PropertyGroup>
+</Project>
