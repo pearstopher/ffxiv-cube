@@ -49,3 +49,45 @@ It also prints the last `Cube loaded` / `Cube unloaded` line from `dalamud.log`,
 
 - All bridge and fake-player code lives under `Cube/TestBridge/` and is excluded from non-Debug builds in `Cube.csproj` (`<Compile Remove="TestBridge/**" Condition="'$(Configuration)' != 'Debug'" />`), and its hook-up in `Plugin` is inside `#if DEBUG`. Excluding the folder means a new bridge file can't be forgotten outside `#if DEBUG`.
 - **Proof:** a unit test opens the plugin DLL built with the test's own configuration using `System.Reflection.Metadata` (reads type names without loading the assembly or Dalamud) and asserts: Release → no type in the `Cube.TestBridge` namespace; Debug → the bridge is there. CI tests the Release configuration, so the Release assertion runs on every push.
+
+## Reading players, party and camera (#10)
+
+Checked 2026-11-17 by reading MiniMappingway (`Service/FinderService.cs`, `Manager/NaviMapManager.cs`), Mappy (`MapRenderer.GameObject.cs`, `.Player.cs`, `.GroupMember.cs`), FFXIVClientStructs (`GameObjectManager`, `GameObject`, `Character`, `Camera`, `CameraBase`, `Graphics.Scene.Camera`) and Dalamud's `UiBuilder`. The game wasn't reachable, so the conventions marked **to confirm** are measured by the bridge check `probe-players-party-camera` on its first run; this section is updated with what it reports.
+
+### Enumerating players without allocating
+
+- **Both reference plugins use Dalamud's `IObjectTable`** (Mappy: `foreach (var obj in Service.ObjectTable.Reverse())` filtered by kind and distance; MiniMappingway: one index per frame, `ObjectTable[i]`, `ObjectKind.Pc`, `obj.Name.ToString()`). Those allocate: LINQ, `IGameObject` wrappers, a new name string per read. Fine for them, not for our zero-allocation budget.
+- **Our hot path reads FFXIVClientStructs directly:** `GameObjectManager.Instance()->Objects.IndexSorted[i]` for `i` in 0–199. Per FFXIVClientStructs' notes, slots 0–199 are the networked characters (players and battle NPCs at even indexes, their mounts/minions at odd ones); other players are never above 199. Each non-null slot with `ObjectKind == Pc` is a player.
+  - Position: `GameObject.Position` (`Vector3`, world space, yalms).
+  - Name: `GameObject.Name`, a fixed 64-byte UTF-8 buffer. Compare the bytes with the cached label's bytes and only build a new `string` when they differ (PROJECT.md: labels cached, rebuilt only when a name changes).
+  - Identity for caching: `GameObject.EntityId` (or the slot index; a slot can be reused by someone else, so the cache keys on both).
+  - Local player: `IObjectTable.LocalPlayer` (one wrapper, read once per frame is acceptable only if it doesn't allocate; otherwise slot 0 of the object manager, which holds the local player; **to confirm** with the probe).
+- **World axes:** X east, Z south, Y up (the map uses X and Z: Mappy's `new Vector2(Position.X, Position.Z)`), so north is −Z. The cube is axis-aligned to these (PROJECT.md: north is a fixed face).
+- **Independent read for the bridge:** the bridge counts players through Dalamud's `IObjectTable` (allocations are fine in checks) and compares with the direct read; the probe check does this now, and the player-drawing checks (#15, #17) will compare positions too.
+
+### Party and alliance
+
+- `Character.IsPartyMember` and `Character.IsAllianceMember` (bits of `Character.RelationFlags`) per character: what MiniMappingway uses, no lookup needed, no allocation. Chosen.
+- Alternative (Mappy): `GroupManager.Instance()->MainGroup.IsEntityIdInParty(entityId)` / `IsEntityIdInAlliance`. Kept as a cross-check for the bridge.
+- Self is identified first (the local player), so "self, party/alliance, everyone else" (PROJECT.md, "Colours") is: local player → self; else either flag set → party; else other.
+
+### Camera yaw
+
+- `CameraManager.Instance()->Camera` (`FFXIVClientStructs.FFXIV.Client.Game.Control`) is the normal in-game camera. `Camera.DirH` is its horizontal angle in radians; FFXIVClientStructs' comment says "0 is north, increases CW". **To confirm**, since character `Rotation` uses 0 = facing south (+Z).
+- Independent source: the scene camera, `Camera.SceneCamera` (`Graphics.Scene.Camera`): `Position` and `LookAtVector` are world-space points. `forward = LookAtVector - Position` projected onto XZ gives the view direction with no angle convention to guess. **Recommended for the Camera orientation mode:** compute the yaw from that vector, so the cube's "forward on screen" is exactly where the game camera looks. The probe records both (`cameraDirH`, `sceneYawAtan2XZ`) so the relation is known.
+- Mappy's alternative (`AreaMapNumberArray.ConeRotation`, the minimap cone) is UI data and only valid while the map addon is updating; not used.
+
+### When to hide
+
+| Situation | How to detect | Notes |
+| --- | --- | --- |
+| Not logged in | `IClientState.IsLoggedIn` false, or no local player | Also covers the title screen and character select. |
+| Loading screen | `ICondition[ConditionFlag.BetweenAreas]` or `[BetweenAreas51]` | MiniMappingway instead checks the `_LocationTitle`/`FadeMiddle` addons; the condition flags are simpler and documented. |
+| Cutscene | `ICondition[OccupiedInCutSceneEvent]`, `[WatchingCutscene]`, `[WatchingCutscene78]` | |
+| GPose | `IClientState.IsGPosing` | |
+
+Dalamud already hides plugin windows during cutscenes, GPose and when the user hides the game UI, **but only if the user's Dalamud settings say so** (`UiBuilder`: `ToggleUiHideDuringCutscenes`, `ToggleUiHideDuringGpose`, `ToggleUiHide`). PROJECT.md requires hiding regardless, so the plugin checks the conditions itself (#21) and draws nothing then; Dalamud's own hiding is a bonus.
+
+### Read-only and within the rules
+
+Everything above is a memory read on the framework thread: no hooks, no signatures of our own, no game functions called, nothing sent. Nearby players' positions and names are what the client already shows in game (and what Mappy and MiniMappingway draw on maps). Names are only drawn on screen (PROJECT.md, "Privacy"); the probe logs counts and the local player's position, never names.

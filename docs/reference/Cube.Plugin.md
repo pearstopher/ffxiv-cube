@@ -100,6 +100,19 @@ private readonly WindowSystem windowSystem
 
 ## Properties
 
+### <a id="Cube_Plugin_ClientState"></a> ClientState
+
+Login and GPose state, read by the bridge's probe. Debug builds only, for now.
+
+```csharp
+[PluginService]
+internal static IClientState ClientState { get; private set; }
+```
+
+#### Property Value
+
+ [IClientState](https://github.com/goatcorp/Dalamud/blob/master/Dalamud/Plugin/Services/IClientState.cs)
+
 ### <a id="Cube_Plugin_CommandManager"></a> CommandManager
 
 Registers the <code>/cube</code> command.
@@ -112,6 +125,19 @@ internal static ICommandManager CommandManager { get; private set; }
 #### Property Value
 
  [ICommandManager](https://github.com/goatcorp/Dalamud/blob/master/Dalamud/Plugin/Services/ICommandManager.cs)
+
+### <a id="Cube_Plugin_Condition"></a> Condition
+
+Condition flags (loading screens, cutscenes), read by the bridge's probe. Debug builds only, for now.
+
+```csharp
+[PluginService]
+internal static ICondition Condition { get; private set; }
+```
+
+#### Property Value
+
+ [ICondition](https://github.com/goatcorp/Dalamud/blob/master/Dalamud/Plugin/Services/ICondition.cs)
 
 ### <a id="Cube_Plugin_Framework"></a> Framework
 
@@ -138,6 +164,19 @@ internal static IPluginLog Log { get; private set; }
 #### Property Value
 
  [IPluginLog](https://github.com/goatcorp/Dalamud/blob/master/Dalamud/Plugin/Services/IPluginLog.cs)
+
+### <a id="Cube_Plugin_ObjectTable"></a> ObjectTable
+
+The object table, read by the bridge's probe as an independent source. Debug builds only, for now.
+
+```csharp
+[PluginService]
+internal static IObjectTable ObjectTable { get; private set; }
+```
+
+#### Property Value
+
+ [IObjectTable](https://github.com/goatcorp/Dalamud/blob/master/Dalamud/Plugin/Services/IObjectTable.cs)
 
 ### <a id="Cube_Plugin_PluginInterface"></a> PluginInterface
 

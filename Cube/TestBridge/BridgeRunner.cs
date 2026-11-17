@@ -309,7 +309,15 @@ internal sealed class BridgeRunner : IDisposable
                 json.WriteStartObject("metrics");
                 foreach (var (name, value) in result.Metrics)
                 {
-                    json.WriteNumber(name, Math.Round(value, 4));
+                    // JSON has no NaN or infinity; write those as null rather than failing the whole results file.
+                    if (double.IsFinite(value))
+                    {
+                        json.WriteNumber(name, Math.Round(value, 4));
+                    }
+                    else
+                    {
+                        json.WriteNull(name);
+                    }
                 }
 
                 json.WriteEndObject();
