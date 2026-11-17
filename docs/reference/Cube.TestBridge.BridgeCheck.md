@@ -26,6 +26,7 @@ internal abstract class BridgeCheck
 [GameStateProbeCheck](Cube.TestBridge.Checks.GameStateProbeCheck.md), 
 [HiddenStatesCheck](Cube.TestBridge.Checks.HiddenStatesCheck.md), 
 [LabelsCheck](Cube.TestBridge.Checks.LabelsCheck.md), 
+[NoErrorsCaughtCheck](Cube.TestBridge.Checks.NoErrorsCaughtCheck.md), 
 [OrientationCheck](Cube.TestBridge.Checks.OrientationCheck.md), 
 [PlayerCubesCheck](Cube.TestBridge.Checks.PlayerCubesCheck.md), 
 [PlayersMatchObjectTableCheck](Cube.TestBridge.Checks.PlayersMatchObjectTableCheck.md), 

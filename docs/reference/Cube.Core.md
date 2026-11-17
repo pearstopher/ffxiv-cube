@@ -50,6 +50,12 @@ The frame's primitives, in window pixels, sorted far to near (PROJECT.md, "Draw 
 so near cubes cover far ones). Built by [CubeGeometry](Cube.Core.CubeGeometry.md#Cube_Core_CubeGeometry), drawn by the plugin, and dumped by the
 test bridge.
 
+ [ErrorThrottle](Cube.Core.ErrorThrottle.md)
+
+Decides when a repeated error is worth logging. A handler that fails every frame would otherwise write 60 log
+lines a second and bury everything else (CLAUDE.md, "Dalamud rules": catch and log, never let an exception reach
+the game).
+
  [NameCache](Cube.Core.NameCache.md)
 
 Turns the game's UTF-8 name bytes into strings, once per name: a string is only built when the bytes in an

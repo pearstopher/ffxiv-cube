@@ -26,6 +26,12 @@ needs. Stored by Dalamud in <code>pluginConfigs\Cube.json</code>; contains no na
 The window the cube is drawn in (PROJECT.md, "Features": a Dalamud window toggled by <code>/cube</code>, showing a
 wireframe cube with the player at its centre).
 
+ [ErrorReporter](Cube.ErrorReporter.md)
+
+Logs exceptions caught in one game-facing handler, throttled with [ErrorThrottle](Cube.Core.ErrorThrottle.md#Cube_Core_ErrorThrottle) so a handler that
+fails every frame logs about once every ten seconds (CLAUDE.md, "Dalamud rules": wrap every game-facing handler in
+try/catch and log; never let an exception reach the game).
+
  [Plugin](Cube.Plugin.md)
 
 Entry point. Registers the <code>/cube</code> command and the cube window, and logs which build loaded.

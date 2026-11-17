@@ -58,6 +58,12 @@ public sealed class Plugin : IDalamudPlugin
     /// <summary>The saved settings, shared by both windows.</summary>
     private readonly Configuration configuration;
 
+    /// <summary>Exceptions caught in the command and the Dalamud UI buttons.</summary>
+    private readonly ErrorReporter uiErrors = new("Command or UI button");
+
+    /// <summary>How many unload steps failed; reported in the unload line.</summary>
+    private int unloadErrors;
+
 #if DEBUG
     /// <summary>The in-game test bridge (PROJECT.md, "Automated testing"). Debug builds only.</summary>
     private readonly TestBridge.BridgeRunner? testBridge;
@@ -114,6 +120,7 @@ public sealed class Plugin : IDalamudPlugin
             this.testBridge.Register(new TestBridge.Checks.DrawBudgetCheck());
             this.testBridge.Register(new TestBridge.Checks.FrameSnapshotCheck(this.testBridge.Folder));
             this.testBridge.Register(new TestBridge.Checks.GameStateProbeCheck(ObjectTable, ClientState, Condition, Log));
+            this.testBridge.Register(new TestBridge.Checks.NoErrorsCaughtCheck(this.cubeWindow.Errors, this.settingsWindow.Errors, this.uiErrors));
         }
         catch (Exception ex)
         {
@@ -122,18 +129,28 @@ public sealed class Plugin : IDalamudPlugin
 #endif
     }
 
-    /// <summary>Unregisters everything, each part even if an earlier one fails.</summary>
+    /// <summary>
+    /// Unregisters everything the constructor registered (the command, the three UI callbacks, both windows, and in
+    /// Debug the bridge's framework hook and file watcher), each part even if an earlier one fails. The plugin changes
+    /// nothing in the game, so there is nothing else to restore.
+    /// </summary>
+    /// <remarks>
+    /// The last line is <c>Cube unloaded</c>, or <c>Cube unloaded with N error(s)</c> if any step failed; the in-game
+    /// test script fails on the latter.
+    /// </remarks>
     public void Dispose()
     {
 #if DEBUG
-        DisposeSafely(() => this.testBridge?.Dispose(), "test bridge");
+        this.DisposeSafely(() => this.testBridge?.Dispose(), "test bridge");
 #endif
-        DisposeSafely(() => CommandManager.RemoveHandler(CommandName), "command");
-        DisposeSafely(() => PluginInterface.UiBuilder.OpenMainUi -= this.ToggleCubeWindow, "main UI callback");
-        DisposeSafely(() => PluginInterface.UiBuilder.OpenConfigUi -= this.ToggleSettingsWindow, "settings UI callback");
-        DisposeSafely(() => PluginInterface.UiBuilder.Draw -= this.windowSystem.Draw, "draw callback");
-        DisposeSafely(this.windowSystem.RemoveAllWindows, "windows");
-        Log.Information($"{PluginInterface.Manifest.Name} unloaded");
+        this.DisposeSafely(() => CommandManager.RemoveHandler(CommandName), "command");
+        this.DisposeSafely(() => PluginInterface.UiBuilder.OpenMainUi -= this.ToggleCubeWindow, "main UI callback");
+        this.DisposeSafely(() => PluginInterface.UiBuilder.OpenConfigUi -= this.ToggleSettingsWindow, "settings UI callback");
+        this.DisposeSafely(() => PluginInterface.UiBuilder.Draw -= this.windowSystem.Draw, "draw callback");
+        this.DisposeSafely(this.windowSystem.RemoveAllWindows, "windows");
+        Log.Information(this.unloadErrors == 0
+            ? $"{PluginInterface.Manifest.Name} unloaded"
+            : $"{PluginInterface.Manifest.Name} unloaded with {this.unloadErrors} error(s)");
     }
 
     /// <summary>Handles <c>/cube</c> (toggles the cube window) and <c>/cube config</c> (toggles the settings).</summary>
@@ -141,21 +158,48 @@ public sealed class Plugin : IDalamudPlugin
     /// <param name="args">Anything typed after the command.</param>
     private void OnCommand(string command, string args)
     {
-        if (CommandArgs.IsConfig(args))
+        try
         {
-            this.ToggleSettingsWindow();
+            if (CommandArgs.IsConfig(args))
+            {
+                this.settingsWindow.Toggle();
+            }
+            else
+            {
+                this.cubeWindow.Toggle();
+            }
         }
-        else
+        catch (Exception ex)
         {
-            this.ToggleCubeWindow();
+            this.uiErrors.Report(ex);
         }
     }
 
-    /// <summary>Shows the window if hidden, hides it if shown.</summary>
-    private void ToggleCubeWindow() => this.cubeWindow.Toggle();
+    /// <summary>Shows the cube window if hidden, hides it if shown (Dalamud's "open" button for the plugin).</summary>
+    private void ToggleCubeWindow()
+    {
+        try
+        {
+            this.cubeWindow.Toggle();
+        }
+        catch (Exception ex)
+        {
+            this.uiErrors.Report(ex);
+        }
+    }
 
-    /// <summary>Shows or hides the settings window.</summary>
-    private void ToggleSettingsWindow() => this.settingsWindow.Toggle();
+    /// <summary>Shows or hides the settings window (Dalamud's settings button for the plugin).</summary>
+    private void ToggleSettingsWindow()
+    {
+        try
+        {
+            this.settingsWindow.Toggle();
+        }
+        catch (Exception ex)
+        {
+            this.uiErrors.Report(ex);
+        }
+    }
 
     /// <summary>Writes the settings to disk, logging rather than throwing if that fails.</summary>
     private void SaveConfiguration()
@@ -170,10 +214,10 @@ public sealed class Plugin : IDalamudPlugin
         }
     }
 
-    /// <summary>Runs one cleanup step and logs, rather than throws, if it fails.</summary>
+    /// <summary>Runs one cleanup step and logs and counts, rather than throws, if it fails.</summary>
     /// <param name="step">The cleanup to run.</param>
     /// <param name="name">What is being cleaned up, for the log.</param>
-    private static void DisposeSafely(Action step, string name)
+    private void DisposeSafely(Action step, string name)
     {
         try
         {
@@ -181,6 +225,7 @@ public sealed class Plugin : IDalamudPlugin
         }
         catch (Exception ex)
         {
+            this.unloadErrors++;
             Log.Error(ex, "Error unloading {Part}", name);
         }
     }

@@ -13,6 +13,9 @@ Fresh results are matched by build time (after a build that changed the DLL, Dal
 the bridge runs on load) or by request id (when the DLL didn't change, the script writes request.json and
 the bridge runs again).
 
+It also fails if dalamud.log shows the plugin's last unload reported errors, or the plugin logged an error since it
+last loaded (issue #22).
+
 With --snapshot, the frame the bridge dumped (drawlist.json) is rendered to snapshots/snapshot.png with the dev-only
 Cube.Snapshot tool, so the drawing can be looked at. snapshots/ is git-ignored.
 
@@ -80,16 +83,42 @@ def read_results() -> dict | None:
         return None
 
 
-def last_plugin_log_line() -> str | None:
-    """The last 'Cube loaded' or 'Cube unloaded' line in dalamud.log, to show whether the plugin is loaded at all."""
+def read_log_tail() -> str | None:
+    """The last 4 MB of dalamud.log, or None if it can't be read."""
     try:
         with DALAMUD_LOG.open("rb") as log:
             log.seek(max(0, log.seek(0, os.SEEK_END) - 4_000_000))
-            text = log.read().decode("utf-8", errors="replace")
+            return log.read().decode("utf-8", errors="replace")
     except OSError:
+        return None
+
+
+def last_plugin_log_line() -> str | None:
+    """The last 'Cube loaded' or 'Cube unloaded' line in dalamud.log, to show whether the plugin is loaded at all."""
+    text = read_log_tail()
+    if text is None:
         return None
     lines = [line for line in text.splitlines() if "Cube loaded" in line or "Cube unloaded" in line]
     return lines[-1].strip() if lines else None
+
+
+def reload_errors(text: str) -> list[str]:
+    """Errors from the last unload and everything since the last load (issue #22: unload and reload are clean).
+
+    Looks at the newest 'Cube loaded' line: the 'Cube unloaded' line just before it must not say 'with N error(s)',
+    and no [ERR] or [FTL] line from the plugin may follow it.
+    """
+    lines = text.splitlines()
+    loads = [i for i, line in enumerate(lines) if "[Cube] Cube loaded" in line]
+    if not loads:
+        return []
+    load = loads[-1]
+    problems = []
+    unloads = [i for i in range(load) if "[Cube] Cube unloaded" in lines[i]]
+    if unloads and "unloaded with" in lines[unloads[-1]]:
+        problems.append(lines[unloads[-1]].strip())
+    problems += [line.strip() for line in lines[load + 1:] if ("[ERR]" in line or "[FTL]" in line) and "[Cube]" in line]
+    return problems
 
 
 def render_snapshot() -> bool:
@@ -138,6 +167,11 @@ def main() -> int:
             print("\n".join(summary(results)))
             print(f"Results: {RESULTS}")
             code = exit_code(results)
+            errors = reload_errors(read_log_tail() or "")
+            if errors:
+                print("FAIL  dalamud.log shows errors from the last unload or since the last load:")
+                print("\n".join(f"  {line}" for line in errors[:10]))
+                code = FAILED
             if args.snapshot and not render_snapshot():
                 code = FAILED
             return code

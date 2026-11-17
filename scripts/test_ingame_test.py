@@ -54,5 +54,34 @@ class ExitCodeTests(unittest.TestCase):
         self.assertEqual(["  PASS  a: fine", "  FAIL  b: bad", "1/2 checks passed (build 2026-11-17 12:00:00)"], lines)
 
 
+LOADED = "2026-11-17 12:00:01.000 -08:00 [INF] [Cube] Cube loaded (Debug build 1.0.0.0, built ...)"
+UNLOADED = "2026-11-17 12:00:00.000 -08:00 [INF] [Cube] Cube unloaded"
+
+
+class ReloadErrorTests(unittest.TestCase):
+    """Unload and reload must be clean: no unload errors, no plugin errors since the last load (#22)."""
+
+    def test_clean_reload_has_no_errors(self):
+        self.assertEqual([], ingame_test.reload_errors("\n".join([UNLOADED, LOADED, "[INF] [Cube] Test bridge: 9/9"])))
+
+    def test_unload_with_errors_is_reported(self):
+        bad = "[INF] [Cube] Cube unloaded with 1 error(s)"
+        self.assertEqual([bad], ingame_test.reload_errors("\n".join([bad, LOADED])))
+
+    def test_plugin_error_after_load_is_reported(self):
+        error = "[ERR] [Cube] Cube window failed"
+        self.assertEqual([error], ingame_test.reload_errors("\n".join([UNLOADED, LOADED, error])))
+
+    def test_errors_before_the_last_load_are_ignored(self):
+        old = "[ERR] [Cube] Cube window failed"
+        self.assertEqual([], ingame_test.reload_errors("\n".join([old, UNLOADED, LOADED])))
+
+    def test_other_plugins_errors_are_ignored(self):
+        self.assertEqual([], ingame_test.reload_errors("\n".join([LOADED, "[ERR] [OtherPlugin] broke"])))
+
+    def test_no_load_line_means_nothing_to_check(self):
+        self.assertEqual([], ingame_test.reload_errors("[ERR] [Cube] something"))
+
+
 if __name__ == "__main__":
     unittest.main()
