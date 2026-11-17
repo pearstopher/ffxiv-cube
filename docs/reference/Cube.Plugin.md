@@ -19,14 +19,6 @@ public sealed class Plugin : IDalamudPlugin, IDisposable
 [IDalamudPlugin](https://github.com/goatcorp/Dalamud/blob/master/Dalamud/Plugin/IDalamudPlugin.cs), 
 [IDisposable](https://learn.microsoft.com/dotnet/api/system.idisposable)
 
-#### Inherited Members
-
-[object.Equals\(object?\)](https://learn.microsoft.com/dotnet/api/system.object.equals\#system\-object\-equals\(system\-object\)), 
-[object.Equals\(object?, object?\)](https://learn.microsoft.com/dotnet/api/system.object.equals\#system\-object\-equals\(system\-object\-system\-object\)), 
-[object.GetHashCode\(\)](https://learn.microsoft.com/dotnet/api/system.object.gethashcode), 
-[object.GetType\(\)](https://learn.microsoft.com/dotnet/api/system.object.gettype), 
-[object.ReferenceEquals\(object?, object?\)](https://learn.microsoft.com/dotnet/api/system.object.referenceequals), 
-[object.ToString\(\)](https://learn.microsoft.com/dotnet/api/system.object.tostring)
 
 ## Remarks
 

@@ -8,7 +8,8 @@ Usage: python scripts/build-docs.py        (needs `dotnet tool restore` once)
 DocFX writes the Markdown; this script then tidies it for GitHub:
 - adds each namespace's overview from docs/namespaces/<namespace>.md (DocFX only applies those to the HTML site);
 - turns DocFX <xref> tags, which GitHub can't render, into links to the right page;
-- replaces commit hashes in links to other repos with the branch name, so the files only change when the code does;
+- replaces commit hashes in links to other repos with the branch name, and drops the 'Inherited Members' lists
+  (from .NET and Dalamud), so the files only change when this code does;
 - writes docs/reference/README.md, an index of the namespaces.
 """
 import pathlib
@@ -56,6 +57,9 @@ def main() -> int:
         text = path.read_text(encoding="utf-8")
         text = re.sub(r'<xref href="([^"]+)"[^>]*></xref>', lambda m: xref_to_link(m, pages), text)
         text = re.sub(r"(https://github\.com/goatcorp/Dalamud/blob/)[0-9a-f]{40}/", r"\1master/", text)
+        # Inherited members come from .NET and Dalamud, not this code, and change with the Dalamud version CI
+        # downloads, so they'd make the committed reference go stale for no reason. Drop those sections.
+        text = re.sub(r"#### Inherited Members\n.*?(?=\n#{1,4} |\Z)", "", text, flags=re.S)
         heading = re.match(r"# <a id=\"[^\"]*\"></a> Namespace (\S+)", text)
         if heading:
             ns = heading.group(1)

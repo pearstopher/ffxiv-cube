@@ -53,6 +53,7 @@ jobs:
           $changes = git status --porcelain -- docs/reference
           if ($changes) {
             Write-Output $changes
+            git --no-pager diff -- docs/reference
             Write-Error "docs/reference/ is out of date. Run 'python scripts/build-docs.py' and commit the result."
             exit 1
           }
