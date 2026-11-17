@@ -85,7 +85,7 @@ The same log is saved to `%APPDATA%\XIVLauncher\dalamud.log` (`dalamud.old.log` 
 2. Run `dotnet build` and `dotnet test`.
 3. With automatic reloading on, the plugin reloads by itself.
 4. In `/xllog`, confirm the new `loaded (...)` line shows the build time you just built.
-5. Check the change in game. `/cube` toggles the cube window.
+5. Check the change in game. Debug builds open the cube window by themselves on every load (so each automatic reload shows the change); `/cube` toggles it. Release builds start with it closed.
 6. Run `python scripts/build-docs.py` and commit `docs/reference/` with the change.
 
 If the build fails because the DLL is in use, disable the plugin in game, build, then enable it again.
