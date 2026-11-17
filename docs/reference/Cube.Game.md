@@ -9,6 +9,12 @@
 Reads which way the game camera is looking, for the Camera orientation mode (PROJECT.md, "View": the view's
 yaw follows the game camera so "forward on screen" matches the game view).
 
+ [GameStateReader](Cube.Game.GameStateReader.md)
+
+Reads the states that hide the cube (PROJECT.md, "When hidden") from Dalamud, using the sources chosen in #10
+(<code>docs/research-notes.md</code>, "When to hide"): `Dalamud.Plugin.Services.IClientState.IsLoggedIn` and
+`Dalamud.Plugin.Services.IClientState.IsGPosing`, and the loading-screen and cutscene condition flags.
+
  [PlayerReader](Cube.Game.PlayerReader.md)
 
 Reads the local player and the players around them straight from the game's object manager and offers each to

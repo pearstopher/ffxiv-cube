@@ -126,7 +126,7 @@ private readonly WindowSystem windowSystem
 
 ### <a id="Cube_Plugin_ClientState"></a> ClientState
 
-Login and GPose state, read by the bridge's probe. Debug builds only, for now.
+Login and GPose state: the cube is hidden when logged out or in GPose (PROJECT.md, "When hidden").
 
 ```csharp
 [PluginService]
@@ -152,7 +152,7 @@ internal static ICommandManager CommandManager { get; private set; }
 
 ### <a id="Cube_Plugin_Condition"></a> Condition
 
-Condition flags (loading screens, cutscenes), read by the bridge's probe. Debug builds only, for now.
+Condition flags: the cube is hidden during loading screens and cutscenes.
 
 ```csharp
 [PluginService]

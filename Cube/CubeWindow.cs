@@ -48,12 +48,17 @@ internal sealed class CubeWindow : Window
     /// <summary>The <see cref="CubeSettings.Revision"/> the cached colours were built from; -1 forces a first build.</summary>
     private int settingsRevision = -1;
 
+    /// <summary>Reads the states that hide the cube.</summary>
+    private readonly GameStateReader gameState;
+
     /// <summary>Creates the window, closed, with a sensible minimum size.</summary>
     /// <param name="settings">The user's settings, read every frame; changes apply on the next frame.</param>
-    public CubeWindow(CubeSettings settings)
+    /// <param name="gameState">Reads login, loading, cutscene and GPose state.</param>
+    public CubeWindow(CubeSettings settings, GameStateReader gameState)
         : base("Cube###CubeMain")
     {
         this.Settings = settings;
+        this.gameState = gameState;
         this.SizeConstraints = new WindowSizeConstraints
         {
             MinimumSize = new Vector2(200, 200),
@@ -74,6 +79,17 @@ internal sealed class CubeWindow : Window
 
     /// <summary>Whether the last frame found a local player to centre the cube on.</summary>
     internal bool LastHadLocalPlayer { get; private set; }
+
+    /// <summary>Whether the last frame drew the cube, or why not (PROJECT.md, "When hidden").</summary>
+    internal Visibility LastVisibility { get; private set; }
+
+#if DEBUG
+    /// <summary>
+    /// A game state the bridge sets to test hiding without a real cutscene or loading screen; null uses the real
+    /// state. Debug builds only.
+    /// </summary>
+    internal GameState? SimulatedState { get; set; }
+#endif
 
     /// <summary>The cube space used for the last frame drawn, so the bridge can rebuild the frame independently.</summary>
     internal CubeSpace LastSpace { get; private set; }
@@ -167,8 +183,22 @@ internal sealed class CubeWindow : Window
     /// <summary>The plugin's per-frame draw path: builds the frame with Core and draws it.</summary>
     private void DrawContents()
     {
-        // North up never reads the camera. With no camera (or one looking straight down) the forward vector is zero
-        // and FromForward keeps the previous yaw.
+        // The cube is centred on the local player and follows them every frame (PROJECT.md, "Cube").
+        this.LastHadLocalPlayer = PlayerReader.TryGetLocalPosition(out var centre);
+        var state = this.gameState.Read(this.LastHadLocalPlayer);
+#if DEBUG
+        state = this.SimulatedState ?? state;
+#endif
+        this.LastVisibility = VisibilityRules.For(state);
+        if (this.LastVisibility != Visibility.Shown)
+        {
+            // Hidden: an empty window, and nothing else is read or computed (PROJECT.md, "When hidden").
+            this.DrawList.Clear();
+            this.Players.Begin(this.LastSpace);
+            this.LastSubmitted = 0;
+            return;
+        }
+
         var settings = this.Settings;
         if (settings.Revision != this.settingsRevision)
         {
@@ -179,6 +209,8 @@ internal sealed class CubeWindow : Window
 
         this.ShowLabels = settings.ShowLabels;
 
+        // North up never reads the camera. With no camera (or one looking straight down) the forward vector is zero
+        // and FromForward keeps the previous yaw.
         var forward = Vector3.Zero;
         if (settings.Orientation == OrientationMode.Camera)
         {
@@ -190,10 +222,8 @@ internal sealed class CubeWindow : Window
         // The cube fills the content region and keeps its shape on resize: Fit uses one scale for both axes.
         var regionMin = ImGui.GetCursorScreenPos();
         var regionSize = ImGui.GetContentRegionAvail();
-        // The cube is centred on the local player and follows them every frame (PROJECT.md, "Cube"). The rotation
-        // is only recomputed when the yaw has actually changed.
-        this.LastHadLocalPlayer = PlayerReader.TryGetLocalPosition(out var centre);
-        var space = this.hasSpace && yaw == this.yaw
+        // The rotation is only recomputed when the yaw has actually changed.
+        var space =this.hasSpace && yaw == this.yaw
             ? this.LastSpace.Recentred(centre, settings.CubeEdge)
             : new CubeSpace(centre, settings.CubeEdge, yaw);
         this.yaw = yaw;
@@ -201,10 +231,7 @@ internal sealed class CubeWindow : Window
         var projection = ViewProjection.Fit(regionMin, regionSize, space.HalfEdge, Elevation);
 
         this.Players.Begin(space);
-        if (this.LastHadLocalPlayer)
-        {
-            PlayerReader.Read(this.Players);
-        }
+        PlayerReader.Read(this.Players);
 
 #if DEBUG
         this.Fakes.Offer(this.Players, space);
