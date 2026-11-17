@@ -12,7 +12,7 @@ namespace Cube.TestBridge.Checks;
 /// </summary>
 /// <remarks>
 /// The format is read by <c>Cube.Snapshot.SnapshotRenderer</c>. It contains only geometry and colours; player names
-/// are never written (PROJECT.md, "Privacy"). Written atomically, like the results.
+/// are never written, only each label's length (PROJECT.md, "Privacy"). Written atomically, like the results.
 /// </remarks>
 /// <param name="folder">The bridge folder to write into.</param>
 internal sealed class FrameSnapshotCheck(string folder) : BridgeCheck
@@ -81,10 +81,14 @@ internal sealed class FrameSnapshotCheck(string folder) : BridgeCheck
             foreach (var p in window.DrawList.Items)
             {
                 json.WriteStartObject();
-                json.WriteString("kind", p.Kind == PrimitiveKind.Line ? "line" : "quad");
+                json.WriteString("kind", p.Kind switch { PrimitiveKind.Line => "line", PrimitiveKind.Quad => "quad", _ => "label" });
                 json.WriteStartArray("points");
                 WritePoint(json, null, p.A);
-                WritePoint(json, null, p.B);
+                if (p.Kind != PrimitiveKind.Label)
+                {
+                    WritePoint(json, null, p.B);
+                }
+
                 if (p.Kind == PrimitiveKind.Quad)
                 {
                     WritePoint(json, null, p.C);
@@ -92,6 +96,13 @@ internal sealed class FrameSnapshotCheck(string folder) : BridgeCheck
                 }
 
                 json.WriteEndArray();
+                if (p.Kind == PrimitiveKind.Label)
+                {
+                    // Only the name's length, never the name itself (PROJECT.md, "Privacy").
+                    json.WriteNumber("chars", window.Players.Items[p.Tag - 1].Name.Length);
+                    json.WriteNumber("fontSize", window.LastFontSize);
+                }
+
                 json.WriteNumber("colour", p.Colour);
                 json.WriteNumber("depth", p.Depth);
                 if (p.Kind == PrimitiveKind.Line)

@@ -60,6 +60,12 @@ Checks players are drawn as small coloured cubes (PROJECT.md, "Players": about 1
 a few pixels; "Colours": one colour each for self, party/alliance and others; "Draw order": near cubes cover far
 ones; "Efficiency and memory": no per-frame allocations).
 
+ [PlayerLabelsTests](Cube.Tests.PlayerLabelsTests.md)
+
+Checks name labels (PROJECT.md, "Features": other players are labelled with their names, labels on/off;
+"Labels": the name drawn next to the cube, overlaps are fine; "Draw order": near cubes cover far ones;
+"Efficiency and memory": labels cached, no string building per frame).
+
  [PlayerSetTests](Cube.Tests.PlayerSetTests.md)
 
 Checks which players are kept and how they're classified and named (PROJECT.md, "Players": only players inside

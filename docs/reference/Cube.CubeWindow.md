@@ -41,8 +41,8 @@ public CubeWindow()
 
 ### <a id="Cube_CubeWindow_DrawListCapacity"></a> DrawListCapacity
 
-Most primitives a frame can hold: the 12 cube edges plus three faces for every character slot in the
-object table (200), with room to spare. Fixed, so memory never grows (PROJECT.md: bounded memory).
+Most primitives a frame can hold: the 12 cube edges plus three faces and a label for every character slot in
+the object table (200), with room to spare. Fixed, so memory never grows (PROJECT.md: bounded memory).
 
 ```csharp
 internal const int DrawListCapacity = 1024
@@ -155,6 +155,18 @@ internal FakePlayers Fakes { get; }
 
  [FakePlayers](Cube.TestBridge.FakePlayers.md)
 
+### <a id="Cube_CubeWindow_LastFontSize"></a> LastFontSize
+
+Text height of the last frame's labels, in pixels; the snapshot sizes label placeholders with it.
+
+```csharp
+internal float LastFontSize { get; private set; }
+```
+
+#### Property Value
+
+ [float](https://learn.microsoft.com/dotnet/api/system.single)
+
 ### <a id="Cube_CubeWindow_LastHadLocalPlayer"></a> LastHadLocalPlayer
 
 Whether the last frame found a local player to centre the cube on.
@@ -166,6 +178,31 @@ internal bool LastHadLocalPlayer { get; private set; }
 #### Property Value
 
  [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+### <a id="Cube_CubeWindow_LastLabelCount"></a> LastLabelCount
+
+How many entries of [LastLabelText](Cube.CubeWindow.md#Cube_CubeWindow_LastLabelText) the last frame filled.
+
+```csharp
+internal int LastLabelCount { get; private set; }
+```
+
+#### Property Value
+
+ [int](https://learn.microsoft.com/dotnet/api/system.int32)
+
+### <a id="Cube_CubeWindow_LastLabelText"></a> LastLabelText
+
+The text of each label the last frame drew, in drawing order, so the bridge can check it against the player
+set. Holds references to the cached name strings, so recording allocates nothing. Debug builds only.
+
+```csharp
+internal string[] LastLabelText { get; }
+```
+
+#### Property Value
+
+ [string](https://learn.microsoft.com/dotnet/api/system.string)\[\]
 
 ### <a id="Cube_CubeWindow_LastProjection"></a> LastProjection
 
@@ -263,15 +300,27 @@ internal PlayerSet Players { get; }
 
  [PlayerSet](Cube.Core.PlayerSet.md)
 
+### <a id="Cube_CubeWindow_ShowLabels"></a> ShowLabels
+
+Whether other players get name labels. On until the settings window (#20) adds the toggle.
+
+```csharp
+internal bool ShowLabels { get; }
+```
+
+#### Property Value
+
+ [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
 ## Methods
 
-### <a id="Cube_CubeWindow_BuildFrame_Cube_Core_DrawList_Cube_Core_CubeSpace__Cube_Core_ViewProjection__System_ReadOnlySpan_Cube_Core_NearbyPlayer__Cube_Core_PlayerPalette__"></a> BuildFrame\(DrawList, in CubeSpace, in ViewProjection, ReadOnlySpan<NearbyPlayer\>, in PlayerPalette\)
+### <a id="Cube_CubeWindow_BuildFrame_Cube_Core_DrawList_Cube_Core_CubeSpace__Cube_Core_ViewProjection__System_ReadOnlySpan_Cube_Core_NearbyPlayer__Cube_Core_PlayerPalette__System_Boolean_"></a> BuildFrame\(DrawList, in CubeSpace, in ViewProjection, ReadOnlySpan<NearbyPlayer\>, in PlayerPalette, bool\)
 
 Builds this frame's draw list for a given drawing region. Separate from the ImGui calls so the bridge can
 check exactly what Core produced.
 
 ```csharp
-internal static void BuildFrame(DrawList list, in CubeSpace space, in ViewProjection projection, ReadOnlySpan<NearbyPlayer> players, in PlayerPalette palette)
+internal static void BuildFrame(DrawList list, in CubeSpace space, in ViewProjection projection, ReadOnlySpan<NearbyPlayer> players, in PlayerPalette palette, bool labels)
 ```
 
 #### Parameters
@@ -296,6 +345,10 @@ The players inside the cube.
 
 Player colours.
 
+`labels` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+Whether to add name labels.
+
 ### <a id="Cube_CubeWindow_Draw"></a> Draw\(\)
 
 Draws the window's contents, measuring the cost in Debug builds.
@@ -312,12 +365,12 @@ The plugin's per-frame draw path: builds the frame with Core and draws it.
 private void DrawContents()
 ```
 
-### <a id="Cube_CubeWindow_Submit_Dalamud_Bindings_ImGui_ImDrawListPtr_System_ReadOnlySpan_Cube_Core_DrawPrimitive__"></a> Submit\(ImDrawListPtr, ReadOnlySpan<DrawPrimitive\>\)
+### <a id="Cube_CubeWindow_Submit_Dalamud_Bindings_ImGui_ImDrawListPtr_System_ReadOnlySpan_Cube_Core_DrawPrimitive__System_ReadOnlySpan_Cube_Core_NearbyPlayer__"></a> Submit\(ImDrawListPtr, ReadOnlySpan<DrawPrimitive\>, ReadOnlySpan<NearbyPlayer\>\)
 
 Issues one ImGui call per primitive, in order.
 
 ```csharp
-private static int Submit(ImDrawListPtr target, ReadOnlySpan<DrawPrimitive> items)
+private int Submit(ImDrawListPtr target, ReadOnlySpan<DrawPrimitive> items, ReadOnlySpan<NearbyPlayer> players)
 ```
 
 #### Parameters
@@ -330,8 +383,17 @@ The window's ImGui draw list.
 
 The sorted primitives.
 
+`players` [ReadOnlySpan](https://learn.microsoft.com/dotnet/api/system.readonlyspan\-1)<[NearbyPlayer](Cube.Core.NearbyPlayer.md)\>
+
+This frame's players, for label text.
+
 #### Returns
 
  [int](https://learn.microsoft.com/dotnet/api/system.int32)
 
 How many calls were made.
+
+#### Remarks
+
+Labels are clipped to the window by the window draw list's own clip rectangle, so names near the edge are cut
+off rather than spilling over the game. The text is the cached name string, so no string is built here.

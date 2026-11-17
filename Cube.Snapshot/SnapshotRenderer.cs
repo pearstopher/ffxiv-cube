@@ -11,8 +11,9 @@ namespace Cube.Snapshot;
 /// </summary>
 /// <remarks>
 /// Dump format: <c>regionMin</c> and <c>regionSize</c> (the window's drawing region in screen pixels) and
-/// <c>primitives</c>, each with <c>kind</c> (<c>line</c> or <c>quad</c>), <c>points</c> (<c>[[x, y], ...]</c> in
-/// screen pixels), <c>colour</c> (<c>0xAABBGGRR</c> as a number) and, for lines, <c>thickness</c>.
+/// <c>primitives</c>, each with <c>kind</c> (<c>line</c>, <c>quad</c> or <c>label</c>), <c>points</c>
+/// (<c>[[x, y], ...]</c> in screen pixels; one anchor point for a label), <c>colour</c> (<c>0xAABBGGRR</c> as a
+/// number), for lines <c>thickness</c>, and for labels <c>chars</c> and <c>fontSize</c>.
 /// </remarks>
 public static class SnapshotRenderer
 {
@@ -21,6 +22,12 @@ public static class SnapshotRenderer
 
     /// <summary>Line thickness used when a dumped line doesn't say.</summary>
     public const float DefaultThickness = 1.5f;
+
+    /// <summary>Label length assumed when a dumped label doesn't say (and in the demo, which has no names).</summary>
+    public const int DefaultLabelChars = 8;
+
+    /// <summary>Text height assumed when a dumped label doesn't say: ImGui's default font size.</summary>
+    public const float DefaultFontSize = 13f;
 
     /// <summary>Renders a dump to a canvas the size of the dumped region.</summary>
     /// <param name="json">The dump's JSON text.</param>
@@ -54,6 +61,11 @@ public static class SnapshotRenderer
                 case "quad" when count >= 3:
                     canvas.FillConvex(points[..count], colour);
                     break;
+                case "label" when count >= 1:
+                    var chars = primitive.TryGetProperty("chars", out var c) ? c.GetInt32() : DefaultLabelChars;
+                    var fontSize = primitive.TryGetProperty("fontSize", out var f) ? f.GetSingle() : DefaultFontSize;
+                    FillLabelBar(canvas, points[0], chars, fontSize, colour);
+                    break;
             }
         }
 
@@ -72,17 +84,44 @@ public static class SnapshotRenderer
         var canvas = NewCanvas(regionSize);
         foreach (ref readonly var p in items)
         {
-            if (p.Kind == PrimitiveKind.Line)
+            switch (p.Kind)
             {
-                canvas.DrawLine(p.A - regionMin, p.B - regionMin, p.Colour, DefaultThickness);
-            }
-            else
-            {
-                canvas.FillConvex([p.A - regionMin, p.B - regionMin, p.C - regionMin, p.D - regionMin], p.Colour);
+                case PrimitiveKind.Line:
+                    canvas.DrawLine(p.A - regionMin, p.B - regionMin, p.Colour, DefaultThickness);
+                    break;
+                case PrimitiveKind.Quad:
+                    canvas.FillConvex([p.A - regionMin, p.B - regionMin, p.C - regionMin, p.D - regionMin], p.Colour);
+                    break;
+                default:
+                    FillLabelBar(canvas, p.A - regionMin, DefaultLabelChars, DefaultFontSize, p.Colour);
+                    break;
             }
         }
 
         return canvas;
+    }
+
+    /// <summary>
+    /// Draws a label as a bar where the text would be: the snapshot has no font, and the dump never contains names
+    /// (PROJECT.md, "Privacy"), so the bar shows where each label sits and roughly how long it is.
+    /// </summary>
+    /// <param name="canvas">Target.</param>
+    /// <param name="anchor">The label's left end, vertically centred (region pixels).</param>
+    /// <param name="chars">Name length in characters.</param>
+    /// <param name="fontSize">Text height in pixels.</param>
+    /// <param name="colour">Text colour.</param>
+    private static void FillLabelBar(Canvas canvas, Vector2 anchor, int chars, float fontSize, uint colour)
+    {
+        var halfHeight = fontSize * 0.3f;
+        var width = chars * fontSize * 0.5f;
+        canvas.FillConvex(
+            [
+                new Vector2(anchor.X, anchor.Y - halfHeight),
+                new Vector2(anchor.X + width, anchor.Y - halfHeight),
+                new Vector2(anchor.X + width, anchor.Y + halfHeight),
+                new Vector2(anchor.X, anchor.Y + halfHeight),
+            ],
+            colour);
     }
 
     /// <summary>A background-filled canvas of the region's size (at least 1×1).</summary>

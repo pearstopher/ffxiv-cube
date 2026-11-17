@@ -64,7 +64,7 @@ public class PlayerCubesTests
 
         PlayerCubes.Add(list, space, projection, players, PlayerPalette.Default);
 
-        var items = list.Items.ToArray();
+        var items = list.Items.ToArray().Where(p => p.Kind == PrimitiveKind.Quad).ToArray();
         Assert.InRange(items.Count(p => p.Tag == 1), 1, 3);
         Assert.InRange(items.Count(p => p.Tag == 2), 1, 3);
         Assert.Contains(items, p => p.Tag == 1 && p.Colour == PlayerPalette.Default.Self);

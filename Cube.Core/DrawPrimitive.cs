@@ -9,7 +9,7 @@ namespace Cube.Core;
 /// <remarks>A plain struct kept in <see cref="DrawList"/>'s reused array, so building a frame allocates nothing.</remarks>
 public struct DrawPrimitive
 {
-    /// <summary>Line or quad.</summary>
+    /// <summary>Line, quad or label.</summary>
     public PrimitiveKind Kind;
 
     /// <summary>First point (pixels).</summary>

@@ -22,8 +22,8 @@ namespace Cube;
 internal sealed class CubeWindow : Window
 {
     /// <summary>
-    /// Most primitives a frame can hold: the 12 cube edges plus three faces for every character slot in the
-    /// object table (200), with room to spare. Fixed, so memory never grows (PROJECT.md: bounded memory).
+    /// Most primitives a frame can hold: the 12 cube edges plus three faces and a label for every character slot in
+    /// the object table (200), with room to spare. Fixed, so memory never grows (PROJECT.md: bounded memory).
     /// </summary>
     internal const int DrawListCapacity = 1024;
 
@@ -79,6 +79,9 @@ internal sealed class CubeWindow : Window
     /// <summary>Size of the last frame's drawing region, in pixels.</summary>
     internal Vector2 LastRegionSize { get; private set; }
 
+    /// <summary>Text height of the last frame's labels, in pixels; the snapshot sizes label placeholders with it.</summary>
+    internal float LastFontSize { get; private set; }
+
     /// <summary>Thickness of the big cube's edges, in pixels; the snapshot draws lines with it.</summary>
     internal static float LineThickness => WireThickness;
 
@@ -103,16 +106,31 @@ internal sealed class CubeWindow : Window
     /// <param name="projection">The projection.</param>
     /// <param name="players">The players inside the cube.</param>
     /// <param name="palette">Player colours.</param>
-    internal static void BuildFrame(DrawList list, in CubeSpace space, in ViewProjection projection, ReadOnlySpan<NearbyPlayer> players, in PlayerPalette palette)
+    /// <param name="labels">Whether to add name labels.</param>
+    internal static void BuildFrame(DrawList list, in CubeSpace space, in ViewProjection projection, ReadOnlySpan<NearbyPlayer> players, in PlayerPalette palette, bool labels)
     {
         list.Clear();
         CubeGeometry.AddWireCube(list, space, projection, WireColour);
-        PlayerCubes.Add(list, space, projection, players, palette);
+        PlayerCubes.Add(list, space, projection, players, palette, labels);
         list.SortBackToFront();
     }
 
     /// <summary>Colours per player relation. Defaults until the settings window (#20) makes them configurable.</summary>
     internal PlayerPalette Palette { get; } = PlayerPalette.Default;
+
+    /// <summary>Whether other players get name labels. On until the settings window (#20) adds the toggle.</summary>
+    internal bool ShowLabels { get; } = true;
+
+#if DEBUG
+    /// <summary>
+    /// The text of each label the last frame drew, in drawing order, so the bridge can check it against the player
+    /// set. Holds references to the cached name strings, so recording allocates nothing. Debug builds only.
+    /// </summary>
+    internal string[] LastLabelText { get; } = new string[NameSlots];
+
+    /// <summary>How many entries of <see cref="LastLabelText"/> the last frame filled.</summary>
+    internal int LastLabelCount { get; private set; }
+#endif
 
     /// <summary>Draws the window's contents, measuring the cost in Debug builds.</summary>
     public override void Draw()
@@ -154,35 +172,56 @@ internal sealed class CubeWindow : Window
         this.Fakes.Offer(this.Players, space);
 #endif
 
-        BuildFrame(this.DrawList, space, projection, this.Players.Items, this.Palette);
+        BuildFrame(this.DrawList, space, projection, this.Players.Items, this.Palette, this.ShowLabels);
         this.LastSpace = space;
         this.LastProjection = projection;
         this.LastRegionMin = regionMin;
         this.LastRegionSize = regionSize;
-        this.LastSubmitted = Submit(ImGui.GetWindowDrawList(), this.DrawList.Items);
+        this.LastSubmitted = this.Submit(ImGui.GetWindowDrawList(), this.DrawList.Items, this.Players.Items);
     }
 
     /// <summary>Issues one ImGui call per primitive, in order.</summary>
+    /// <remarks>
+    /// Labels are clipped to the window by the window draw list's own clip rectangle, so names near the edge are cut
+    /// off rather than spilling over the game. The text is the cached name string, so no string is built here.
+    /// </remarks>
     /// <param name="target">The window's ImGui draw list.</param>
     /// <param name="items">The sorted primitives.</param>
+    /// <param name="players">This frame's players, for label text.</param>
     /// <returns>How many calls were made.</returns>
-    private static int Submit(ImDrawListPtr target, ReadOnlySpan<DrawPrimitive> items)
+    private int Submit(ImDrawListPtr target, ReadOnlySpan<DrawPrimitive> items, ReadOnlySpan<NearbyPlayer> players)
     {
         var submitted = 0;
+        this.LastFontSize = ImGui.GetFontSize();
+        var halfLine = this.LastFontSize / 2f;
+#if DEBUG
+        var labels = 0;
+#endif
         foreach (ref readonly var p in items)
         {
-            if (p.Kind == PrimitiveKind.Line)
+            switch (p.Kind)
             {
-                target.AddLine(p.A, p.B, p.Colour, WireThickness);
-            }
-            else
-            {
-                target.AddQuadFilled(p.A, p.B, p.C, p.D, p.Colour);
+                case PrimitiveKind.Line:
+                    target.AddLine(p.A, p.B, p.Colour, WireThickness);
+                    break;
+                case PrimitiveKind.Quad:
+                    target.AddQuadFilled(p.A, p.B, p.C, p.D, p.Colour);
+                    break;
+                default:
+                    var name = players[p.Tag - 1].Name;
+                    target.AddText(new Vector2(p.A.X, p.A.Y - halfLine), p.Colour, name);
+#if DEBUG
+                    this.LastLabelText[labels++] = name;
+#endif
+                    break;
             }
 
             submitted++;
         }
 
+#if DEBUG
+        this.LastLabelCount = labels;
+#endif
         return submitted;
     }
 }

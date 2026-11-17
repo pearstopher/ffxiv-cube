@@ -20,3 +20,11 @@ A line from [A](Cube.Core.DrawPrimitive.md#Cube_Core_DrawPrimitive_A) to [B](Cub
 `Quad = 1` 
 
 A filled quadrilateral [A](Cube.Core.DrawPrimitive.md#Cube_Core_DrawPrimitive_A)–[D](Cube.Core.DrawPrimitive.md#Cube_Core_DrawPrimitive_D): one visible face of a solid cube.
+
+
+
+`Label = 2` 
+
+A player's name label, anchored at [A](Cube.Core.DrawPrimitive.md#Cube_Core_DrawPrimitive_A) (left end, vertically centred). The text is
+not stored here: it is the name of the player [Tag](Cube.Core.DrawPrimitive.md#Cube_Core_DrawPrimitive_Tag) points to, so the draw list stays
+a plain struct array and names are never copied (PROJECT.md, "Labels"; "Efficiency and memory").
