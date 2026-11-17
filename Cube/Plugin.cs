@@ -29,13 +29,26 @@ public sealed class Plugin : IDalamudPlugin
     [PluginService] internal static ICommandManager CommandManager { get; private set; } = null!;
 
 #if DEBUG
+    /// <summary>Drives the in-game test bridge's checks, one step per frame. Debug builds only.</summary>
+    [PluginService] internal static IFramework Framework { get; private set; } = null!;
+
+    /// <summary>The build configuration, shown in the load line.</summary>
     private const string BuildConfiguration = "Debug";
 #else
+    /// <summary>The build configuration, shown in the load line.</summary>
     private const string BuildConfiguration = "Release";
 #endif
 
+    /// <summary>Dalamud's window manager for this plugin's windows.</summary>
     private readonly WindowSystem windowSystem = new("Cube");
+
+    /// <summary>The cube window.</summary>
     private readonly CubeWindow cubeWindow;
+
+#if DEBUG
+    /// <summary>The in-game test bridge (PROJECT.md, "Automated testing"). Debug builds only.</summary>
+    private readonly TestBridge.BridgeRunner? testBridge;
+#endif
 
     /// <summary>Creates the window and command, then logs the build line.</summary>
     public Plugin()
@@ -53,17 +66,40 @@ public sealed class Plugin : IDalamudPlugin
 
         // Logs which build is running, so a stale or wrong-configuration build is obvious in /xllog.
         var dll = PluginInterface.AssemblyLocation.FullName;
+        var builtAt = BuildInfo.ReadBuildTime(dll);
         var build = BuildInfo.Describe(
             BuildConfiguration,
             typeof(Plugin).Assembly.GetName().Version ?? new Version(0, 0),
-            BuildInfo.ReadBuildTime(dll),
+            builtAt,
             dll);
         Log.Information($"{PluginInterface.Manifest.Name} loaded ({build})");
+
+#if DEBUG
+        // A broken bridge mustn't stop the plugin loading; the missing results file shows it.
+        try
+        {
+            this.testBridge = new TestBridge.BridgeRunner(
+                Framework,
+                Log,
+                PluginInterface.ConfigDirectory.FullName,
+                new TestBridge.BridgeContext(this.cubeWindow, dll, builtAt));
+            this.testBridge.Register(new TestBridge.Checks.BuildStampCheck());
+            this.testBridge.Register(new TestBridge.Checks.WindowOpenCloseCheck());
+            this.testBridge.Register(new TestBridge.Checks.DrawBudgetCheck());
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Test bridge failed to start");
+        }
+#endif
     }
 
     /// <summary>Unregisters everything, each part even if an earlier one fails.</summary>
     public void Dispose()
     {
+#if DEBUG
+        DisposeSafely(() => this.testBridge?.Dispose(), "test bridge");
+#endif
         DisposeSafely(() => CommandManager.RemoveHandler(CommandName), "command");
         DisposeSafely(() => PluginInterface.UiBuilder.OpenMainUi -= this.ToggleCubeWindow, "main UI callback");
         DisposeSafely(() => PluginInterface.UiBuilder.Draw -= this.windowSystem.Draw, "draw callback");

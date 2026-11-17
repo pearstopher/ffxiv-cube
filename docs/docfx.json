@@ -13,6 +13,7 @@
         }
       ],
       "dest": "api",
+      "properties": { "Configuration": "Debug" },
       "includePrivateMembers": true,
       "includeExplicitInterfaceImplementations": true,
       "namespaceLayout": "flattened",

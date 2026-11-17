@@ -16,6 +16,11 @@ Checks the [Allocations](Cube.Tests.Allocations.md#Cube_Tests_Allocations) helpe
 "zero bytes allocated per frame" budget in unit tests: it must pass allocation-free code
 and catch code that allocates, including small amortised growth.
 
+ [AtomicFileTests](Cube.Tests.AtomicFileTests.md)
+
+Checks the in-game bridge's results are written atomically (PROJECT.md, "Automated testing":
+the script polls the results file, so it must never see half a file).
+
  [BuildInfoTests](Cube.Tests.BuildInfoTests.md)
 
 Checks the build line logged on load (CLAUDE.md: log which build is running and when it was built),
@@ -31,3 +36,18 @@ without the game (CLAUDE.md, "Reference: the previous plugin" layout rule).
 Checks the documentation rules (CLAUDE.md, "Code is the documentation"): every test class has a
 summary saying which rule it checks, and every namespace has an overview page for the generated docs. Test methods are named as behaviour and need no summary,
 so the compiler doesn't enforce this for the test project; this test does.
+
+ [DrawCostSamplerTests](Cube.Tests.DrawCostSamplerTests.md)
+
+Checks the draw-cost measurements the in-game bridge uses for PROJECT.md's budgets
+("Efficiency and memory": under 0.5 ms per frame on average, zero bytes allocated per frame),
+and that measuring is itself allocation-free with bounded memory.
+
+ [ReleaseBuildTests](Cube.Tests.ReleaseBuildTests.md)
+
+Checks the in-game test bridge is compiled out of Release builds (CLAUDE.md, "Building and testing":
+the bridge and fake-player code must not ship), and is present in Debug builds where the in-game checks need it.
+
+ [TestPaths](Cube.Tests.TestPaths.md)
+
+Locates files in the repository from a test's output folder, for tests that inspect the repo or build output.

@@ -6,6 +6,8 @@
 
  [Cube.Core](Cube.Core.md)
 
+ [Cube.TestBridge](Cube.TestBridge.md)
+
  [Cube.Tests](Cube.Tests.md)
 
 ### Classes
