@@ -90,7 +90,15 @@ The same log is saved to `%APPDATA%\XIVLauncher\dalamud.log` (`dalamud.old.log` 
 
 If the build fails because the DLL is in use, disable the plugin in game, build, then enable it again.
 
-In-game checks are automated: the Debug-only test bridge runs a suite of checks on every load and writes a results file, and one script builds, waits for fresh results and fails if any check fails. How to run it is in `docs/in-game-testing.md` (added with the bridge). Only what the bridge can't check goes in `docs/manual-tests.md`.
+In-game checks are automated: the Debug-only test bridge runs a suite of checks on every load and writes a results file, and one script builds, waits for fresh results and fails if any check fails:
+
+```sh
+python scripts/ingame_test.py
+```
+
+Setup, exit codes and how to read the results are in `docs/in-game-testing.md`. Only what the bridge can't check goes in `docs/manual-tests.md`.
+
+The script's own decisions are unit tested: `python -m unittest discover -s scripts`.
 
 ## 6. Unit tests
 

@@ -2,5 +2,7 @@
   href: readme.md
 - name: Development guide
   href: development.md
+- name: In-game testing
+  href: in-game-testing.md
 - name: Research notes
   href: research-notes.md
