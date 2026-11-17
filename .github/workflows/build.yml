@@ -54,6 +54,11 @@ jobs:
         timeout-minutes: 5
         run: dotnet test --configuration Release --no-build
 
+      - name: Test scripts
+        # The in-game test script's decisions (fresh results, exit codes) are unit tested too.
+        timeout-minutes: 2
+        run: python -m unittest discover -s scripts
+
       - name: Upload plugin package
         timeout-minutes: 2
         uses: actions/upload-artifact@v7
