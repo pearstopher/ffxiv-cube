@@ -17,7 +17,8 @@
       "includeExplicitInterfaceImplementations": true,
       "namespaceLayout": "flattened",
       "memberLayout": "samePage",
-      "enumSortOrder": "declaringOrder"
+      "enumSortOrder": "declaringOrder",
+      "filter": "filterConfig.yml"
     }
   ],
   "build": {
