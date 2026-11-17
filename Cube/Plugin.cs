@@ -97,6 +97,7 @@ public sealed class Plugin : IDalamudPlugin
             this.testBridge.Register(new TestBridge.Checks.DrawListMatchesCoreCheck());
             this.testBridge.Register(new TestBridge.Checks.PlayersMatchObjectTableCheck(ObjectTable));
             this.testBridge.Register(new TestBridge.Checks.FakePlayersCheck());
+            this.testBridge.Register(new TestBridge.Checks.PlayerCubesCheck());
             this.testBridge.Register(new TestBridge.Checks.DrawBudgetCheck());
             this.testBridge.Register(new TestBridge.Checks.FrameSnapshotCheck(this.testBridge.Folder));
             this.testBridge.Register(new TestBridge.Checks.GameStateProbeCheck(ObjectTable, ClientState, Condition, Log));

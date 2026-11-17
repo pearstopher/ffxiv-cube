@@ -24,6 +24,7 @@ internal abstract class BridgeCheck
 [FakePlayersCheck](Cube.TestBridge.Checks.FakePlayersCheck.md), 
 [FrameSnapshotCheck](Cube.TestBridge.Checks.FrameSnapshotCheck.md), 
 [GameStateProbeCheck](Cube.TestBridge.Checks.GameStateProbeCheck.md), 
+[PlayerCubesCheck](Cube.TestBridge.Checks.PlayerCubesCheck.md), 
 [PlayersMatchObjectTableCheck](Cube.TestBridge.Checks.PlayersMatchObjectTableCheck.md), 
 [WindowOpenCloseCheck](Cube.TestBridge.Checks.WindowOpenCloseCheck.md)
 

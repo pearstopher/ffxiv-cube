@@ -20,8 +20,8 @@ internal sealed class DrawListMatchesCoreCheck : BridgeCheck
 
 ## Remarks
 
-With no players yet (#13), the frame is the empty cube: exactly 12 wireframe edges, centred in the window.
-Later features extend the expected content, not this comparison.
+The frame is the wireframe (12 edges) plus one solid cube per player in the window's player set (#17).
+Later features extend what [BuildFrame](Cube.CubeWindow.md#Cube_CubeWindow_BuildFrame) builds, not this comparison.
 
 ## Fields
 

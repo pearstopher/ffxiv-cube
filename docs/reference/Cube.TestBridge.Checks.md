@@ -38,6 +38,11 @@ bridge dumps the frame's draw list; the snapshot tool turns it into a PNG so Cla
 Research probe for #10 (reading players, party and camera): reads the same facts two ways and records
 both, so one in-game run settles the open questions in <code>docs/research-notes.md</code>.
 
+ [PlayerCubesCheck](Cube.TestBridge.Checks.PlayerCubesCheck.md)
+
+Checks every player in the cube is drawn as a cube in their relation's colour (PROJECT.md, "Players" and "Colours";
+"Draw order": far first), using the standard fake players (#16) so it works with nobody around.
+
  [PlayersMatchObjectTableCheck](Cube.TestBridge.Checks.PlayersMatchObjectTableCheck.md)
 
 Checks the players the window found match an independent read of Dalamud's object table (PROJECT.md,

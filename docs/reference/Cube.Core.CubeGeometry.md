@@ -88,12 +88,12 @@ private const float VisibleThreshold = 0.0001
 
 ## Methods
 
-### <a id="Cube_Core_CubeGeometry_AddFace_Cube_Core_DrawList_Cube_Core_ViewProjection__System_Numerics_Vector3_System_Numerics_Vector3_System_Numerics_Vector3_System_Numerics_Vector3_System_Numerics_Vector3_System_Single_System_UInt32_"></a> AddFace\(DrawList, in ViewProjection, Vector3, Vector3, Vector3, Vector3, Vector3, float, uint\)
+### <a id="Cube_Core_CubeGeometry_AddFace_Cube_Core_DrawList_Cube_Core_ViewProjection__System_Numerics_Vector3_System_Numerics_Vector3_System_Numerics_Vector3_System_Numerics_Vector3_System_Numerics_Vector3_System_Single_System_UInt32_System_Int32_"></a> AddFace\(DrawList, in ViewProjection, Vector3, Vector3, Vector3, Vector3, Vector3, float, uint, int\)
 
 Adds one face if it faces the viewer.
 
 ```csharp
-private static void AddFace(DrawList list, in ViewProjection projection, Vector3 centre, Vector3 normal, Vector3 u, Vector3 v, Vector3 towardsViewer, float depth, uint colour)
+private static void AddFace(DrawList list, in ViewProjection projection, Vector3 centre, Vector3 normal, Vector3 u, Vector3 v, Vector3 towardsViewer, float depth, uint colour, int tag)
 ```
 
 #### Parameters
@@ -134,14 +134,18 @@ Depth to sort the face by.
 
 Face colour.
 
-### <a id="Cube_Core_CubeGeometry_AddSolidCube_Cube_Core_DrawList_Cube_Core_CubeSpace__Cube_Core_ViewProjection__System_Numerics_Vector3_System_Single_System_UInt32_"></a> AddSolidCube\(DrawList, in CubeSpace, in ViewProjection, Vector3, float, uint\)
+`tag` [int](https://learn.microsoft.com/dotnet/api/system.int32)
+
+Owner of the face.
+
+### <a id="Cube_Core_CubeGeometry_AddSolidCube_Cube_Core_DrawList_Cube_Core_CubeSpace__Cube_Core_ViewProjection__System_Numerics_Vector3_System_Single_System_UInt32_System_Int32_"></a> AddSolidCube\(DrawList, in CubeSpace, in ViewProjection, Vector3, float, uint, int\)
 
 Adds a solid, world-axis-aligned cube as its visible faces (at most three). All faces share the cube
 centre's depth: a convex cube's visible faces never overlap each other, and one depth per cube keeps
 its faces together in the painter's sort.
 
 ```csharp
-public static void AddSolidCube(DrawList list, in CubeSpace space, in ViewProjection projection, Vector3 viewCentre, float halfSize, uint colour)
+public static void AddSolidCube(DrawList list, in CubeSpace space, in ViewProjection projection, Vector3 viewCentre, float halfSize, uint colour, int tag = 0)
 ```
 
 #### Parameters
@@ -169,6 +173,10 @@ Half the small cube's edge, in yalms.
 `colour` [uint](https://learn.microsoft.com/dotnet/api/system.uint32)
 
 Base colour; side faces are shaded darker.
+
+`tag` [int](https://learn.microsoft.com/dotnet/api/system.int32)
+
+Owner of the faces ([Tag](Cube.Core.DrawPrimitive.md#Cube_Core_DrawPrimitive_Tag)).
 
 ### <a id="Cube_Core_CubeGeometry_AddWireCube_Cube_Core_DrawList_Cube_Core_CubeSpace__Cube_Core_ViewProjection__System_UInt32_"></a> AddWireCube\(DrawList, in CubeSpace, in ViewProjection, uint\)
 

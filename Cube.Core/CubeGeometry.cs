@@ -72,7 +72,8 @@ public static class CubeGeometry
     /// <param name="viewCentre">The small cube's centre in view coordinates.</param>
     /// <param name="halfSize">Half the small cube's edge, in yalms.</param>
     /// <param name="colour">Base colour; side faces are shaded darker.</param>
-    public static void AddSolidCube(DrawList list, in CubeSpace space, in ViewProjection projection, Vector3 viewCentre, float halfSize, uint colour)
+    /// <param name="tag">Owner of the faces (<see cref="DrawPrimitive.Tag"/>).</param>
+    public static void AddSolidCube(DrawList list, in CubeSpace space, in ViewProjection projection, Vector3 viewCentre, float halfSize, uint colour, int tag = 0)
     {
         var depth = projection.Depth(viewCentre);
         var towardsViewer = projection.TowardsViewer;
@@ -82,12 +83,12 @@ public static class CubeGeometry
         var y = space.RotateOffset(Vector3.UnitY) * halfSize;
         var z = space.RotateOffset(Vector3.UnitZ) * halfSize;
 
-        AddFace(list, projection, viewCentre, y, x, z, towardsViewer, depth, Colour.Shade(colour, TopShade));
-        AddFace(list, projection, viewCentre, -y, x, z, towardsViewer, depth, Colour.Shade(colour, BottomShade));
-        AddFace(list, projection, viewCentre, x, y, z, towardsViewer, depth, Colour.Shade(colour, EastWestShade));
-        AddFace(list, projection, viewCentre, -x, y, z, towardsViewer, depth, Colour.Shade(colour, EastWestShade));
-        AddFace(list, projection, viewCentre, z, x, y, towardsViewer, depth, Colour.Shade(colour, NorthSouthShade));
-        AddFace(list, projection, viewCentre, -z, x, y, towardsViewer, depth, Colour.Shade(colour, NorthSouthShade));
+        AddFace(list, projection, viewCentre, y, x, z, towardsViewer, depth, Colour.Shade(colour, TopShade), tag);
+        AddFace(list, projection, viewCentre, -y, x, z, towardsViewer, depth, Colour.Shade(colour, BottomShade), tag);
+        AddFace(list, projection, viewCentre, x, y, z, towardsViewer, depth, Colour.Shade(colour, EastWestShade), tag);
+        AddFace(list, projection, viewCentre, -x, y, z, towardsViewer, depth, Colour.Shade(colour, EastWestShade), tag);
+        AddFace(list, projection, viewCentre, z, x, y, towardsViewer, depth, Colour.Shade(colour, NorthSouthShade), tag);
+        AddFace(list, projection, viewCentre, -z, x, y, towardsViewer, depth, Colour.Shade(colour, NorthSouthShade), tag);
     }
 
     /// <summary>Adds one face if it faces the viewer.</summary>
@@ -100,7 +101,8 @@ public static class CubeGeometry
     /// <param name="towardsViewer">Direction to the viewer.</param>
     /// <param name="depth">Depth to sort the face by.</param>
     /// <param name="colour">Face colour.</param>
-    private static void AddFace(DrawList list, in ViewProjection projection, Vector3 centre, Vector3 normal, Vector3 u, Vector3 v, Vector3 towardsViewer, float depth, uint colour)
+    /// <param name="tag">Owner of the face.</param>
+    private static void AddFace(DrawList list, in ViewProjection projection, Vector3 centre, Vector3 normal, Vector3 u, Vector3 v, Vector3 towardsViewer, float depth, uint colour, int tag)
     {
         if (Vector3.Dot(normal, towardsViewer) <= VisibleThreshold * normal.Length())
         {
@@ -114,6 +116,7 @@ public static class CubeGeometry
             projection.ToScreen(faceCentre + u + v),
             projection.ToScreen(faceCentre - u + v),
             depth,
-            colour);
+            colour,
+            tag);
     }
 }
