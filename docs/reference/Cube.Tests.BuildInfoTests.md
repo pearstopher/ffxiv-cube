@@ -28,6 +28,16 @@ private static readonly DateTime BuiltAt
 
  [DateTime](https://learn.microsoft.com/dotnet/api/system.datetime)
 
+### <a id="Cube_Tests_BuildInfoTests_PluginVersion"></a> PluginVersion
+
+```csharp
+private static readonly Version PluginVersion
+```
+
+#### Field Value
+
+ [Version](https://learn.microsoft.com/dotnet/api/system.version)
+
 ## Methods
 
 ### <a id="Cube_Tests_BuildInfoTests_Build_time_is_read_fresh_after_the_file_changes"></a> Build\_time\_is\_read\_fresh\_after\_the\_file\_changes\(\)
@@ -37,11 +47,11 @@ private static readonly DateTime BuiltAt
 public void Build_time_is_read_fresh_after_the_file_changes()
 ```
 
-### <a id="Cube_Tests_BuildInfoTests_Describes_configuration_time_and_path"></a> Describes\_configuration\_time\_and\_path\(\)
+### <a id="Cube_Tests_BuildInfoTests_Describes_configuration_version_time_and_path"></a> Describes\_configuration\_version\_time\_and\_path\(\)
 
 ```csharp
 [Fact]
-public void Describes_configuration_time_and_path()
+public void Describes_configuration_version_time_and_path()
 ```
 
 ### <a id="Cube_Tests_BuildInfoTests_Omits_the_path_when_unknown_System_String_"></a> Omits\_the\_path\_when\_unknown\(string?\)

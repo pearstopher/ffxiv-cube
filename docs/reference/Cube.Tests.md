@@ -4,6 +4,18 @@
 
 ### Classes
 
+ [Allocations](Cube.Tests.Allocations.md)
+
+Test helper for the "zero bytes allocated per frame" budget (PROJECT.md, "Efficiency and memory"):
+hot-path Core code is run under [AssertNone](Cube.Tests.Allocations.md#Cube_Tests_Allocations_AssertNone) so an accidental allocation
+(LINQ, a capturing lambda, boxing, string building) fails a unit test long before it shows up in game.
+
+ [AllocationsTests](Cube.Tests.AllocationsTests.md)
+
+Checks the [Allocations](Cube.Tests.Allocations.md#Cube_Tests_Allocations) helper itself, which enforces PROJECT.md's
+"zero bytes allocated per frame" budget in unit tests: it must pass allocation-free code
+and catch code that allocates, including small amortised growth.
+
  [BuildInfoTests](Cube.Tests.BuildInfoTests.md)
 
 Checks the build line logged on load (CLAUDE.md: log which build is running and when it was built),
