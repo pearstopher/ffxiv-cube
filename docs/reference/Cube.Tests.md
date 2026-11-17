@@ -35,6 +35,12 @@ Compares packed colours allowing one step of rounding per channel.
 Checks that Core stays free of Dalamud, game structs and Lumina, so all its logic can be unit tested
 without the game (CLAUDE.md, "Reference: the previous plugin" layout rule).
 
+ [CubeSettingsTests](Cube.Tests.CubeSettingsTests.md)
+
+Checks the settings' defaults and repair rules (PROJECT.md, "Features": settings for cube size, orientation mode,
+labels on/off, colours and opacity; "Cube": edge 10–100, default 40; "View": Camera mode by default) and the
+<code>/cube config</code> command.
+
  [CubeSpaceTests](Cube.Tests.CubeSpaceTests.md)
 
 Checks the cube of space (PROJECT.md, "Exact behaviour rules": Cube, View, Players): axis-aligned, centred on

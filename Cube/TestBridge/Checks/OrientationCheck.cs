@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Cube.Core;
 using Cube.Game;
@@ -13,20 +13,18 @@ namespace Cube.TestBridge.Checks;
 /// The camera is read again here, independently of the window, through <see cref="CameraReader"/> and turned into
 /// a heading with <see cref="ViewYaw.FromForward"/>. A small tolerance covers the camera moving between the window's
 /// draw and this check, plus <see cref="ViewYaw.ChangeThreshold"/>. If the camera happens to face north, North up
-/// can't be told apart from Camera mode; the <c>cameraYaw</c> metric shows when that was the case.
+/// can't be told apart from Camera mode; the <c>cameraYaw</c> metric shows when that was the case. The mode is
+/// changed in memory only and restored afterwards.
 /// </remarks>
 internal sealed class OrientationCheck : BridgeCheck
 {
-    /// <summary>Frames to wait for the window to draw in each mode.</summary>
-    private const int FramesToWait = 30;
-
     /// <summary>Largest allowed difference between the view's yaw and the camera heading, in radians (about 1°).</summary>
     private const float Tolerance = 0.02f;
 
     /// <summary>The window's open state before the check.</summary>
     private bool wasOpen;
 
-    /// <summary>The window's orientation mode before the check.</summary>
+    /// <summary>The orientation setting before the check.</summary>
     private OrientationMode wasMode;
 
     /// <inheritdoc/>
@@ -37,11 +35,12 @@ internal sealed class OrientationCheck : BridgeCheck
     {
         var window = context.Window;
         this.wasOpen = window.IsOpen;
-        this.wasMode = window.Orientation;
+        this.wasMode = window.Settings.Orientation;
         window.IsOpen = true;
 
-        window.Orientation = OrientationMode.Camera;
-        foreach (var step in WaitForFrames(window))
+        window.Settings.Orientation = OrientationMode.Camera;
+        window.Settings.Changed();
+        foreach (var step in WaitForDraws(window))
         {
             yield return step;
         }
@@ -62,8 +61,9 @@ internal sealed class OrientationCheck : BridgeCheck
             yield break;
         }
 
-        window.Orientation = OrientationMode.NorthUp;
-        foreach (var step in WaitForFrames(window))
+        window.Settings.Orientation = OrientationMode.NorthUp;
+        window.Settings.Changed();
+        foreach (var step in WaitForDraws(window))
         {
             yield return step;
         }
@@ -77,25 +77,8 @@ internal sealed class OrientationCheck : BridgeCheck
     /// <inheritdoc/>
     public override void Cleanup(BridgeContext context)
     {
-        context.Window.Orientation = this.wasMode;
+        context.Window.Settings.Orientation = this.wasMode;
+        context.Window.Settings.Changed();
         context.Window.IsOpen = this.wasOpen;
-    }
-
-    /// <summary>Waits until the window has drawn two frames in the current mode.</summary>
-    /// <param name="window">The cube window.</param>
-    private static IEnumerable<CheckStep> WaitForFrames(CubeWindow window)
-    {
-        var start = window.DrawCost.TotalRecorded;
-        var waited = 0;
-        while (window.DrawCost.TotalRecorded - start < 2)
-        {
-            if (++waited > FramesToWait)
-            {
-                yield return CheckStep.Fail($"Window didn't draw within {FramesToWait} frames (game UI hidden?).");
-                yield break;
-            }
-
-            yield return CheckStep.NextFrame;
-        }
     }
 }

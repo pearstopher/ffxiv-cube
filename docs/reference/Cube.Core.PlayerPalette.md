@@ -4,7 +4,7 @@ Namespace: [Cube.Core](Cube.Core.md)
 Assembly: Cube.Core.dll  
 
 One colour per player relation (PROJECT.md, "Colours": self, party/alliance members, everyone else; one colour
-each). The settings window (#20) lets the user change them.
+each). Built from the user's [CubeSettings](Cube.Core.CubeSettings.md#Cube_Core_CubeSettings).
 
 ```csharp
 public readonly record struct PlayerPalette : IEquatable<PlayerPalette>
@@ -20,7 +20,7 @@ public readonly record struct PlayerPalette : IEquatable<PlayerPalette>
 ### <a id="Cube_Core_PlayerPalette__ctor_System_UInt32_System_UInt32_System_UInt32_"></a> PlayerPalette\(uint, uint, uint\)
 
 One colour per player relation (PROJECT.md, "Colours": self, party/alliance members, everyone else; one colour
-each). The settings window (#20) lets the user change them.
+each). Built from the user's [CubeSettings](Cube.Core.CubeSettings.md#Cube_Core_CubeSettings).
 
 ```csharp
 public PlayerPalette(uint Self, uint Party, uint Other)
@@ -44,8 +44,8 @@ Everyone else's colour.
 
 ### <a id="Cube_Core_PlayerPalette_Default"></a> Default
 
-Defaults: blue for self, green for party/alliance, orange for others, chosen to stay distinct from each other
-and from the grey wireframe.
+Defaults: blue for self, green for party/alliance, orange for others, fully opaque, chosen to stay distinct
+from each other and from the grey wireframe ([DefaultSelfColour](Cube.Core.CubeSettings.md#Cube_Core_CubeSettings_DefaultSelfColour) and siblings).
 
 ```csharp
 public static PlayerPalette Default { get; }

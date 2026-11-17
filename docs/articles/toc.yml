@@ -4,5 +4,7 @@
   href: development.md
 - name: In-game testing
   href: in-game-testing.md
+- name: Manual tests
+  href: manual-tests.md
 - name: Research notes
   href: research-notes.md

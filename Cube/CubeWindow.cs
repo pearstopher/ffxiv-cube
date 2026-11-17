@@ -27,8 +27,11 @@ internal sealed class CubeWindow : Window
     /// </summary>
     internal const int DrawListCapacity = 1024;
 
-    /// <summary>Colour of the big cube's edges: light grey, slightly transparent.</summary>
-    private static readonly uint WireColour = Colour.Pack(0.85f, 0.85f, 0.85f, 0.8f);
+    /// <summary>Colour of the big cube's edges: light grey.</summary>
+    private static readonly Vector3 WireRgb = new(0.85f, 0.85f, 0.85f);
+
+    /// <summary>The edges' own opacity (slightly transparent), before the opacity setting is applied.</summary>
+    private const float WireAlpha = 0.8f;
 
     /// <summary>Thickness of the big cube's edges, in pixels.</summary>
     private const float WireThickness = 1.5f;
@@ -42,10 +45,15 @@ internal sealed class CubeWindow : Window
     /// <summary>Whether <see cref="LastSpace"/> holds a real frame's cube, so its rotation can be reused.</summary>
     private bool hasSpace;
 
+    /// <summary>The <see cref="CubeSettings.Revision"/> the cached colours were built from; -1 forces a first build.</summary>
+    private int settingsRevision = -1;
+
     /// <summary>Creates the window, closed, with a sensible minimum size.</summary>
-    public CubeWindow()
+    /// <param name="settings">The user's settings, read every frame; changes apply on the next frame.</param>
+    public CubeWindow(CubeSettings settings)
         : base("Cube###CubeMain")
     {
+        this.Settings = settings;
         this.SizeConstraints = new WindowSizeConstraints
         {
             MinimumSize = new Vector2(200, 200),
@@ -110,25 +118,26 @@ internal sealed class CubeWindow : Window
     /// <param name="players">The players inside the cube.</param>
     /// <param name="palette">Player colours.</param>
     /// <param name="labels">Whether to add name labels.</param>
-    internal static void BuildFrame(DrawList list, in CubeSpace space, in ViewProjection projection, ReadOnlySpan<NearbyPlayer> players, in PlayerPalette palette, bool labels)
+    /// <param name="wireColour">The big cube's edge colour.</param>
+    internal static void BuildFrame(DrawList list, in CubeSpace space, in ViewProjection projection, ReadOnlySpan<NearbyPlayer> players, in PlayerPalette palette, bool labels, uint wireColour)
     {
         list.Clear();
-        CubeGeometry.AddWireCube(list, space, projection, WireColour);
+        CubeGeometry.AddWireCube(list, space, projection, wireColour);
         PlayerCubes.Add(list, space, projection, players, palette, labels);
         list.SortBackToFront();
     }
 
-    /// <summary>Colours per player relation. Defaults until the settings window (#20) makes them configurable.</summary>
-    internal PlayerPalette Palette { get; } = PlayerPalette.Default;
+    /// <summary>The user's settings (PROJECT.md, "Features": settings window). The bridge changes them in memory to test them.</summary>
+    internal CubeSettings Settings { get; }
 
-    /// <summary>
-    /// How the view turns (PROJECT.md, "View"): Camera (default) follows the game camera, North up stays fixed.
-    /// Settable so the bridge can test both; the settings window (#20) will drive it.
-    /// </summary>
-    internal OrientationMode Orientation { get; set; } = OrientationMode.Camera;
+    /// <summary>The last frame's player colours, rebuilt from <see cref="Settings"/> only when they change.</summary>
+    internal PlayerPalette Palette { get; private set; }
 
-    /// <summary>Whether other players get name labels. On until the settings window (#20) adds the toggle.</summary>
-    internal bool ShowLabels { get; } = true;
+    /// <summary>The last frame's edge colour, rebuilt with <see cref="Palette"/>.</summary>
+    internal uint WireColour { get; private set; }
+
+    /// <summary>The last frame's label setting.</summary>
+    internal bool ShowLabels { get; private set; }
 
 #if DEBUG
     /// <summary>
@@ -160,13 +169,23 @@ internal sealed class CubeWindow : Window
     {
         // North up never reads the camera. With no camera (or one looking straight down) the forward vector is zero
         // and FromForward keeps the previous yaw.
+        var settings = this.Settings;
+        if (settings.Revision != this.settingsRevision)
+        {
+            this.Palette = settings.Palette();
+            this.WireColour = settings.WithOpacity(WireRgb, WireAlpha);
+            this.settingsRevision = settings.Revision;
+        }
+
+        this.ShowLabels = settings.ShowLabels;
+
         var forward = Vector3.Zero;
-        if (this.Orientation == OrientationMode.Camera)
+        if (settings.Orientation == OrientationMode.Camera)
         {
             CameraReader.TryGetForward(out forward);
         }
 
-        var yaw = ViewYaw.Settle(this.yaw, ViewYaw.For(this.Orientation, forward, this.yaw));
+        var yaw = ViewYaw.Settle(this.yaw, ViewYaw.For(settings.Orientation, forward, this.yaw));
 
         // The cube fills the content region and keeps its shape on resize: Fit uses one scale for both axes.
         var regionMin = ImGui.GetCursorScreenPos();
@@ -175,8 +194,8 @@ internal sealed class CubeWindow : Window
         // is only recomputed when the yaw has actually changed.
         this.LastHadLocalPlayer = PlayerReader.TryGetLocalPosition(out var centre);
         var space = this.hasSpace && yaw == this.yaw
-            ? this.LastSpace.Recentred(centre, CubeSpace.DefaultEdge)
-            : new CubeSpace(centre, CubeSpace.DefaultEdge, yaw);
+            ? this.LastSpace.Recentred(centre, settings.CubeEdge)
+            : new CubeSpace(centre, settings.CubeEdge, yaw);
         this.yaw = yaw;
         this.hasSpace = true;
         var projection = ViewProjection.Fit(regionMin, regionSize, space.HalfEdge, Elevation);
@@ -191,7 +210,7 @@ internal sealed class CubeWindow : Window
         this.Fakes.Offer(this.Players, space);
 #endif
 
-        BuildFrame(this.DrawList, space, projection, this.Players.Items, this.Palette, this.ShowLabels);
+        BuildFrame(this.DrawList, space, projection, this.Players.Items, this.Palette, this.ShowLabels, this.WireColour);
         this.LastSpace = space;
         this.LastProjection = projection;
         this.LastRegionMin = regionMin;

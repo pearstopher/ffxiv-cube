@@ -54,6 +54,12 @@ public sealed class Plugin : IDalamudPlugin
     /// <summary>The cube window.</summary>
     private readonly CubeWindow cubeWindow;
 
+    /// <summary>The settings window (<c>/cube config</c>).</summary>
+    private readonly SettingsWindow settingsWindow;
+
+    /// <summary>The saved settings, shared by both windows.</summary>
+    private readonly Configuration configuration;
+
 #if DEBUG
     /// <summary>The in-game test bridge (PROJECT.md, "Automated testing"). Debug builds only.</summary>
     private readonly TestBridge.BridgeRunner? testBridge;
@@ -62,15 +68,19 @@ public sealed class Plugin : IDalamudPlugin
     /// <summary>Creates the window and command, then logs the build line.</summary>
     public Plugin()
     {
-        this.cubeWindow = new CubeWindow();
+        this.configuration = Configuration.Load(PluginInterface);
+        this.cubeWindow = new CubeWindow(this.configuration);
+        this.settingsWindow = new SettingsWindow(this.configuration, this.SaveConfiguration);
         this.windowSystem.AddWindow(this.cubeWindow);
+        this.windowSystem.AddWindow(this.settingsWindow);
 
         PluginInterface.UiBuilder.Draw += this.windowSystem.Draw;
         PluginInterface.UiBuilder.OpenMainUi += this.ToggleCubeWindow;
+        PluginInterface.UiBuilder.OpenConfigUi += this.ToggleSettingsWindow;
 
         CommandManager.AddHandler(CommandName, new CommandInfo(this.OnCommand)
         {
-            HelpMessage = "Show or hide the cube window.",
+            HelpMessage = "Show or hide the cube window. \"/cube config\" opens the settings.",
         });
 
         // Logs which build is running, so a stale or wrong-configuration build is obvious in /xllog.
@@ -100,6 +110,8 @@ public sealed class Plugin : IDalamudPlugin
             this.testBridge.Register(new TestBridge.Checks.PlayerCubesCheck());
             this.testBridge.Register(new TestBridge.Checks.LabelsCheck());
             this.testBridge.Register(new TestBridge.Checks.OrientationCheck());
+            this.testBridge.Register(new TestBridge.Checks.SettingsCheck());
+            this.testBridge.Register(new TestBridge.Checks.SettingsWindowCheck(this.settingsWindow, this.configuration, this.SaveConfiguration, PluginInterface.ConfigFile.FullName));
             this.testBridge.Register(new TestBridge.Checks.DrawBudgetCheck());
             this.testBridge.Register(new TestBridge.Checks.FrameSnapshotCheck(this.testBridge.Folder));
             this.testBridge.Register(new TestBridge.Checks.GameStateProbeCheck(ObjectTable, ClientState, Condition, Log));
@@ -119,18 +131,45 @@ public sealed class Plugin : IDalamudPlugin
 #endif
         DisposeSafely(() => CommandManager.RemoveHandler(CommandName), "command");
         DisposeSafely(() => PluginInterface.UiBuilder.OpenMainUi -= this.ToggleCubeWindow, "main UI callback");
+        DisposeSafely(() => PluginInterface.UiBuilder.OpenConfigUi -= this.ToggleSettingsWindow, "settings UI callback");
         DisposeSafely(() => PluginInterface.UiBuilder.Draw -= this.windowSystem.Draw, "draw callback");
         DisposeSafely(this.windowSystem.RemoveAllWindows, "windows");
         Log.Information($"{PluginInterface.Manifest.Name} unloaded");
     }
 
-    /// <summary>Handles <c>/cube</c>: toggles the window.</summary>
+    /// <summary>Handles <c>/cube</c> (toggles the cube window) and <c>/cube config</c> (toggles the settings).</summary>
     /// <param name="command">The command typed.</param>
-    /// <param name="args">Anything typed after the command (unused for now).</param>
-    private void OnCommand(string command, string args) => this.ToggleCubeWindow();
+    /// <param name="args">Anything typed after the command.</param>
+    private void OnCommand(string command, string args)
+    {
+        if (CommandArgs.IsConfig(args))
+        {
+            this.ToggleSettingsWindow();
+        }
+        else
+        {
+            this.ToggleCubeWindow();
+        }
+    }
 
     /// <summary>Shows the window if hidden, hides it if shown.</summary>
     private void ToggleCubeWindow() => this.cubeWindow.Toggle();
+
+    /// <summary>Shows or hides the settings window.</summary>
+    private void ToggleSettingsWindow() => this.settingsWindow.Toggle();
+
+    /// <summary>Writes the settings to disk, logging rather than throwing if that fails.</summary>
+    private void SaveConfiguration()
+    {
+        try
+        {
+            this.configuration.Save(PluginInterface);
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Couldn't save settings");
+        }
+    }
 
     /// <summary>Runs one cleanup step and logs, rather than throws, if it fails.</summary>
     /// <param name="step">The cleanup to run.</param>

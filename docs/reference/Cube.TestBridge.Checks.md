@@ -60,6 +60,16 @@ Checks the players the window found match an independent read of Dalamud's objec
 "Automated testing": the players drawn match an independent read of the object table; "Players": every player
 character inside the cube, nobody outside; "Colours": self, party/alliance, other).
 
+ [SettingsCheck](Cube.TestBridge.Checks.SettingsCheck.md)
+
+Checks each setting changes the drawn frame straight away, and that putting the settings back restores it
+(PROJECT.md, "Features": settings for cube size, orientation mode, labels on/off, colours and opacity).
+
+ [SettingsWindowCheck](Cube.TestBridge.Checks.SettingsWindowCheck.md)
+
+Checks the settings window draws and the settings are saved in the expected file (PROJECT.md, "Features":
+a settings window, <code>/cube config</code>; the acceptance rule that settings are saved on change).
+
  [WindowOpenCloseCheck](Cube.TestBridge.Checks.WindowOpenCloseCheck.md)
 
 Checks the cube window draws when opened and stops drawing when closed (PROJECT.md, "Features":

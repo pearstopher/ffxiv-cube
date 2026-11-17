@@ -62,6 +62,18 @@ internal const string CommandName = "/cube"
 
  [string](https://learn.microsoft.com/dotnet/api/system.string)
 
+### <a id="Cube_Plugin_configuration"></a> configuration
+
+The saved settings, shared by both windows.
+
+```csharp
+private readonly Configuration configuration
+```
+
+#### Field Value
+
+ [Configuration](Cube.Configuration.md)
+
 ### <a id="Cube_Plugin_cubeWindow"></a> cubeWindow
 
 The cube window.
@@ -73,6 +85,18 @@ private readonly CubeWindow cubeWindow
 #### Field Value
 
  [CubeWindow](Cube.CubeWindow.md)
+
+### <a id="Cube_Plugin_settingsWindow"></a> settingsWindow
+
+The settings window (<code>/cube config</code>).
+
+```csharp
+private readonly SettingsWindow settingsWindow
+```
+
+#### Field Value
+
+ [SettingsWindow](Cube.SettingsWindow.md)
 
 ### <a id="Cube_Plugin_testBridge"></a> testBridge
 
@@ -221,7 +245,7 @@ What is being cleaned up, for the log.
 
 ### <a id="Cube_Plugin_OnCommand_System_String_System_String_"></a> OnCommand\(string, string\)
 
-Handles <code>/cube</code>: toggles the window.
+Handles <code>/cube</code> (toggles the cube window) and <code>/cube config</code> (toggles the settings).
 
 ```csharp
 private void OnCommand(string command, string args)
@@ -235,7 +259,15 @@ The command typed.
 
 `args` [string](https://learn.microsoft.com/dotnet/api/system.string)
 
-Anything typed after the command (unused for now).
+Anything typed after the command.
+
+### <a id="Cube_Plugin_SaveConfiguration"></a> SaveConfiguration\(\)
+
+Writes the settings to disk, logging rather than throwing if that fails.
+
+```csharp
+private void SaveConfiguration()
+```
 
 ### <a id="Cube_Plugin_ToggleCubeWindow"></a> ToggleCubeWindow\(\)
 
@@ -243,4 +275,12 @@ Shows the window if hidden, hides it if shown.
 
 ```csharp
 private void ToggleCubeWindow()
+```
+
+### <a id="Cube_Plugin_ToggleSettingsWindow"></a> ToggleSettingsWindow\(\)
+
+Shows or hides the settings window.
+
+```csharp
+private void ToggleSettingsWindow()
 ```
