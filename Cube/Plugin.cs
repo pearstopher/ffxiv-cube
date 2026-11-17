@@ -78,6 +78,12 @@ public sealed class Plugin : IDalamudPlugin
         this.windowSystem.AddWindow(this.cubeWindow);
         this.windowSystem.AddWindow(this.settingsWindow);
 
+#if DEBUG
+        // Debug builds open the cube window on every load, so after each automatic reload the owner sees the
+        // change straight away in game. Release builds start closed; players open it with /cube.
+        this.cubeWindow.IsOpen = true;
+#endif
+
         PluginInterface.UiBuilder.Draw += this.windowSystem.Draw;
         PluginInterface.UiBuilder.OpenMainUi += this.ToggleCubeWindow;
         PluginInterface.UiBuilder.OpenConfigUi += this.ToggleSettingsWindow;
