@@ -26,6 +26,10 @@ the script polls the results file, so it must never see half a file).
 Checks the build line logged on load (CLAUDE.md: log which build is running and when it was built),
 so a stale or wrong-configuration build is obvious.
 
+ [ProjectionAndDrawListTests.ChannelTolerance](Cube.Tests.ProjectionAndDrawListTests.ChannelTolerance.md)
+
+Compares packed colours allowing one step of rounding per channel.
+
  [CoreAssemblyTests](Cube.Tests.CoreAssemblyTests.md)
 
 Checks that Core stays free of Dalamud, game structs and Lumina, so all its logic can be unit tested
@@ -49,6 +53,12 @@ so the compiler doesn't enforce this for the test project; this test does.
 Checks the draw-cost measurements the in-game bridge uses for PROJECT.md's budgets
 ("Efficiency and memory": under 0.5 ms per frame on average, zero bytes allocated per frame),
 and that measuring is itself allocation-free with bounded memory.
+
+ [ProjectionAndDrawListTests](Cube.Tests.ProjectionAndDrawListTests.md)
+
+Checks projection and the draw list (PROJECT.md, "View": fixed-angle view from above and behind, default 30°;
+"Draw order": far things first so near cubes cover far ones; "Cheap drawing": only visible faces, the big cube a
+wireframe; "Efficiency and memory": reused buffers, no per-frame allocations).
 
  [ReleaseBuildTests](Cube.Tests.ReleaseBuildTests.md)
 
