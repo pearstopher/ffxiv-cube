@@ -1,0 +1,25 @@
+{
+  "$schema": "https://raw.githubusercontent.com/dotnet/docfx/main/schemas/docfx.schema.json",
+  "metadata": [
+    {
+      "src": [
+        {
+          "src": "..",
+          "files": [
+            "Cube.Core/Cube.Core.csproj",
+            "Cube/Cube.csproj",
+            "Cube.Tests/Cube.Tests.csproj"
+          ]
+        }
+      ],
+      "dest": "reference",
+      "includePrivateMembers": true,
+      "includeExplicitInterfaceImplementations": true,
+      "namespaceLayout": "flattened",
+      "memberLayout": "samePage",
+      "enumSortOrder": "declaringOrder",
+      "outputFormat": "markdown",
+      "filter": "filterConfig.yml"
+    }
+  ]
+}

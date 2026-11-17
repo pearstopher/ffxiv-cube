@@ -13,4 +13,5 @@ does and which rule from the spec it implements. Each namespace page gives an ov
 plugin.
 
 - **Code reference:** how the plugin works, straight from the code.
+- **On GitHub:** the same reference as Markdown is in `docs/reference/` in the repository.
 - **Articles:** the few things that can't live in code, such as the README and the development guide.

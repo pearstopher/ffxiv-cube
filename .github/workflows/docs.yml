@@ -1,7 +1,8 @@
 name: Docs
 
-# Builds the documentation site from the code's XML doc comments with DocFX (warnings are errors),
-# on every PR, and publishes it to GitHub Pages from main.
+# Checks the committed Markdown code reference (docs/reference/) matches the code, builds the HTML site
+# from the code's XML doc comments with DocFX (warnings are errors), and publishes the site to GitHub Pages
+# from main. The Markdown reference is the one linked from the README; Pages is optional.
 on:
   push:
     branches: [ main ]
@@ -42,7 +43,22 @@ jobs:
       - name: Restore tools
         run: dotnet tool restore
 
-      - name: Build docs
+      - name: Check the Markdown code reference is up to date
+        # docs/reference/ is committed so it can be read on GitHub without Pages. It must match the code.
+        timeout-minutes: 10
+        shell: pwsh
+        run: |
+          python scripts/build-docs.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $changes = git status --porcelain -- docs/reference
+          if ($changes) {
+            Write-Output $changes
+            git --no-pager diff -- docs/reference
+            Write-Error "docs/reference/ is out of date. Run 'python scripts/build-docs.py' and commit the result."
+            exit 1
+          }
+
+      - name: Build docs site
         timeout-minutes: 10
         run: dotnet docfx docs/docfx.json --warningsAsErrors
 
