@@ -50,8 +50,19 @@ internal sealed class CubeWindow : Window
         };
     }
 
+    /// <summary>
+    /// Name cache slots: the 200 character slots, plus room for the Debug-only fake players above them (#16).
+    /// </summary>
+    internal const int NameSlots = 256;
+
     /// <summary>This frame's primitives, in drawing order. Read by the test bridge.</summary>
     internal DrawList DrawList { get; } = new(DrawListCapacity);
+
+    /// <summary>The players inside the cube this frame (PROJECT.md, "Players"). Read by the test bridge.</summary>
+    internal PlayerSet Players { get; } = new(NameSlots, new NameCache(NameSlots));
+
+    /// <summary>Whether the last frame found a local player to centre the cube on.</summary>
+    internal bool LastHadLocalPlayer { get; private set; }
 
     /// <summary>The cube space used for the last frame drawn, so the bridge can rebuild the frame independently.</summary>
     internal CubeSpace LastSpace { get; private set; }
@@ -119,8 +130,16 @@ internal sealed class CubeWindow : Window
         // The cube fills the content region and keeps its shape on resize: Fit uses one scale for both axes.
         var regionMin = ImGui.GetCursorScreenPos();
         var regionSize = ImGui.GetContentRegionAvail();
-        var space = new CubeSpace(Vector3.Zero, CubeSpace.DefaultEdge, this.yaw);
+        // The cube is centred on the local player and follows them every frame (PROJECT.md, "Cube").
+        this.LastHadLocalPlayer = PlayerReader.TryGetLocalPosition(out var centre);
+        var space = new CubeSpace(centre, CubeSpace.DefaultEdge, this.yaw);
         var projection = ViewProjection.Fit(regionMin, regionSize, space.HalfEdge, Elevation);
+
+        this.Players.Begin(space);
+        if (this.LastHadLocalPlayer)
+        {
+            PlayerReader.Read(this.Players);
+        }
 
         BuildFrame(this.DrawList, space, projection);
         this.LastSpace = space;

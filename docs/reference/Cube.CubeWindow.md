@@ -64,6 +64,18 @@ private static readonly float Elevation
 
  [float](https://learn.microsoft.com/dotnet/api/system.single)
 
+### <a id="Cube_CubeWindow_NameSlots"></a> NameSlots
+
+Name cache slots: the 200 character slots, plus room for the Debug-only fake players above them (#16).
+
+```csharp
+internal const int NameSlots = 256
+```
+
+#### Field Value
+
+ [int](https://learn.microsoft.com/dotnet/api/system.int32)
+
 ### <a id="Cube_CubeWindow_WireColour"></a> WireColour
 
 Colour of the big cube's edges: light grey, slightly transparent.
@@ -130,6 +142,18 @@ internal DrawList DrawList { get; }
 #### Property Value
 
  [DrawList](Cube.Core.DrawList.md)
+
+### <a id="Cube_CubeWindow_LastHadLocalPlayer"></a> LastHadLocalPlayer
+
+Whether the last frame found a local player to centre the cube on.
+
+```csharp
+internal bool LastHadLocalPlayer { get; private set; }
+```
+
+#### Property Value
+
+ [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
 ### <a id="Cube_CubeWindow_LastProjection"></a> LastProjection
 
@@ -202,6 +226,18 @@ internal static float LineThickness { get; }
 #### Property Value
 
  [float](https://learn.microsoft.com/dotnet/api/system.single)
+
+### <a id="Cube_CubeWindow_Players"></a> Players
+
+The players inside the cube this frame (PROJECT.md, "Players"). Read by the test bridge.
+
+```csharp
+internal PlayerSet Players { get; }
+```
+
+#### Property Value
+
+ [PlayerSet](Cube.Core.PlayerSet.md)
 
 ## Methods
 

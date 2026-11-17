@@ -40,6 +40,18 @@ The frame's primitives, in window pixels, sorted far to near (PROJECT.md, "Draw 
 so near cubes cover far ones). Built by [CubeGeometry](Cube.Core.CubeGeometry.md#Cube_Core_CubeGeometry), drawn by the plugin, and dumped by the
 test bridge.
 
+ [NameCache](Cube.Core.NameCache.md)
+
+Turns the game's UTF-8 name bytes into strings, once per name: a string is only built when the bytes in an
+object slot change (PROJECT.md, "Efficiency and memory": name labels are cached and only rebuilt when a name
+changes). Reading the same names every frame allocates nothing.
+
+ [PlayerSet](Cube.Core.PlayerSet.md)
+
+The players inside the cube this frame (PROJECT.md, "Players": every player character in the object table whose
+position is inside the cube; players outside are not shown at all). The game reader offers every player it
+finds; this class culls, classifies and names them.
+
  [ViewYaw](Cube.Core.ViewYaw.md)
 
 Chooses the yaw of the view around the cube (PROJECT.md, "View"): in <b>Camera</b> mode it follows the
@@ -59,6 +71,11 @@ inside?" and turns world positions into cube-local view coordinates.
 One thing to draw, already projected to window pixels: the plugin turns each into one ImGui call
 (PROJECT.md, "Cheap drawing": the fewest primitives that do the job).
 
+ [NearbyPlayer](Cube.Core.NearbyPlayer.md)
+
+One player inside the cube this frame: where they are, how they relate to the local player, and their
+(cached) name for the label.
+
  [ViewProjection](Cube.Core.ViewProjection.md)
 
 Projects view coordinates (from [CubeSpace](Cube.Core.CubeSpace.md#Cube_Core_CubeSpace)) onto the window: a fixed-angle view from above
@@ -69,6 +86,11 @@ and behind (PROJECT.md, "View": default 30° elevation).
  [OrientationMode](Cube.Core.OrientationMode.md)
 
 How the view around the cube is turned (PROJECT.md, "View": orientation mode setting).
+
+ [PlayerRelation](Cube.Core.PlayerRelation.md)
+
+How a player relates to the local player, which picks their colour (PROJECT.md, "Colours": self,
+party/alliance members, everyone else; one colour each).
 
  [PrimitiveKind](Cube.Core.PrimitiveKind.md)
 
