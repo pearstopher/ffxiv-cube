@@ -35,7 +35,7 @@ public class DocumentationCoverageTests
     [Fact]
     public void Every_namespace_has_an_overview_page()
     {
-        var root = RepoRoot();
+        var root = TestPaths.RepoRoot();
         var namespaces = new[] { "Cube", "Cube.Core", "Cube.Tests" }
             .SelectMany(project => Directory.EnumerateFiles(Path.Combine(root, project), "*.cs", SearchOption.AllDirectories))
             .Where(file => !file.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}", StringComparison.Ordinal))
@@ -50,17 +50,5 @@ public class DocumentationCoverageTests
             .ToList();
 
         Assert.True(missing.Count == 0, $"Namespaces without docs/namespaces/<name>.md: {string.Join(", ", missing)}");
-    }
-
-    /// <summary>Finds the repository root (the folder holding <c>Cube.slnx</c>) from the test's output folder.</summary>
-    private static string RepoRoot()
-    {
-        var dir = new DirectoryInfo(AppContext.BaseDirectory);
-        while (dir is not null && !File.Exists(Path.Combine(dir.FullName, "Cube.slnx")))
-        {
-            dir = dir.Parent;
-        }
-
-        return dir?.FullName ?? throw new InvalidOperationException("Cube.slnx not found above the test output folder.");
     }
 }

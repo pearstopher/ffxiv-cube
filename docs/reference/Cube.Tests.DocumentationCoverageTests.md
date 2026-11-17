@@ -32,15 +32,3 @@ public void Every_namespace_has_an_overview_page()
 [Fact]
 public void Every_test_class_has_a_summary()
 ```
-
-### <a id="Cube_Tests_DocumentationCoverageTests_RepoRoot"></a> RepoRoot\(\)
-
-Finds the repository root (the folder holding <code>Cube.slnx</code>) from the test's output folder.
-
-```csharp
-private static string RepoRoot()
-```
-
-#### Returns
-
- [string](https://learn.microsoft.com/dotnet/api/system.string)

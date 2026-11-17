@@ -40,8 +40,10 @@ public Plugin()
 
 ### <a id="Cube_Plugin_BuildConfiguration"></a> BuildConfiguration
 
+The build configuration, shown in the load line.
+
 ```csharp
-private const string BuildConfiguration = "Release"
+private const string BuildConfiguration = "Debug"
 ```
 
 #### Field Value
@@ -62,6 +64,8 @@ internal const string CommandName = "/cube"
 
 ### <a id="Cube_Plugin_cubeWindow"></a> cubeWindow
 
+The cube window.
+
 ```csharp
 private readonly CubeWindow cubeWindow
 ```
@@ -70,7 +74,21 @@ private readonly CubeWindow cubeWindow
 
  [CubeWindow](Cube.CubeWindow.md)
 
+### <a id="Cube_Plugin_testBridge"></a> testBridge
+
+The in-game test bridge (PROJECT.md, "Automated testing"). Debug builds only.
+
+```csharp
+private readonly BridgeRunner? testBridge
+```
+
+#### Field Value
+
+ [BridgeRunner](Cube.TestBridge.BridgeRunner.md)?
+
 ### <a id="Cube_Plugin_windowSystem"></a> windowSystem
+
+Dalamud's window manager for this plugin's windows.
 
 ```csharp
 private readonly WindowSystem windowSystem
@@ -94,6 +112,19 @@ internal static ICommandManager CommandManager { get; private set; }
 #### Property Value
 
  [ICommandManager](https://github.com/goatcorp/Dalamud/blob/master/Dalamud/Plugin/Services/ICommandManager.cs)
+
+### <a id="Cube_Plugin_Framework"></a> Framework
+
+Drives the in-game test bridge's checks, one step per frame. Debug builds only.
+
+```csharp
+[PluginService]
+internal static IFramework Framework { get; private set; }
+```
+
+#### Property Value
+
+ [IFramework](https://github.com/goatcorp/Dalamud/blob/master/Dalamud/Plugin/Services/IFramework.cs)
 
 ### <a id="Cube_Plugin_Log"></a> Log
 

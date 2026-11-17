@@ -4,6 +4,11 @@
   <ItemGroup>
     <ProjectReference Include="..\Cube.Core\Cube.Core.csproj" />
   </ItemGroup>
+  <ItemGroup Condition="'$(Configuration)' != 'Debug'">
+    <!-- The in-game test bridge and fake players are Debug-only (CLAUDE.md). Excluding the whole folder means a
+         new bridge file can't ship by forgetting #if DEBUG; ReleaseBuildTests checks the Release DLL. -->
+    <Compile Remove="TestBridge/**" />
+  </ItemGroup>
   <PropertyGroup>
     <!-- The plugin version. Bump it in the release commit; the release workflow fails if the tag doesn't match (v1.2.3 -> 1.2.3.0). -->
     <Version>1.0.0.0</Version>

@@ -13,6 +13,7 @@
         }
       ],
       "dest": "reference",
+      "properties": { "Configuration": "Debug" },
       "includePrivateMembers": true,
       "includeExplicitInterfaceImplementations": true,
       "namespaceLayout": "flattened",
