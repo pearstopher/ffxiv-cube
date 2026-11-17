@@ -28,6 +28,8 @@ internal abstract class BridgeCheck
 [OrientationCheck](Cube.TestBridge.Checks.OrientationCheck.md), 
 [PlayerCubesCheck](Cube.TestBridge.Checks.PlayerCubesCheck.md), 
 [PlayersMatchObjectTableCheck](Cube.TestBridge.Checks.PlayersMatchObjectTableCheck.md), 
+[SettingsCheck](Cube.TestBridge.Checks.SettingsCheck.md), 
+[SettingsWindowCheck](Cube.TestBridge.Checks.SettingsWindowCheck.md), 
 [WindowOpenCloseCheck](Cube.TestBridge.Checks.WindowOpenCloseCheck.md)
 
 
@@ -92,6 +94,30 @@ public abstract IEnumerable<CheckStep> Run(BridgeContext context)
 `context` [BridgeContext](Cube.TestBridge.BridgeContext.md)
 
 The plugin parts the check can look at, and where it records metrics.
+
+#### Returns
+
+ [IEnumerable](https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable\-1)<[CheckStep](Cube.TestBridge.CheckStep.md)\>
+
+### <a id="Cube_TestBridge_BridgeCheck_WaitForDraws_Cube_CubeWindow_System_Int32_"></a> WaitForDraws\(CubeWindow, int\)
+
+Waits until the cube window has drawn two more frames, so a change made before the call is in the last
+frame. Ends with a failure step if it doesn't draw within <code class="paramref">maxFrames</code> frames (e.g. the
+game UI is hidden); the runner stops the check at that step.
+
+```csharp
+protected static IEnumerable<CheckStep> WaitForDraws(CubeWindow window, int maxFrames = 30)
+```
+
+#### Parameters
+
+`window` [CubeWindow](Cube.CubeWindow.md)
+
+The cube window.
+
+`maxFrames` [int](https://learn.microsoft.com/dotnet/api/system.int32)
+
+How many frames to wait at most.
 
 #### Returns
 

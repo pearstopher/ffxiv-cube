@@ -17,6 +17,10 @@ Formats the build details the plugin logs when it loads, so a stale build
 
 Packs and shades colours in the 32-bit layout ImGui uses (<code>0xAABBGGRR</code>), without Core depending on ImGui.
 
+ [CommandArgs](Cube.Core.CommandArgs.md)
+
+Reads what was typed after <code>/cube</code> (PROJECT.md, "Features": <code>/cube</code> toggles the window, <code>/cube config</code> opens the settings).
+
  [CoreAssembly](Cube.Core.CoreAssembly.md)
 
 Marker for the Core assembly. Core holds all the cube logic (geometry, projection, drawing order) and
@@ -27,6 +31,12 @@ must not depend on Dalamud or the game, so it can be unit tested on its own.
 Turns cubes into draw-list primitives: the big cube as a wireframe, and solid cubes (players, later
 collision boxes) as their visible faces only (PROJECT.md: "Everything it draws is a cube"; "Cheap drawing":
 only the visible faces of a cube).
+
+ [CubeSettings](Cube.Core.CubeSettings.md)
+
+The user's settings (PROJECT.md, "Features": cube size, orientation mode, labels on/off, colours and opacity),
+with their defaults and the rules for valid values. The plugin's saved configuration derives from this, so the
+rules are unit tested without Dalamud.
 
  [DrawCostSampler](Cube.Core.DrawCostSampler.md)
 
@@ -86,7 +96,7 @@ One player inside the cube this frame: where they are, how they relate to the lo
  [PlayerPalette](Cube.Core.PlayerPalette.md)
 
 One colour per player relation (PROJECT.md, "Colours": self, party/alliance members, everyone else; one colour
-each). The settings window (#20) lets the user change them.
+each). Built from the user's [CubeSettings](Cube.Core.CubeSettings.md#Cube_Core_CubeSettings).
 
  [ViewProjection](Cube.Core.ViewProjection.md)
 

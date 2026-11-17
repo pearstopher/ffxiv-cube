@@ -16,6 +16,11 @@
 
 ### Classes
 
+ [Configuration](Cube.Configuration.md)
+
+The saved settings: Core's [CubeSettings](Cube.Core.CubeSettings.md#Cube_Core_CubeSettings) plus the version number Dalamud's configuration system
+needs. Stored by Dalamud in <code>pluginConfigs\Cube.json</code>; contains no names or IDs (PROJECT.md, "Privacy").
+
  [CubeWindow](Cube.CubeWindow.md)
 
 The window the cube is drawn in (PROJECT.md, "Features": a Dalamud window toggled by <code>/cube</code>, showing a
@@ -24,3 +29,8 @@ wireframe cube with the player at its centre).
  [Plugin](Cube.Plugin.md)
 
 Entry point. Registers the <code>/cube</code> command and the cube window, and logs which build loaded.
+
+ [SettingsWindow](Cube.SettingsWindow.md)
+
+The settings window, opened with <code>/cube config</code> or Dalamud's settings button (PROJECT.md, "Features": cube
+size, orientation mode, labels on/off, colours and opacity).

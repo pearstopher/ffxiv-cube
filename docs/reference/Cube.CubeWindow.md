@@ -29,13 +29,19 @@ Each frame: build the [CubeSpace](Cube.Core.CubeSpace.md#Cube_Core_CubeSpace) an
 
 ## Constructors
 
-### <a id="Cube_CubeWindow__ctor"></a> CubeWindow\(\)
+### <a id="Cube_CubeWindow__ctor_Cube_Core_CubeSettings_"></a> CubeWindow\(CubeSettings\)
 
 Creates the window, closed, with a sensible minimum size.
 
 ```csharp
-public CubeWindow()
+public CubeWindow(CubeSettings settings)
 ```
+
+#### Parameters
+
+`settings` [CubeSettings](Cube.Core.CubeSettings.md)
+
+The user's settings, read every frame; changes apply on the next frame.
 
 ## Fields
 
@@ -76,17 +82,29 @@ internal const int NameSlots = 256
 
  [int](https://learn.microsoft.com/dotnet/api/system.int32)
 
-### <a id="Cube_CubeWindow_WireColour"></a> WireColour
+### <a id="Cube_CubeWindow_WireAlpha"></a> WireAlpha
 
-Colour of the big cube's edges: light grey, slightly transparent.
+The edges' own opacity (slightly transparent), before the opacity setting is applied.
 
 ```csharp
-private static readonly uint WireColour
+private const float WireAlpha = 0.8
 ```
 
 #### Field Value
 
- [uint](https://learn.microsoft.com/dotnet/api/system.uint32)
+ [float](https://learn.microsoft.com/dotnet/api/system.single)
+
+### <a id="Cube_CubeWindow_WireRgb"></a> WireRgb
+
+Colour of the big cube's edges: light grey.
+
+```csharp
+private static readonly Vector3 WireRgb
+```
+
+#### Field Value
+
+ [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
 
 ### <a id="Cube_CubeWindow_WireThickness"></a> WireThickness
 
@@ -111,6 +129,18 @@ private bool hasSpace
 #### Field Value
 
  [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+### <a id="Cube_CubeWindow_settingsRevision"></a> settingsRevision
+
+The [Revision](Cube.Core.CubeSettings.md#Cube_Core_CubeSettings_Revision) the cached colours were built from; -1 forces a first build.
+
+```csharp
+private int settingsRevision
+```
+
+#### Field Value
+
+ [int](https://learn.microsoft.com/dotnet/api/system.int32)
 
 ### <a id="Cube_CubeWindow_yaw"></a> yaw
 
@@ -288,25 +318,12 @@ internal static float LineThickness { get; }
 
  [float](https://learn.microsoft.com/dotnet/api/system.single)
 
-### <a id="Cube_CubeWindow_Orientation"></a> Orientation
-
-How the view turns (PROJECT.md, "View"): Camera (default) follows the game camera, North up stays fixed.
-Settable so the bridge can test both; the settings window (#20) will drive it.
-
-```csharp
-internal OrientationMode Orientation { get; set; }
-```
-
-#### Property Value
-
- [OrientationMode](Cube.Core.OrientationMode.md)
-
 ### <a id="Cube_CubeWindow_Palette"></a> Palette
 
-Colours per player relation. Defaults until the settings window (#20) makes them configurable.
+The last frame's player colours, rebuilt from [Settings](Cube.CubeWindow.md#Cube_CubeWindow_Settings) only when they change.
 
 ```csharp
-internal PlayerPalette Palette { get; }
+internal PlayerPalette Palette { get; private set; }
 ```
 
 #### Property Value
@@ -325,27 +342,51 @@ internal PlayerSet Players { get; }
 
  [PlayerSet](Cube.Core.PlayerSet.md)
 
-### <a id="Cube_CubeWindow_ShowLabels"></a> ShowLabels
+### <a id="Cube_CubeWindow_Settings"></a> Settings
 
-Whether other players get name labels. On until the settings window (#20) adds the toggle.
+The user's settings (PROJECT.md, "Features": settings window). The bridge changes them in memory to test them.
 
 ```csharp
-internal bool ShowLabels { get; }
+internal CubeSettings Settings { get; }
+```
+
+#### Property Value
+
+ [CubeSettings](Cube.Core.CubeSettings.md)
+
+### <a id="Cube_CubeWindow_ShowLabels"></a> ShowLabels
+
+The last frame's label setting.
+
+```csharp
+internal bool ShowLabels { get; private set; }
 ```
 
 #### Property Value
 
  [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
+### <a id="Cube_CubeWindow_WireColour"></a> WireColour
+
+The last frame's edge colour, rebuilt with [Palette](Cube.CubeWindow.md#Cube_CubeWindow_Palette).
+
+```csharp
+internal uint WireColour { get; private set; }
+```
+
+#### Property Value
+
+ [uint](https://learn.microsoft.com/dotnet/api/system.uint32)
+
 ## Methods
 
-### <a id="Cube_CubeWindow_BuildFrame_Cube_Core_DrawList_Cube_Core_CubeSpace__Cube_Core_ViewProjection__System_ReadOnlySpan_Cube_Core_NearbyPlayer__Cube_Core_PlayerPalette__System_Boolean_"></a> BuildFrame\(DrawList, in CubeSpace, in ViewProjection, ReadOnlySpan<NearbyPlayer\>, in PlayerPalette, bool\)
+### <a id="Cube_CubeWindow_BuildFrame_Cube_Core_DrawList_Cube_Core_CubeSpace__Cube_Core_ViewProjection__System_ReadOnlySpan_Cube_Core_NearbyPlayer__Cube_Core_PlayerPalette__System_Boolean_System_UInt32_"></a> BuildFrame\(DrawList, in CubeSpace, in ViewProjection, ReadOnlySpan<NearbyPlayer\>, in PlayerPalette, bool, uint\)
 
 Builds this frame's draw list for a given drawing region. Separate from the ImGui calls so the bridge can
 check exactly what Core produced.
 
 ```csharp
-internal static void BuildFrame(DrawList list, in CubeSpace space, in ViewProjection projection, ReadOnlySpan<NearbyPlayer> players, in PlayerPalette palette, bool labels)
+internal static void BuildFrame(DrawList list, in CubeSpace space, in ViewProjection projection, ReadOnlySpan<NearbyPlayer> players, in PlayerPalette palette, bool labels, uint wireColour)
 ```
 
 #### Parameters
@@ -373,6 +414,10 @@ Player colours.
 `labels` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
 Whether to add name labels.
+
+`wireColour` [uint](https://learn.microsoft.com/dotnet/api/system.uint32)
+
+The big cube's edge colour.
 
 ### <a id="Cube_CubeWindow_Draw"></a> Draw\(\)
 

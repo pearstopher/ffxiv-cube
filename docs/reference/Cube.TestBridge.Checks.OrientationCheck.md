@@ -22,21 +22,10 @@ internal sealed class OrientationCheck : BridgeCheck
 The camera is read again here, independently of the window, through [CameraReader](Cube.Game.CameraReader.md#Cube_Game_CameraReader) and turned into
 a heading with [FromForward](Cube.Core.ViewYaw.md#Cube_Core_ViewYaw_FromForward). A small tolerance covers the camera moving between the window's
 draw and this check, plus [ChangeThreshold](Cube.Core.ViewYaw.md#Cube_Core_ViewYaw_ChangeThreshold). If the camera happens to face north, North up
-can't be told apart from Camera mode; the <code>cameraYaw</code> metric shows when that was the case.
+can't be told apart from Camera mode; the <code>cameraYaw</code> metric shows when that was the case. The mode is
+changed in memory only and restored afterwards.
 
 ## Fields
-
-### <a id="Cube_TestBridge_Checks_OrientationCheck_FramesToWait"></a> FramesToWait
-
-Frames to wait for the window to draw in each mode.
-
-```csharp
-private const int FramesToWait = 30
-```
-
-#### Field Value
-
- [int](https://learn.microsoft.com/dotnet/api/system.int32)
 
 ### <a id="Cube_TestBridge_Checks_OrientationCheck_Tolerance"></a> Tolerance
 
@@ -52,7 +41,7 @@ private const float Tolerance = 0.02
 
 ### <a id="Cube_TestBridge_Checks_OrientationCheck_wasMode"></a> wasMode
 
-The window's orientation mode before the check.
+The orientation setting before the check.
 
 ```csharp
 private OrientationMode wasMode
@@ -119,24 +108,6 @@ public override IEnumerable<CheckStep> Run(BridgeContext context)
 `context` [BridgeContext](Cube.TestBridge.BridgeContext.md)
 
 The plugin parts the check can look at, and where it records metrics.
-
-#### Returns
-
- [IEnumerable](https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable\-1)<[CheckStep](Cube.TestBridge.CheckStep.md)\>
-
-### <a id="Cube_TestBridge_Checks_OrientationCheck_WaitForFrames_Cube_CubeWindow_"></a> WaitForFrames\(CubeWindow\)
-
-Waits until the window has drawn two frames in the current mode.
-
-```csharp
-private static IEnumerable<CheckStep> WaitForFrames(CubeWindow window)
-```
-
-#### Parameters
-
-`window` [CubeWindow](Cube.CubeWindow.md)
-
-The cube window.
 
 #### Returns
 

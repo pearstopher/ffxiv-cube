@@ -32,4 +32,27 @@ internal abstract class BridgeCheck
     public virtual void Cleanup(BridgeContext context)
     {
     }
+
+    /// <summary>
+    /// Waits until the cube window has drawn two more frames, so a change made before the call is in the last
+    /// frame. Ends with a failure step if it doesn't draw within <paramref name="maxFrames"/> frames (e.g. the
+    /// game UI is hidden); the runner stops the check at that step.
+    /// </summary>
+    /// <param name="window">The cube window.</param>
+    /// <param name="maxFrames">How many frames to wait at most.</param>
+    protected static IEnumerable<CheckStep> WaitForDraws(CubeWindow window, int maxFrames = 30)
+    {
+        var start = window.DrawCost.TotalRecorded;
+        var waited = 0;
+        while (window.DrawCost.TotalRecorded - start < 2)
+        {
+            if (++waited > maxFrames)
+            {
+                yield return CheckStep.Fail($"Window didn't draw within {maxFrames} frames (game UI hidden?).");
+                yield break;
+            }
+
+            yield return CheckStep.NextFrame;
+        }
+    }
 }
