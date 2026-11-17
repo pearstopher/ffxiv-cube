@@ -31,6 +31,13 @@ so a stale or wrong-configuration build is obvious.
 Checks that Core stays free of Dalamud, game structs and Lumina, so all its logic can be unit tested
 without the game (CLAUDE.md, "Reference: the previous plugin" layout rule).
 
+ [CubeSpaceTests](Cube.Tests.CubeSpaceTests.md)
+
+Checks the cube of space (PROJECT.md, "Exact behaviour rules": Cube, View, Players): axis-aligned, centred on
+the player, edge 10–100 yalms (default 40); players outside are not shown at all; containment is inclusive on
+faces; the view turns by yaw (north up: east right, north forward). Also the zero-allocation rule
+("Efficiency and memory").
+
  [DocumentationCoverageTests](Cube.Tests.DocumentationCoverageTests.md)
 
 Checks the documentation rules (CLAUDE.md, "Code is the documentation"): every test class has a
@@ -51,3 +58,9 @@ the bridge and fake-player code must not ship), and is present in Debug builds w
  [TestPaths](Cube.Tests.TestPaths.md)
 
 Locates files in the repository from a test's output folder, for tests that inspect the repo or build output.
+
+ [ViewYawTests](Cube.Tests.ViewYawTests.md)
+
+Checks the view's orientation modes (PROJECT.md, "View"): Camera mode follows the game camera's heading so
+"forward on screen" matches the game view; North up is fixed with north at the back. The heading comes from
+the camera's direction vector (docs/research-notes.md, #10).
