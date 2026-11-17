@@ -13,4 +13,4 @@ no automation) but is not published in the official plugin repository.
 
 ## License
 
-[AGPL-3.0](LICENSE.md)
+[AGPL-3.0](https://github.com/pearstopher/ffxiv-cube/blob/main/LICENSE.md)
