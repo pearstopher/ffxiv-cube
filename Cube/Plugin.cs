@@ -21,8 +21,11 @@ public sealed class Plugin : IDalamudPlugin
     /// <summary>The slash command that toggles the cube window.</summary>
     internal const string CommandName = "/cube";
 
+    /// <summary>Dalamud's interface for this plugin: UI callbacks, manifest, file locations.</summary>
     [PluginService] internal static IDalamudPluginInterface PluginInterface { get; private set; } = null!;
+    /// <summary>The plugin's log, written to <c>/xllog</c> and <c>dalamud.log</c>.</summary>
     [PluginService] internal static IPluginLog Log { get; private set; } = null!;
+    /// <summary>Registers the <c>/cube</c> command.</summary>
     [PluginService] internal static ICommandManager CommandManager { get; private set; } = null!;
 
 #if DEBUG

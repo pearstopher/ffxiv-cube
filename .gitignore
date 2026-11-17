@@ -42,3 +42,8 @@ $RECYCLE.BIN/
 *.swp
 *~
 *.DotSettings.user
+
+# Generated documentation (DocFX)
+docs/_site/
+docs/api/
+docs/obj/
