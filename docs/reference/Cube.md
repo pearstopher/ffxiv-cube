@@ -6,6 +6,8 @@
 
  [Cube.Core](Cube.Core.md)
 
+ [Cube.Game](Cube.Game.md)
+
  [Cube.TestBridge](Cube.TestBridge.md)
 
  [Cube.Tests](Cube.Tests.md)
@@ -14,7 +16,8 @@
 
  [CubeWindow](Cube.CubeWindow.md)
 
-The window the cube is drawn in (PROJECT.md, "Features": a Dalamud window toggled by <code>/cube</code>).
+The window the cube is drawn in (PROJECT.md, "Features": a Dalamud window toggled by <code>/cube</code>, showing a
+wireframe cube with the player at its centre).
 
  [Plugin](Cube.Plugin.md)
 

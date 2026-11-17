@@ -20,6 +20,7 @@ internal abstract class BridgeCheck
 
 [BuildStampCheck](Cube.TestBridge.Checks.BuildStampCheck.md), 
 [DrawBudgetCheck](Cube.TestBridge.Checks.DrawBudgetCheck.md), 
+[DrawListMatchesCoreCheck](Cube.TestBridge.Checks.DrawListMatchesCoreCheck.md), 
 [GameStateProbeCheck](Cube.TestBridge.Checks.GameStateProbeCheck.md), 
 [WindowOpenCloseCheck](Cube.TestBridge.Checks.WindowOpenCloseCheck.md)
 

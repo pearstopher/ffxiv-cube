@@ -16,6 +16,12 @@ Checks the draw path stays within PROJECT.md's phase 1 budgets ("Efficiency and 
 under 0.5 ms per frame on average and zero bytes allocated per frame in steady state.
 A budget failure is a failed test, not a note (CLAUDE.md).
 
+ [DrawListMatchesCoreCheck](Cube.TestBridge.Checks.DrawListMatchesCoreCheck.md)
+
+Checks the window drew exactly what Core produced (PROJECT.md, "Automated testing": the primitives drawn
+match Core's output): rebuilds the last frame independently from the same cube space and projection,
+compares it primitive by primitive, and checks one ImGui call was issued per primitive.
+
  [GameStateProbeCheck](Cube.TestBridge.Checks.GameStateProbeCheck.md)
 
 Research probe for #10 (reading players, party and camera): reads the same facts two ways and records

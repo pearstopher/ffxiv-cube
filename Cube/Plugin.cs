@@ -94,6 +94,7 @@ public sealed class Plugin : IDalamudPlugin
                 new TestBridge.BridgeContext(this.cubeWindow, dll, builtAt));
             this.testBridge.Register(new TestBridge.Checks.BuildStampCheck());
             this.testBridge.Register(new TestBridge.Checks.WindowOpenCloseCheck());
+            this.testBridge.Register(new TestBridge.Checks.DrawListMatchesCoreCheck());
             this.testBridge.Register(new TestBridge.Checks.DrawBudgetCheck());
             this.testBridge.Register(new TestBridge.Checks.GameStateProbeCheck(ObjectTable, ClientState, Condition, Log));
         }

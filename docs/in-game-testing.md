@@ -14,7 +14,7 @@ Building and loading the plugin in general is in the [development guide](https:/
    ```
 
 3. `/xlplugins` > **Dev Tools > Installed Dev Plugins**: enable **Cube**, open its settings and turn on **automatic reloading**.
-4. Check `/xllog` (filter `Cube`) shows `Cube loaded (Debug build ...)` and, a few seconds later, `Test bridge: 3/3 checks passed, results in ...`.
+4. Check `/xllog` (filter `Cube`) shows `Cube loaded (Debug build ...)` and, a few seconds later, `Test bridge: N/N checks passed, results in ...` (N is the number of registered checks).
 5. Optional: set the `/xllog` level dropdown to **Debug+** (it's saved) to see each check's line.
 6. Leave the game running and logged in, ideally somewhere with other players around (a city). Keep the game UI visible: Dalamud hides plugin windows during cutscenes, GPose and loading screens, so checks that need the window fail there.
 

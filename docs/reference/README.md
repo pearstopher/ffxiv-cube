@@ -7,6 +7,10 @@ improve the comments in the code instead.
 
 **All the logic, with no Dalamud, game or Lumina references,** so it can be unit tested without launching the game (enforced by `CoreAssemblyTests`). This is where the cube's geometry, projection and drawing order live. Per-frame code here must not allocate (PROJECT.md, "Efficiency and memory").
 
+## [Cube.Game](Cube.Game.md)
+
+**Reading the game.** Small, read-only readers that turn game memory into plain values for `Cube.Core`: the camera's direction now, nearby players later. They only read memory through FFXIVClientStructs on the game's main thread; they hook nothing, call no game functions that change anything, and allocate nothing per frame (PROJECT.md, "Read-only game access" and "Efficiency and memory"). Where each value comes from, and why, is in `docs/research-notes.md` (#10).
+
 ## [Cube](Cube.md)
 
 **The plugin: everything that touches Dalamud or the game.** It is kept as thin as possible: it reads game state, hands it to `Cube.Core` and draws the result. Entry point: `Plugin`. The cube is drawn in `CubeWindow`, a Dalamud window toggled by `/cube`. Game access is read-only (PROJECT.md, "Goal"), and every handler is released when the plugin unloads.
