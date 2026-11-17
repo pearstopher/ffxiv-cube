@@ -36,6 +36,9 @@ internal sealed class DrawBudgetCheck : BridgeCheck
         this.wasOpen = context.Window.IsOpen;
         context.Window.IsOpen = true;
 
+        // Measure with players in the cube even when nobody is around: the standard fakes (#16).
+        context.Window.Fakes.UseStandardSet();
+
         var start = sampler.TotalRecorded;
         while (sampler.TotalRecorded - start < WarmUpFrames)
         {
@@ -67,5 +70,9 @@ internal sealed class DrawBudgetCheck : BridgeCheck
     }
 
     /// <inheritdoc/>
-    public override void Cleanup(BridgeContext context) => context.Window.IsOpen = this.wasOpen;
+    public override void Cleanup(BridgeContext context)
+    {
+        context.Window.Fakes.Clear();
+        context.Window.IsOpen = this.wasOpen;
+    }
 }

@@ -29,6 +29,12 @@ appears, and writes the results, stamped with the build time, for the test scrip
 
 One check's outcome, as written to the results file.
 
+ [FakePlayers](Cube.TestBridge.FakePlayers.md)
+
+Synthetic players for in-game checks (PROJECT.md, "Automated testing": the bridge can inject synthetic players so
+rendering checks work even when nobody is nearby). Debug builds only: this file lives in <code>TestBridge/</code>,
+which Release builds exclude.
+
 ### Structs
 
  [CheckStep](Cube.TestBridge.CheckStep.md)
@@ -36,6 +42,10 @@ One check's outcome, as written to the results file.
 One step of an in-game check. A check is written as an iterator that yields [NextFrame](Cube.TestBridge.CheckStep.md#Cube_TestBridge_CheckStep_NextFrame)
 to wait a frame and ends with [Pass](Cube.TestBridge.CheckStep.md#Cube_TestBridge_CheckStep_Pass) or [Fail](Cube.TestBridge.CheckStep.md#Cube_TestBridge_CheckStep_Fail), so a check that needs
 several frames (open the window, wait for it to draw, close it) reads top to bottom.
+
+ [FakePlayers.Fake](Cube.TestBridge.FakePlayers.Fake.md)
+
+One fake player.
 
 ### Enums
 

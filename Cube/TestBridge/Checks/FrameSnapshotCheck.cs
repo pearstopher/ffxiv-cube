@@ -36,6 +36,9 @@ internal sealed class FrameSnapshotCheck(string folder) : BridgeCheck
         this.wasOpen = window.IsOpen;
         window.IsOpen = true;
 
+        // The standard fakes make sure the snapshot shows player cubes even with nobody around (#16).
+        window.Fakes.UseStandardSet();
+
         var start = window.DrawCost.TotalRecorded;
         var waited = 0;
         while (window.DrawCost.TotalRecorded - start < 2)
@@ -58,7 +61,11 @@ internal sealed class FrameSnapshotCheck(string folder) : BridgeCheck
     }
 
     /// <inheritdoc/>
-    public override void Cleanup(BridgeContext context) => context.Window.IsOpen = this.wasOpen;
+    public override void Cleanup(BridgeContext context)
+    {
+        context.Window.Fakes.Clear();
+        context.Window.IsOpen = this.wasOpen;
+    }
 
     /// <summary>Serialises the window's last frame.</summary>
     /// <param name="window">The cube window.</param>

@@ -143,6 +143,18 @@ internal DrawList DrawList { get; }
 
  [DrawList](Cube.Core.DrawList.md)
 
+### <a id="Cube_CubeWindow_Fakes"></a> Fakes
+
+Synthetic players the test bridge can inject (#16). Empty unless a check enables them. Debug builds only.
+
+```csharp
+internal FakePlayers Fakes { get; }
+```
+
+#### Property Value
+
+ [FakePlayers](Cube.TestBridge.FakePlayers.md)
+
 ### <a id="Cube_CubeWindow_LastHadLocalPlayer"></a> LastHadLocalPlayer
 
 Whether the last frame found a local player to centre the cube on.
