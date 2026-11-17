@@ -218,7 +218,7 @@ private static int Submit(ImDrawListPtr target, ReadOnlySpan<DrawPrimitive> item
 
 #### Parameters
 
-`target` [ImDrawListPtr](https://github.com/goatcorp/Dalamud/blob/43b34118bcf7213e575ec39517d033191b1acf17/imgui/Dalamud.Bindings.ImGui/Custom/Generated/Generated/Structs.gen.cs)
+`target` [ImDrawListPtr](https://github.com/goatcorp/Dalamud/blob/master/imgui/Dalamud.Bindings.ImGui/Custom/Generated/Generated/Structs.gen.cs)
 
 The window's ImGui draw list.
 
