@@ -101,12 +101,18 @@ internal sealed class CubeWindow : Window
     /// <param name="list">The list to fill (cleared first).</param>
     /// <param name="space">The cube.</param>
     /// <param name="projection">The projection.</param>
-    internal static void BuildFrame(DrawList list, in CubeSpace space, in ViewProjection projection)
+    /// <param name="players">The players inside the cube.</param>
+    /// <param name="palette">Player colours.</param>
+    internal static void BuildFrame(DrawList list, in CubeSpace space, in ViewProjection projection, ReadOnlySpan<NearbyPlayer> players, in PlayerPalette palette)
     {
         list.Clear();
         CubeGeometry.AddWireCube(list, space, projection, WireColour);
+        PlayerCubes.Add(list, space, projection, players, palette);
         list.SortBackToFront();
     }
+
+    /// <summary>Colours per player relation. Defaults until the settings window (#20) makes them configurable.</summary>
+    internal PlayerPalette Palette { get; } = PlayerPalette.Default;
 
     /// <summary>Draws the window's contents, measuring the cost in Debug builds.</summary>
     public override void Draw()
@@ -148,7 +154,7 @@ internal sealed class CubeWindow : Window
         this.Fakes.Offer(this.Players, space);
 #endif
 
-        BuildFrame(this.DrawList, space, projection);
+        BuildFrame(this.DrawList, space, projection, this.Players.Items, this.Palette);
         this.LastSpace = space;
         this.LastProjection = projection;
         this.LastRegionMin = regionMin;

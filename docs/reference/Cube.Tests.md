@@ -54,6 +54,12 @@ Checks the draw-cost measurements the in-game bridge uses for PROJECT.md's budge
 ("Efficiency and memory": under 0.5 ms per frame on average, zero bytes allocated per frame),
 and that measuring is itself allocation-free with bounded memory.
 
+ [PlayerCubesTests](Cube.Tests.PlayerCubesTests.md)
+
+Checks players are drawn as small coloured cubes (PROJECT.md, "Players": about 1/40 of the big cube's edge, minimum
+a few pixels; "Colours": one colour each for self, party/alliance and others; "Draw order": near cubes cover far
+ones; "Efficiency and memory": no per-frame allocations).
+
  [PlayerSetTests](Cube.Tests.PlayerSetTests.md)
 
 Checks which players are kept and how they're classified and named (PROJECT.md, "Players": only players inside

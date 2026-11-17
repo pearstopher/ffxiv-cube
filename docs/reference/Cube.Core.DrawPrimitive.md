@@ -112,3 +112,17 @@ public int Sequence
 #### Field Value
 
  [int](https://learn.microsoft.com/dotnet/api/system.int32)
+
+### <a id="Cube_Core_DrawPrimitive_Tag"></a> Tag
+
+Which thing the primitive belongs to: 0 for the scene (the big cube), otherwise the index of the player in
+this frame's [PlayerSet](Cube.Core.PlayerSet.md#Cube_Core_PlayerSet) plus one. Lets the bridge check each player's cube, and labels find
+their player.
+
+```csharp
+public int Tag
+```
+
+#### Field Value
+
+ [int](https://learn.microsoft.com/dotnet/api/system.int32)

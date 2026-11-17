@@ -239,6 +239,18 @@ internal static float LineThickness { get; }
 
  [float](https://learn.microsoft.com/dotnet/api/system.single)
 
+### <a id="Cube_CubeWindow_Palette"></a> Palette
+
+Colours per player relation. Defaults until the settings window (#20) makes them configurable.
+
+```csharp
+internal PlayerPalette Palette { get; }
+```
+
+#### Property Value
+
+ [PlayerPalette](Cube.Core.PlayerPalette.md)
+
 ### <a id="Cube_CubeWindow_Players"></a> Players
 
 The players inside the cube this frame (PROJECT.md, "Players"). Read by the test bridge.
@@ -253,13 +265,13 @@ internal PlayerSet Players { get; }
 
 ## Methods
 
-### <a id="Cube_CubeWindow_BuildFrame_Cube_Core_DrawList_Cube_Core_CubeSpace__Cube_Core_ViewProjection__"></a> BuildFrame\(DrawList, in CubeSpace, in ViewProjection\)
+### <a id="Cube_CubeWindow_BuildFrame_Cube_Core_DrawList_Cube_Core_CubeSpace__Cube_Core_ViewProjection__System_ReadOnlySpan_Cube_Core_NearbyPlayer__Cube_Core_PlayerPalette__"></a> BuildFrame\(DrawList, in CubeSpace, in ViewProjection, ReadOnlySpan<NearbyPlayer\>, in PlayerPalette\)
 
 Builds this frame's draw list for a given drawing region. Separate from the ImGui calls so the bridge can
 check exactly what Core produced.
 
 ```csharp
-internal static void BuildFrame(DrawList list, in CubeSpace space, in ViewProjection projection)
+internal static void BuildFrame(DrawList list, in CubeSpace space, in ViewProjection projection, ReadOnlySpan<NearbyPlayer> players, in PlayerPalette palette)
 ```
 
 #### Parameters
@@ -275,6 +287,14 @@ The cube.
 `projection` [ViewProjection](Cube.Core.ViewProjection.md)
 
 The projection.
+
+`players` [ReadOnlySpan](https://learn.microsoft.com/dotnet/api/system.readonlyspan\-1)<[NearbyPlayer](Cube.Core.NearbyPlayer.md)\>
+
+The players inside the cube.
+
+`palette` [PlayerPalette](Cube.Core.PlayerPalette.md)
+
+Player colours.
 
 ### <a id="Cube_CubeWindow_Draw"></a> Draw\(\)
 

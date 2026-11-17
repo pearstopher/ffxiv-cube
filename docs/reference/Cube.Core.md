@@ -46,6 +46,12 @@ Turns the game's UTF-8 name bytes into strings, once per name: a string is only 
 object slot change (PROJECT.md, "Efficiency and memory": name labels are cached and only rebuilt when a name
 changes). Reading the same names every frame allocates nothing.
 
+ [PlayerCubes](Cube.Core.PlayerCubes.md)
+
+Draws each player in the cube as a small solid cube in their relation's colour (PROJECT.md, "Players": player cube
+size fixed relative to the big cube, about 1/40 of its edge, minimum a few pixels; "Features": the local player is a
+cube at the centre in its own colour).
+
  [PlayerSet](Cube.Core.PlayerSet.md)
 
 The players inside the cube this frame (PROJECT.md, "Players": every player character in the object table whose
@@ -75,6 +81,11 @@ One thing to draw, already projected to window pixels: the plugin turns each int
 
 One player inside the cube this frame: where they are, how they relate to the local player, and their
 (cached) name for the label.
+
+ [PlayerPalette](Cube.Core.PlayerPalette.md)
+
+One colour per player relation (PROJECT.md, "Colours": self, party/alliance members, everyone else; one colour
+each). The settings window (#20) lets the user change them.
 
  [ViewProjection](Cube.Core.ViewProjection.md)
 

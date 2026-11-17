@@ -158,12 +158,12 @@ Distance from the viewer.
 
 Packed colour.
 
-### <a id="Cube_Core_DrawList_AddQuad_System_Numerics_Vector2_System_Numerics_Vector2_System_Numerics_Vector2_System_Numerics_Vector2_System_Single_System_UInt32_"></a> AddQuad\(Vector2, Vector2, Vector2, Vector2, float, uint\)
+### <a id="Cube_Core_DrawList_AddQuad_System_Numerics_Vector2_System_Numerics_Vector2_System_Numerics_Vector2_System_Numerics_Vector2_System_Single_System_UInt32_System_Int32_"></a> AddQuad\(Vector2, Vector2, Vector2, Vector2, float, uint, int\)
 
 Adds a filled quad; points go round the outline in order.
 
 ```csharp
-public void AddQuad(Vector2 a, Vector2 b, Vector2 c, Vector2 d, float depth, uint colour)
+public void AddQuad(Vector2 a, Vector2 b, Vector2 c, Vector2 d, float depth, uint colour, int tag = 0)
 ```
 
 #### Parameters
@@ -191,6 +191,10 @@ Distance from the viewer.
 `colour` [uint](https://learn.microsoft.com/dotnet/api/system.uint32)
 
 Packed colour.
+
+`tag` [int](https://learn.microsoft.com/dotnet/api/system.int32)
+
+Owner: 0 for the scene, player index + 1 for a player's cube ([Tag](Cube.Core.DrawPrimitive.md#Cube_Core_DrawPrimitive_Tag)).
 
 ### <a id="Cube_Core_DrawList_Clear"></a> Clear\(\)
 
