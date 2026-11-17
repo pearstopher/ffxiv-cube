@@ -29,12 +29,12 @@ Each frame: build the [CubeSpace](Cube.Core.CubeSpace.md#Cube_Core_CubeSpace) an
 
 ## Constructors
 
-### <a id="Cube_CubeWindow__ctor_Cube_Core_CubeSettings_"></a> CubeWindow\(CubeSettings\)
+### <a id="Cube_CubeWindow__ctor_Cube_Core_CubeSettings_Cube_Game_GameStateReader_"></a> CubeWindow\(CubeSettings, GameStateReader\)
 
 Creates the window, closed, with a sensible minimum size.
 
 ```csharp
-public CubeWindow(CubeSettings settings)
+public CubeWindow(CubeSettings settings, GameStateReader gameState)
 ```
 
 #### Parameters
@@ -42,6 +42,10 @@ public CubeWindow(CubeSettings settings)
 `settings` [CubeSettings](Cube.Core.CubeSettings.md)
 
 The user's settings, read every frame; changes apply on the next frame.
+
+`gameState` [GameStateReader](Cube.Game.GameStateReader.md)
+
+Reads login, loading, cutscene and GPose state.
 
 ## Fields
 
@@ -117,6 +121,18 @@ private const float WireThickness = 1.5
 #### Field Value
 
  [float](https://learn.microsoft.com/dotnet/api/system.single)
+
+### <a id="Cube_CubeWindow_gameState"></a> gameState
+
+Reads the states that hide the cube.
+
+```csharp
+private readonly GameStateReader gameState
+```
+
+#### Field Value
+
+ [GameStateReader](Cube.Game.GameStateReader.md)
 
 ### <a id="Cube_CubeWindow_hasSpace"></a> hasSpace
 
@@ -306,6 +322,18 @@ internal int LastSubmitted { get; private set; }
 
  [int](https://learn.microsoft.com/dotnet/api/system.int32)
 
+### <a id="Cube_CubeWindow_LastVisibility"></a> LastVisibility
+
+Whether the last frame drew the cube, or why not (PROJECT.md, "When hidden").
+
+```csharp
+internal Visibility LastVisibility { get; private set; }
+```
+
+#### Property Value
+
+ [Visibility](Cube.Core.Visibility.md)
+
 ### <a id="Cube_CubeWindow_LineThickness"></a> LineThickness
 
 Thickness of the big cube's edges, in pixels; the snapshot draws lines with it.
@@ -365,6 +393,19 @@ internal bool ShowLabels { get; private set; }
 #### Property Value
 
  [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+### <a id="Cube_CubeWindow_SimulatedState"></a> SimulatedState
+
+A game state the bridge sets to test hiding without a real cutscene or loading screen; null uses the real
+state. Debug builds only.
+
+```csharp
+internal GameState? SimulatedState { get; set; }
+```
+
+#### Property Value
+
+ [GameState](Cube.Core.GameState.md)?
 
 ### <a id="Cube_CubeWindow_WireColour"></a> WireColour
 

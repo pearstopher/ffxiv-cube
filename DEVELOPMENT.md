@@ -144,6 +144,7 @@ Each namespace's overview lives in `docs/namespaces/<namespace>.md`; a test fail
 | Build error CS1591 or SA1600 (missing XML comment) | Add a `<summary>` to the type or member named in the error. Docs are generated from these, so they're required. |
 | `NU1004` / lock file error on restore | A package changed without updating `Cube/packages.lock.json`. Run `dotnet restore --force-evaluate` and commit the lock file. |
 | CI says `docs/reference/` is out of date | Run `python scripts/build-docs.py` and commit the result. |
+| Docs site build fails with `InvalidFileLink` between two `docs/*.md` files | The articles are pulled in with `[!INCLUDE]`, so relative links between them break. Name the other file as a path in backticks instead. Check locally with `dotnet docfx docs/docfx.json --warningsAsErrors`. |
 | The plugin isn't listed under Installed Dev Plugins | Check that the path in `/xlsettings` points at the `.dll` file itself and that the file exists. |
 | The plugin is listed but won't load | Look in `/xllog` for the exception. After a game patch, Dalamud may need an update first. |
 | My change didn't take effect | Compare the build time in the `loaded (...)` line with your last build. If it's older, point the dev location at Debug (section 3), then rebuild or reload. |

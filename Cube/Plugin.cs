@@ -27,6 +27,10 @@ public sealed class Plugin : IDalamudPlugin
     [PluginService] internal static IPluginLog Log { get; private set; } = null!;
     /// <summary>Registers the <c>/cube</c> command.</summary>
     [PluginService] internal static ICommandManager CommandManager { get; private set; } = null!;
+    /// <summary>Login and GPose state: the cube is hidden when logged out or in GPose (PROJECT.md, "When hidden").</summary>
+    [PluginService] internal static IClientState ClientState { get; private set; } = null!;
+    /// <summary>Condition flags: the cube is hidden during loading screens and cutscenes.</summary>
+    [PluginService] internal static ICondition Condition { get; private set; } = null!;
 
 #if DEBUG
     /// <summary>Drives the in-game test bridge's checks, one step per frame. Debug builds only.</summary>
@@ -34,12 +38,6 @@ public sealed class Plugin : IDalamudPlugin
 
     /// <summary>The object table, read by the bridge's probe as an independent source. Debug builds only, for now.</summary>
     [PluginService] internal static IObjectTable ObjectTable { get; private set; } = null!;
-
-    /// <summary>Login and GPose state, read by the bridge's probe. Debug builds only, for now.</summary>
-    [PluginService] internal static IClientState ClientState { get; private set; } = null!;
-
-    /// <summary>Condition flags (loading screens, cutscenes), read by the bridge's probe. Debug builds only, for now.</summary>
-    [PluginService] internal static ICondition Condition { get; private set; } = null!;
 
     /// <summary>The build configuration, shown in the load line.</summary>
     private const string BuildConfiguration = "Debug";
@@ -69,7 +67,7 @@ public sealed class Plugin : IDalamudPlugin
     public Plugin()
     {
         this.configuration = Configuration.Load(PluginInterface);
-        this.cubeWindow = new CubeWindow(this.configuration);
+        this.cubeWindow = new CubeWindow(this.configuration, new Game.GameStateReader(ClientState, Condition));
         this.settingsWindow = new SettingsWindow(this.configuration, this.SaveConfiguration);
         this.windowSystem.AddWindow(this.cubeWindow);
         this.windowSystem.AddWindow(this.settingsWindow);
@@ -111,6 +109,7 @@ public sealed class Plugin : IDalamudPlugin
             this.testBridge.Register(new TestBridge.Checks.LabelsCheck());
             this.testBridge.Register(new TestBridge.Checks.OrientationCheck());
             this.testBridge.Register(new TestBridge.Checks.SettingsCheck());
+            this.testBridge.Register(new TestBridge.Checks.HiddenStatesCheck());
             this.testBridge.Register(new TestBridge.Checks.SettingsWindowCheck(this.settingsWindow, this.configuration, this.SaveConfiguration, PluginInterface.ConfigFile.FullName));
             this.testBridge.Register(new TestBridge.Checks.DrawBudgetCheck());
             this.testBridge.Register(new TestBridge.Checks.FrameSnapshotCheck(this.testBridge.Folder));

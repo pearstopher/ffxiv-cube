@@ -103,3 +103,8 @@ Locates files in the repository from a test's output folder, for tests that insp
 Checks the view's orientation modes (PROJECT.md, "View"): Camera mode follows the game camera's heading so
 "forward on screen" matches the game view; North up is fixed with north at the back. The heading comes from
 the camera's direction vector (docs/research-notes.md, #10).
+
+ [VisibilityTests](Cube.Tests.VisibilityTests.md)
+
+Checks when the cube is hidden (PROJECT.md, "When hidden": not logged in, during loading screens, cutscenes and
+GPose; shown otherwise).

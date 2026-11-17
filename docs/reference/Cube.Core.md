@@ -75,6 +75,11 @@ Chooses the yaw of the view around the cube (PROJECT.md, "View"): in <b>Camera</
 game camera so "forward on screen" matches the game view; in <b>North up</b> mode it is fixed with
 north at the back.
 
+ [VisibilityRules](Cube.Core.VisibilityRules.md)
+
+Decides whether to draw (PROJECT.md, "When hidden": not logged in, loading screens, cutscenes and GPose; the
+window is just empty then, never an error).
+
 ### Structs
 
  [CubeSpace](Cube.Core.CubeSpace.md)
@@ -87,6 +92,11 @@ inside?" and turns world positions into cube-local view coordinates.
 
 One thing to draw, already projected to window pixels: the plugin turns each into one ImGui call
 (PROJECT.md, "Cheap drawing": the fewest primitives that do the job).
+
+ [GameState](Cube.Core.GameState.md)
+
+The game states that decide whether the cube is drawn (PROJECT.md, "When hidden"). Read once per frame by the
+plugin from Dalamud's client state and condition flags (<code>docs/research-notes.md</code>, "When to hide").
 
  [NearbyPlayer](Cube.Core.NearbyPlayer.md)
 
@@ -117,3 +127,7 @@ party/alliance members, everyone else; one colour each).
  [PrimitiveKind](Cube.Core.PrimitiveKind.md)
 
 What a [DrawPrimitive](Cube.Core.DrawPrimitive.md#Cube_Core_DrawPrimitive) draws.
+
+ [Visibility](Cube.Core.Visibility.md)
+
+Whether the cube is drawn, and if not, why (PROJECT.md, "When hidden"). Decided by [VisibilityRules](Cube.Core.VisibilityRules.md#Cube_Core_VisibilityRules).

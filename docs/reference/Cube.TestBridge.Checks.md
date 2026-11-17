@@ -38,6 +38,12 @@ bridge dumps the frame's draw list; the snapshot tool turns it into a PNG so Cla
 Research probe for #10 (reading players, party and camera): reads the same facts two ways and records
 both, so one in-game run settles the open questions in <code>docs/research-notes.md</code>.
 
+ [HiddenStatesCheck](Cube.TestBridge.Checks.HiddenStatesCheck.md)
+
+Checks the cube is hidden when logged out, during loading screens, cutscenes and GPose, and comes back
+afterwards (PROJECT.md, "When hidden": the window is just empty then, never an error; "Efficiency and memory": no
+work and no allocations while there's nothing to draw).
+
  [LabelsCheck](Cube.TestBridge.Checks.LabelsCheck.md)
 
 Checks every other player in the cube gets exactly one name label showing their name, next to their cube and on
