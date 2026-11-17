@@ -1,6 +1,6 @@
 # Manual tests
 
-Only what the in-game test bridge can't check ([in-game-testing.md](in-game-testing.md)). Optional, before a release. Report results in the format from CLAUDE.md.
+Only what the in-game test bridge can't check (`docs/in-game-testing.md`). Optional, before a release. Report results in the format from CLAUDE.md.
 
 ## Settings window (#20)
 

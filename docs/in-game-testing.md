@@ -82,7 +82,7 @@ The same summary is logged: `Test bridge: N/M checks passed` at Information, and
 
 Each feature that touches the game adds checks for its behaviour: a class in `Cube/TestBridge/Checks/` deriving from `BridgeCheck`, registered in `Plugin`'s constructor. A check is an iterator: `yield return CheckStep.NextFrame` waits a frame, and it ends with `CheckStep.Pass(...)` or `CheckStep.Fail(...)`. Put back anything it changes in `Cleanup`. `BridgeCheck.WaitForDraws` waits until the cube window has drawn after a change. Checks that change settings do it in memory only and restore the user's values in `Cleanup`. The whole `TestBridge` folder is compiled out of Release builds.
 
-The few things the bridge can't do (clicking ImGui controls) are listed in [manual-tests.md](manual-tests.md).
+The few things the bridge can't do (clicking ImGui controls) are listed in `docs/manual-tests.md`.
 
 ## If the checks don't run
 
