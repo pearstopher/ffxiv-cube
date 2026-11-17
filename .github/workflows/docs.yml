@@ -1,0 +1,70 @@
+name: Docs
+
+# Builds the documentation site from the code's XML doc comments with DocFX (warnings are errors),
+# on every PR, and publishes it to GitHub Pages from main.
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: docs-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Install .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Download Dalamud
+        # The plugin project references Dalamud, and DocFX needs it to read that project's code.
+        timeout-minutes: 5
+        shell: pwsh
+        run: |
+          $dalamudHome = Join-Path $env:RUNNER_TEMP "dalamud"
+          Invoke-WebRequest -Uri https://goatcorp.github.io/dalamud-distrib/latest.zip -OutFile latest.zip
+          Expand-Archive -Force latest.zip $dalamudHome
+          "DALAMUD_HOME=$dalamudHome" >> $env:GITHUB_ENV
+
+      - name: Restore tools
+        run: dotnet tool restore
+
+      - name: Build docs
+        timeout-minutes: 10
+        run: dotnet docfx docs/docfx.json --warningsAsErrors
+
+      - name: Upload site
+        if: github.event_name != 'pull_request'
+        timeout-minutes: 5
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: docs/_site
+
+  deploy:
+    if: github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5

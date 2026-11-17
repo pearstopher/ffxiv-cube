@@ -1,0 +1,59 @@
+{
+  "$schema": "https://raw.githubusercontent.com/dotnet/docfx/main/schemas/docfx.schema.json",
+  "metadata": [
+    {
+      "src": [
+        {
+          "src": "..",
+          "files": [
+            "Cube.Core/Cube.Core.csproj",
+            "Cube/Cube.csproj",
+            "Cube.Tests/Cube.Tests.csproj"
+          ]
+        }
+      ],
+      "dest": "api",
+      "includePrivateMembers": true,
+      "includeExplicitInterfaceImplementations": true,
+      "namespaceLayout": "flattened",
+      "memberLayout": "samePage",
+      "enumSortOrder": "declaringOrder"
+    }
+  ],
+  "build": {
+    "content": [
+      {
+        "files": [
+          "api/**.yml",
+          "api/index.md"
+        ]
+      },
+      {
+        "files": [
+          "index.md",
+          "toc.yml",
+          "articles/**.md",
+          "articles/toc.yml"
+        ]
+      }
+    ],
+    "overwrite": [
+      {
+        "files": [
+          "namespaces/**.md"
+        ]
+      }
+    ],
+    "output": "_site",
+    "template": [
+      "default",
+      "modern"
+    ],
+    "globalMetadata": {
+      "_appName": "Cube",
+      "_appTitle": "Cube",
+      "_enableSearch": true,
+      "_disableContribution": false
+    }
+  }
+}

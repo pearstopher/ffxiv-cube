@@ -2,6 +2,10 @@ using Cube.Core;
 
 namespace Cube.Tests;
 
+/// <summary>
+/// Checks that Core stays free of Dalamud, game structs and Lumina, so all its logic can be unit tested
+/// without the game (CLAUDE.md, "Reference: the previous plugin" layout rule).
+/// </summary>
 public class CoreAssemblyTests
 {
     // Core must stay testable without the game: no Dalamud, game structs or Lumina.

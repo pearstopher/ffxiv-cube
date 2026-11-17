@@ -3,6 +3,10 @@ using Cube.Core;
 
 namespace Cube.Tests;
 
+/// <summary>
+/// Checks the build line logged on load (CLAUDE.md: log which build is running and when it was built),
+/// so a stale or wrong-configuration build is obvious.
+/// </summary>
 public class BuildInfoTests
 {
     private static readonly DateTime BuiltAt = new(2026, 11, 11, 10, 36, 2);
