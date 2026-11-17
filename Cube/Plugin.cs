@@ -32,6 +32,15 @@ public sealed class Plugin : IDalamudPlugin
     /// <summary>Drives the in-game test bridge's checks, one step per frame. Debug builds only.</summary>
     [PluginService] internal static IFramework Framework { get; private set; } = null!;
 
+    /// <summary>The object table, read by the bridge's probe as an independent source. Debug builds only, for now.</summary>
+    [PluginService] internal static IObjectTable ObjectTable { get; private set; } = null!;
+
+    /// <summary>Login and GPose state, read by the bridge's probe. Debug builds only, for now.</summary>
+    [PluginService] internal static IClientState ClientState { get; private set; } = null!;
+
+    /// <summary>Condition flags (loading screens, cutscenes), read by the bridge's probe. Debug builds only, for now.</summary>
+    [PluginService] internal static ICondition Condition { get; private set; } = null!;
+
     /// <summary>The build configuration, shown in the load line.</summary>
     private const string BuildConfiguration = "Debug";
 #else
@@ -86,6 +95,7 @@ public sealed class Plugin : IDalamudPlugin
             this.testBridge.Register(new TestBridge.Checks.BuildStampCheck());
             this.testBridge.Register(new TestBridge.Checks.WindowOpenCloseCheck());
             this.testBridge.Register(new TestBridge.Checks.DrawBudgetCheck());
+            this.testBridge.Register(new TestBridge.Checks.GameStateProbeCheck(ObjectTable, ClientState, Condition, Log));
         }
         catch (Exception ex)
         {

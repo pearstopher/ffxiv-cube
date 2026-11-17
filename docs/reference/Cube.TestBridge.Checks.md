@@ -16,6 +16,11 @@ Checks the draw path stays within PROJECT.md's phase 1 budgets ("Efficiency and 
 under 0.5 ms per frame on average and zero bytes allocated per frame in steady state.
 A budget failure is a failed test, not a note (CLAUDE.md).
 
+ [GameStateProbeCheck](Cube.TestBridge.Checks.GameStateProbeCheck.md)
+
+Research probe for #10 (reading players, party and camera): reads the same facts two ways and records
+both, so one in-game run settles the open questions in <code>docs/research-notes.md</code>.
+
  [WindowOpenCloseCheck](Cube.TestBridge.Checks.WindowOpenCloseCheck.md)
 
 Checks the cube window draws when opened and stops drawing when closed (PROJECT.md, "Features":
