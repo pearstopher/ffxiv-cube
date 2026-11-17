@@ -34,6 +34,26 @@ public static class ViewYaw
         return horizontal < MinHorizontalLength ? previous : MathF.Atan2(forward.X, -forward.Z);
     }
 
+    /// <summary>
+    /// Smallest yaw change, in radians (about 0.1°), that turns the view. Smaller changes, such as camera jitter or
+    /// float noise while the camera is still, keep the previous yaw so the rotation isn't recomputed (PROJECT.md,
+    /// "Efficiency and memory": recompute only when inputs change). Far below what a pixel shows at any window size.
+    /// </summary>
+    public const float ChangeThreshold = 0.002f;
+
+    /// <summary>
+    /// Keeps the previous yaw unless the new one differs by at least <see cref="ChangeThreshold"/>, measured the
+    /// short way round (so −π and π count as equal).
+    /// </summary>
+    /// <param name="previous">The yaw in use.</param>
+    /// <param name="next">This frame's wanted yaw.</param>
+    /// <returns><paramref name="previous"/> or <paramref name="next"/>.</returns>
+    public static float Settle(float previous, float next)
+    {
+        var difference = MathF.IEEERemainder(next - previous, 2 * MathF.PI);
+        return MathF.Abs(difference) < ChangeThreshold ? previous : next;
+    }
+
     /// <summary>The yaw for the given mode.</summary>
     /// <param name="mode">Camera or north up.</param>
     /// <param name="cameraForward">The game camera's world direction (used in Camera mode).</param>

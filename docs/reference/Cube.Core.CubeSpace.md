@@ -52,6 +52,28 @@ Edge length in yalms; clamped to [MinEdge](Cube.Core.CubeSpace.md#Cube_Core_Cube
 
 The view's yaw in radians (see [ViewYaw](Cube.Core.ViewYaw.md#Cube_Core_ViewYaw)): 0 looks north, increasing clockwise seen from above.
 
+### <a id="Cube_Core_CubeSpace__ctor_Cube_Core_CubeSpace__System_Numerics_Vector3_System_Single_"></a> CubeSpace\(in CubeSpace, Vector3, float\)
+
+Copies a cube with a new centre and edge, keeping its yaw and rotation.
+
+```csharp
+private CubeSpace(in CubeSpace source, Vector3 centre, float edge)
+```
+
+#### Parameters
+
+`source` [CubeSpace](Cube.Core.CubeSpace.md)
+
+The cube whose yaw (and cached sine and cosine) to keep.
+
+`centre` [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
+
+The new centre.
+
+`edge` [float](https://learn.microsoft.com/dotnet/api/system.single)
+
+The new edge; clamped like the main constructor.
+
 ## Fields
 
 ### <a id="Cube_Core_CubeSpace_DefaultEdge"></a> DefaultEdge
@@ -203,6 +225,30 @@ A world position.
 #### Returns
 
  [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+### <a id="Cube_Core_CubeSpace_Recentred_System_Numerics_Vector3_System_Single_"></a> Recentred\(Vector3, float\)
+
+The same view rotation around a new centre and edge, without recomputing the sine and cosine. The window
+uses it every frame the yaw hasn't changed (PROJECT.md, "Efficiency and memory": recompute only when inputs
+change).
+
+```csharp
+public CubeSpace Recentred(Vector3 centre, float edge)
+```
+
+#### Parameters
+
+`centre` [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
+
+The new centre.
+
+`edge` [float](https://learn.microsoft.com/dotnet/api/system.single)
+
+The new edge in yalms.
+
+#### Returns
+
+ [CubeSpace](Cube.Core.CubeSpace.md)
 
 ### <a id="Cube_Core_CubeSpace_RotateOffset_System_Numerics_Vector3_"></a> RotateOffset\(Vector3\)
 

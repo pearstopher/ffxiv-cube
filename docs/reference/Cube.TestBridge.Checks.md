@@ -44,6 +44,11 @@ Checks every other player in the cube gets exactly one name label showing their 
 top of it, and the local player gets none (PROJECT.md, "Features": other players are labelled with their names;
 "Labels": the name drawn next to the cube). Uses the standard fake players (#16) so it works with nobody around.
 
+ [OrientationCheck](Cube.TestBridge.Checks.OrientationCheck.md)
+
+Checks both orientation modes against the live game camera (PROJECT.md, "View"): in Camera mode the view's yaw
+matches the camera's heading, in North up mode it is 0 whatever the camera does.
+
  [PlayerCubesCheck](Cube.TestBridge.Checks.PlayerCubesCheck.md)
 
 Checks every player in the cube is drawn as a cube in their relation's colour (PROJECT.md, "Players" and "Colours";

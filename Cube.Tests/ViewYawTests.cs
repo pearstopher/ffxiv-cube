@@ -52,4 +52,29 @@ public class ViewYawTests
     {
         Assert.Equal(OrientationMode.Camera, default(OrientationMode));
     }
+
+    [Fact]
+    public void Tiny_yaw_change_keeps_the_previous_yaw()
+    {
+        Assert.Equal(1f, ViewYaw.Settle(1f, 1f + (ViewYaw.ChangeThreshold / 2)));
+    }
+
+    [Fact]
+    public void Real_yaw_change_turns_the_view()
+    {
+        Assert.Equal(1.1f, ViewYaw.Settle(1f, 1.1f));
+    }
+
+    [Fact]
+    public void Yaw_change_is_measured_the_short_way_round()
+    {
+        // Just either side of south: nearly the same heading, though the numbers are 2π apart.
+        Assert.Equal(MathF.PI - 0.0005f, ViewYaw.Settle(MathF.PI - 0.0005f, -MathF.PI + 0.0005f));
+    }
+
+    [Fact]
+    public void Switching_to_north_up_always_applies()
+    {
+        Assert.Equal(ViewYaw.NorthUp, ViewYaw.Settle(2f, ViewYaw.For(OrientationMode.NorthUp, new Vector3(1, 0, 0), 2f)));
+    }
 }

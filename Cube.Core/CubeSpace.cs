@@ -53,6 +53,29 @@ public readonly struct CubeSpace
         this.sin = MathF.Sin(yaw);
     }
 
+    /// <summary>Copies a cube with a new centre and edge, keeping its yaw and rotation.</summary>
+    /// <param name="source">The cube whose yaw (and cached sine and cosine) to keep.</param>
+    /// <param name="centre">The new centre.</param>
+    /// <param name="edge">The new edge; clamped like the main constructor.</param>
+    private CubeSpace(in CubeSpace source, Vector3 centre, float edge)
+    {
+        this.Centre = centre;
+        this.Edge = ClampEdge(edge);
+        this.HalfEdge = this.Edge / 2f;
+        this.Yaw = source.Yaw;
+        this.cos = source.cos;
+        this.sin = source.sin;
+    }
+
+    /// <summary>
+    /// The same view rotation around a new centre and edge, without recomputing the sine and cosine. The window
+    /// uses it every frame the yaw hasn't changed (PROJECT.md, "Efficiency and memory": recompute only when inputs
+    /// change).
+    /// </summary>
+    /// <param name="centre">The new centre.</param>
+    /// <param name="edge">The new edge in yalms.</param>
+    public CubeSpace Recentred(Vector3 centre, float edge) => new(this, centre, edge);
+
     /// <summary>The cube's centre in world coordinates: the local player's position.</summary>
     public Vector3 Centre { get; }
 

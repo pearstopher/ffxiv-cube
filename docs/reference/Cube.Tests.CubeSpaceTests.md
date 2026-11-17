@@ -202,3 +202,10 @@ public void Point_just_outside_a_face_is_outside(float dx, float dy, float dz)
 [Fact]
 public void Point_outside_is_rejected_before_it_is_transformed()
 ```
+
+### <a id="Cube_Tests_CubeSpaceTests_Recentred_cube_keeps_the_view_rotation_and_moves_with_the_player"></a> Recentred\_cube\_keeps\_the\_view\_rotation\_and\_moves\_with\_the\_player\(\)
+
+```csharp
+[Fact]
+public void Recentred_cube_keeps_the_view_rotation_and_moves_with_the_player()
+```

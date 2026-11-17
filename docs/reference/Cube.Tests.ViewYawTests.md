@@ -72,3 +72,31 @@ public void Camera_pitch_does_not_change_yaw()
 [Fact]
 public void North_up_mode_ignores_the_camera()
 ```
+
+### <a id="Cube_Tests_ViewYawTests_Real_yaw_change_turns_the_view"></a> Real\_yaw\_change\_turns\_the\_view\(\)
+
+```csharp
+[Fact]
+public void Real_yaw_change_turns_the_view()
+```
+
+### <a id="Cube_Tests_ViewYawTests_Switching_to_north_up_always_applies"></a> Switching\_to\_north\_up\_always\_applies\(\)
+
+```csharp
+[Fact]
+public void Switching_to_north_up_always_applies()
+```
+
+### <a id="Cube_Tests_ViewYawTests_Tiny_yaw_change_keeps_the_previous_yaw"></a> Tiny\_yaw\_change\_keeps\_the\_previous\_yaw\(\)
+
+```csharp
+[Fact]
+public void Tiny_yaw_change_keeps_the_previous_yaw()
+```
+
+### <a id="Cube_Tests_ViewYawTests_Yaw_change_is_measured_the_short_way_round"></a> Yaw\_change\_is\_measured\_the\_short\_way\_round\(\)
+
+```csharp
+[Fact]
+public void Yaw_change_is_measured_the_short_way_round()
+```
