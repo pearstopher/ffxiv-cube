@@ -126,6 +126,7 @@ public sealed class Plugin : IDalamudPlugin
             this.testBridge.Register(new TestBridge.Checks.ViewControlCheck(this.testBridge.Folder));
             this.testBridge.Register(new TestBridge.Checks.SettingsCheck());
             this.testBridge.Register(new TestBridge.Checks.BoxSizeCheck());
+            this.testBridge.Register(new TestBridge.Checks.PlayerHeightCheck());
             this.testBridge.Register(new TestBridge.Checks.HiddenStatesCheck());
             this.testBridge.Register(new TestBridge.Checks.SettingsWindowCheck(this.settingsWindow, this.configuration, this.SaveConfiguration, PluginInterface.ConfigFile.FullName));
             this.testBridge.Register(new TestBridge.Checks.DrawBudgetCheck());

@@ -3,7 +3,8 @@ using System.Numerics;
 namespace Cube.Core;
 
 /// <summary>
-/// The cube of space around the local player (PROJECT.md, "Exact behaviour rules", Cube): centred on the player,
+/// The cube of space around the local player (PROJECT.md, "Exact behaviour rules", Cube): centred on the player
+/// horizontally, and vertically too unless "Player height in cube" (#91, <see cref="PlayerHeight"/>) moves them up or down,
 /// a box with a width, height and depth of 10–100 yalms each (default 40, see <see cref="BoxExtents"/>), turned about
 /// the vertical axis by its alignment <see cref="Yaw"/>. Answers "is this point inside?" and turns world positions into
 /// cube-local view coordinates.
@@ -57,6 +58,7 @@ public readonly struct CubeSpace
     public CubeSpace(Vector3 centre, Vector3 size, float yaw)
     {
         this.Centre = centre;
+        this.Player = centre;
         this.Size = BoxExtents.Clamp(size);
         this.Half = this.Size / 2f;
         this.Largest = BoxExtents.Largest(this.Size);
@@ -65,14 +67,31 @@ public readonly struct CubeSpace
         this.sin = MathF.Sin(yaw);
     }
 
-    /// <summary>Copies a cube with a new centre and size, keeping its yaw and rotation.</summary>
-    /// <param name="source">The cube whose yaw (and cached sine and cosine) to keep.</param>
-    /// <param name="centre">The new centre.</param>
-    /// <param name="size">The new size; clamped like the main constructor.</param>
-    private CubeSpace(in CubeSpace source, Vector3 centre, Vector3 size)
+    /// <summary>
+    /// Creates the box around a player who sits at a chosen height in it (PROJECT.md, "Player height in cube", #91):
+    /// the box's centre is shifted vertically by <see cref="PlayerHeight.BoxCentre"/>, so culling, projection and the
+    /// collision region all use the shifted box.
+    /// </summary>
+    /// <param name="player">The local player's world position.</param>
+    /// <param name="size">Width, height and depth in yalms; each clamped (<see cref="BoxExtents.Clamp(Vector3)"/>).</param>
+    /// <param name="yaw">The cube's alignment yaw in radians (see <see cref="ViewYaw"/>).</param>
+    /// <param name="playerHeight">Where the player sits, as a fraction of the height from the bottom face (0–1).</param>
+    public CubeSpace(Vector3 player, Vector3 size, float yaw, float playerHeight)
+        : this(PlayerHeight.BoxCentre(player, BoxExtents.Clamp(size.Y), playerHeight), size, yaw)
     {
-        this.Centre = centre;
+        this.Player = player;
+    }
+
+    /// <summary>Copies a cube with a new player position, size and player height, keeping its yaw and rotation.</summary>
+    /// <param name="source">The cube whose yaw (and cached sine and cosine) to keep.</param>
+    /// <param name="player">The new player position.</param>
+    /// <param name="size">The new size; clamped like the main constructor.</param>
+    /// <param name="playerHeight">The player height fraction (see <see cref="PlayerHeight"/>).</param>
+    private CubeSpace(in CubeSpace source, Vector3 player, Vector3 size, float playerHeight)
+    {
         this.Size = BoxExtents.Clamp(size);
+        this.Player = player;
+        this.Centre = PlayerHeight.BoxCentre(player, this.Size.Y, playerHeight);
         this.Half = this.Size / 2f;
         this.Largest = BoxExtents.Largest(this.Size);
         this.Yaw = source.Yaw;
@@ -81,16 +100,28 @@ public readonly struct CubeSpace
     }
 
     /// <summary>
-    /// The same alignment around a new centre and size, without recomputing the sine and cosine. The window
-    /// uses it every frame the yaw hasn't changed (PROJECT.md, "Efficiency and memory": recompute only when inputs
-    /// change).
+    /// The same alignment around a new player position, size and player height, without recomputing the sine and
+    /// cosine. The window uses it every frame the yaw hasn't changed (PROJECT.md, "Efficiency and memory": recompute
+    /// only when inputs change).
     /// </summary>
-    /// <param name="centre">The new centre.</param>
+    /// <param name="player">The local player's new world position.</param>
     /// <param name="size">The new width, height and depth in yalms.</param>
-    public CubeSpace Recentred(Vector3 centre, Vector3 size) => new(this, centre, size);
+    /// <param name="playerHeight">Where the player sits in the box (#91); <see cref="PlayerHeight.Default"/> centres them.</param>
+    public CubeSpace Recentred(Vector3 player, Vector3 size, float playerHeight = PlayerHeight.Default) =>
+        new(this, player, size, playerHeight);
 
-    /// <summary>The cube's centre in world coordinates: the local player's position.</summary>
+    /// <summary>
+    /// The box's centre in world coordinates: the local player's position, shifted vertically when the player height
+    /// setting isn't 50% (#91). Containment and view coordinates are measured from here, so the box is drawn centred in
+    /// the widget and turns around this point.
+    /// </summary>
     public Vector3 Centre { get; }
+
+    /// <summary>
+    /// The local player's world position the box was built around. Equal to <see cref="Centre"/> at the default player
+    /// height; the test bridge places fake players relative to it.
+    /// </summary>
+    public Vector3 Player { get; }
 
     /// <summary>Width (X), height (Y) and depth (Z) in yalms, in the cube's own axes, already clamped.</summary>
     public Vector3 Size { get; }

@@ -456,7 +456,7 @@ public static CollisionBox RegionFor(Vector3 centre, Vector3 size)
 
 `centre` [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
 
-The cube's centre (the player's position).
+The cube's centre: the player's position, shifted vertically by the player height setting (#91).
 
 `size` [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
 

@@ -3,7 +3,8 @@
 Namespace: [Cube.Core](Cube.Core.md)  
 Assembly: Cube.Core.dll  
 
-The cube of space around the local player (PROJECT.md, "Exact behaviour rules", Cube): centred on the player,
+The cube of space around the local player (PROJECT.md, "Exact behaviour rules", Cube): centred on the player
+horizontally, and vertically too unless "Player height in cube" (#91, [PlayerHeight](Cube.Core.PlayerHeight.md#Cube_Core_PlayerHeight)) moves them up or down,
 a box with a width, height and depth of 10–100 yalms each (default 40, see [BoxExtents](Cube.Core.BoxExtents.md#Cube_Core_BoxExtents)), turned about
 the vertical axis by its alignment [Yaw](Cube.Core.CubeSpace.md#Cube_Core_CubeSpace_Yaw). Answers "is this point inside?" and turns world positions into
 cube-local view coordinates.
@@ -85,12 +86,40 @@ Width, height and depth in yalms; each clamped ([Clamp](Cube.Core.BoxExtents.md#
 
 The cube's alignment yaw in radians (see [ViewYaw](Cube.Core.ViewYaw.md#Cube_Core_ViewYaw)): 0 faces north, increasing clockwise seen from above.
 
-### <a id="Cube_Core_CubeSpace__ctor_Cube_Core_CubeSpace__System_Numerics_Vector3_System_Numerics_Vector3_"></a> CubeSpace\(in CubeSpace, Vector3, Vector3\)
+### <a id="Cube_Core_CubeSpace__ctor_System_Numerics_Vector3_System_Numerics_Vector3_System_Single_System_Single_"></a> CubeSpace\(Vector3, Vector3, float, float\)
 
-Copies a cube with a new centre and size, keeping its yaw and rotation.
+Creates the box around a player who sits at a chosen height in it (PROJECT.md, "Player height in cube", #91):
+the box's centre is shifted vertically by [BoxCentre](Cube.Core.PlayerHeight.md#Cube_Core_PlayerHeight_BoxCentre), so culling, projection and the
+collision region all use the shifted box.
 
 ```csharp
-private CubeSpace(in CubeSpace source, Vector3 centre, Vector3 size)
+public CubeSpace(Vector3 player, Vector3 size, float yaw, float playerHeight)
+```
+
+#### Parameters
+
+`player` [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
+
+The local player's world position.
+
+`size` [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
+
+Width, height and depth in yalms; each clamped ([Clamp](Cube.Core.BoxExtents.md#Cube_Core_BoxExtents_Clamp)).
+
+`yaw` [float](https://learn.microsoft.com/dotnet/api/system.single)
+
+The cube's alignment yaw in radians (see [ViewYaw](Cube.Core.ViewYaw.md#Cube_Core_ViewYaw)).
+
+`playerHeight` [float](https://learn.microsoft.com/dotnet/api/system.single)
+
+Where the player sits, as a fraction of the height from the bottom face (0–1).
+
+### <a id="Cube_Core_CubeSpace__ctor_Cube_Core_CubeSpace__System_Numerics_Vector3_System_Numerics_Vector3_System_Single_"></a> CubeSpace\(in CubeSpace, Vector3, Vector3, float\)
+
+Copies a cube with a new player position, size and player height, keeping its yaw and rotation.
+
+```csharp
+private CubeSpace(in CubeSpace source, Vector3 player, Vector3 size, float playerHeight)
 ```
 
 #### Parameters
@@ -99,13 +128,17 @@ private CubeSpace(in CubeSpace source, Vector3 centre, Vector3 size)
 
 The cube whose yaw (and cached sine and cosine) to keep.
 
-`centre` [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
+`player` [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
 
-The new centre.
+The new player position.
 
 `size` [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
 
 The new size; clamped like the main constructor.
+
+`playerHeight` [float](https://learn.microsoft.com/dotnet/api/system.single)
+
+The player height fraction (see [PlayerHeight](Cube.Core.PlayerHeight.md#Cube_Core_PlayerHeight)).
 
 ## Fields
 
@@ -137,7 +170,9 @@ private readonly float sin
 
 ### <a id="Cube_Core_CubeSpace_Centre"></a> Centre
 
-The cube's centre in world coordinates: the local player's position.
+The box's centre in world coordinates: the local player's position, shifted vertically when the player height
+setting isn't 50% (#91). Containment and view coordinates are measured from here, so the box is drawn centred in
+the widget and turns around this point.
 
 ```csharp
 public Vector3 Centre { get; }
@@ -171,6 +206,19 @@ public float Largest { get; }
 #### Property Value
 
  [float](https://learn.microsoft.com/dotnet/api/system.single)
+
+### <a id="Cube_Core_CubeSpace_Player"></a> Player
+
+The local player's world position the box was built around. Equal to [Centre](Cube.Core.CubeSpace.md#Cube_Core_CubeSpace_Centre) at the default player
+height; the test bridge places fake players relative to it.
+
+```csharp
+public Vector3 Player { get; }
+```
+
+#### Property Value
+
+ [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
 
 ### <a id="Cube_Core_CubeSpace_Size"></a> Size
 
@@ -247,25 +295,29 @@ A point in cube-local coordinates.
 The rotation in [RotateOffset](Cube.Core.CubeSpace.md#Cube_Core_CubeSpace_RotateOffset) is its own inverse (it also flips Z, since forward is −Z at yaw 0),
 so the same formula maps back.
 
-### <a id="Cube_Core_CubeSpace_Recentred_System_Numerics_Vector3_System_Numerics_Vector3_"></a> Recentred\(Vector3, Vector3\)
+### <a id="Cube_Core_CubeSpace_Recentred_System_Numerics_Vector3_System_Numerics_Vector3_System_Single_"></a> Recentred\(Vector3, Vector3, float\)
 
-The same alignment around a new centre and size, without recomputing the sine and cosine. The window
-uses it every frame the yaw hasn't changed (PROJECT.md, "Efficiency and memory": recompute only when inputs
-change).
+The same alignment around a new player position, size and player height, without recomputing the sine and
+cosine. The window uses it every frame the yaw hasn't changed (PROJECT.md, "Efficiency and memory": recompute
+only when inputs change).
 
 ```csharp
-public CubeSpace Recentred(Vector3 centre, Vector3 size)
+public CubeSpace Recentred(Vector3 player, Vector3 size, float playerHeight = 0.5)
 ```
 
 #### Parameters
 
-`centre` [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
+`player` [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
 
-The new centre.
+The local player's new world position.
 
 `size` [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
 
 The new width, height and depth in yalms.
+
+`playerHeight` [float](https://learn.microsoft.com/dotnet/api/system.single)
+
+Where the player sits in the box (#91); [Default](Cube.Core.PlayerHeight.md#Cube_Core_PlayerHeight_Default) centres them.
 
 #### Returns
 

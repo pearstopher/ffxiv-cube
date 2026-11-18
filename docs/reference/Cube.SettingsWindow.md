@@ -4,7 +4,7 @@ Namespace: [Cube](Cube.md)
 Assembly: Cube.dll  
 
 The settings window, opened with <code>/cube config</code> or Dalamud's settings button (PROJECT.md, "Features": cube
-width, height and depth with zoom and reset size (#90), orientation mode, labels on/off, colours and opacity; "NPCs": NPCs on/off and their colour; "View orientation
+width, height and depth with zoom and reset size (#90), player height in cube (#91), orientation mode, labels on/off, colours and opacity; "NPCs": NPCs on/off and their colour; "View orientation
 control": the control's corner and a way to reset the view; #32: collision on/off and detail).
 
 ```csharp

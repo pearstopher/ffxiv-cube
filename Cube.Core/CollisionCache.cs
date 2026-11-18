@@ -117,7 +117,7 @@ public sealed class CollisionCache
     /// </summary>
     /// <typeparam name="TSource">The collision source; a struct, so the calls aren't boxed.</typeparam>
     /// <param name="source">The source, positioned anywhere; <see cref="ICollisionSource.Seek"/> is called first.</param>
-    /// <param name="position">The cube's centre (the player).</param>
+    /// <param name="position">The cube's centre: the player, shifted vertically by the player height setting (#91).</param>
     /// <param name="size">The cube's width, height and depth in yalms.</param>
     /// <param name="zone">The current zone (territory) id.</param>
     /// <param name="sceneStamp">The source's scene stamp (see <see cref="CollisionBoxSet.NeedsRefresh"/>).</param>

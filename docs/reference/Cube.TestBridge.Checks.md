@@ -108,6 +108,12 @@ Checks every player and named NPC in the cube is drawn as a cube in their relati
 "NPCs" and "Colours"; "Draw order": far first), using the standard fake players and fake NPC (#16, #74) so it works
 with nobody around.
 
+ [PlayerHeightCheck](Cube.TestBridge.Checks.PlayerHeightCheck.md)
+
+Checks the player height setting (#91; PROJECT.md, "Player height in cube"): it changes which fake players above or
+below the player are inside, moves the player's drawn marker off the middle of the box, shifts the collision region,
+and resetting to defaults brings back the centred cube.
+
  [PlayersMatchObjectTableCheck](Cube.TestBridge.Checks.PlayersMatchObjectTableCheck.md)
 
 Checks the players the window found match an independent read of Dalamud's object table (PROJECT.md,
@@ -159,6 +165,10 @@ the same thing (PROJECT.md, "Efficiency and memory": the phase 2 budgets hold wi
  [CollisionProbeCheck.CubeCounts](Cube.TestBridge.Checks.CollisionProbeCheck.CubeCounts.md)
 
 What one walk found inside one cube size.
+
+ [PlayerHeightCheck.Sample](Cube.TestBridge.Checks.PlayerHeightCheck.Sample.md)
+
+One frame's measurements.
 
  [CollisionProbeCheck.Sample](Cube.TestBridge.Checks.CollisionProbeCheck.Sample.md)
 

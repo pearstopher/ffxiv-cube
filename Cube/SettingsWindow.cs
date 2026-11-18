@@ -7,7 +7,7 @@ namespace Cube;
 
 /// <summary>
 /// The settings window, opened with <c>/cube config</c> or Dalamud's settings button (PROJECT.md, "Features": cube
-/// width, height and depth with zoom and reset size (#90), orientation mode, labels on/off, colours and opacity; "NPCs": NPCs on/off and their colour; "View orientation
+/// width, height and depth with zoom and reset size (#90), player height in cube (#91), orientation mode, labels on/off, colours and opacity; "NPCs": NPCs on/off and their colour; "View orientation
 /// control": the control's corner and a way to reset the view; #32: collision on/off and detail).
 /// </summary>
 /// <remarks>
@@ -95,6 +95,18 @@ internal sealed class SettingsWindow : Window
             c.ResetSize();
             this.save();
         }
+
+        // Where the player sits vertically (PROJECT.md, "Player height in cube", #91): stored as a fraction, shown as
+        // a percentage, 0% bottom face to 100% top face.
+        ImGui.SetNextItemWidth(200);
+        var percent = c.PlayerHeight * 100f;
+        var heightChanged = ImGui.SliderFloat("Player height in cube", ref percent, 0f, 100f, "%.0f%%");
+        if (heightChanged)
+        {
+            c.PlayerHeight = percent / 100f;
+        }
+
+        this.Track(heightChanged);
 
         // The names describe what happens to the contents, not what turns: the cube's frame stays still on screen in
         // both modes (PROJECT.md, "Cube" and "Cube on screen never turns by itself").

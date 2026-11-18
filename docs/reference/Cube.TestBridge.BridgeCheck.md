@@ -35,6 +35,7 @@ internal abstract class BridgeCheck
 [NoErrorsCaughtCheck](Cube.TestBridge.Checks.NoErrorsCaughtCheck.md), 
 [OrientationCheck](Cube.TestBridge.Checks.OrientationCheck.md), 
 [PlayerCubesCheck](Cube.TestBridge.Checks.PlayerCubesCheck.md), 
+[PlayerHeightCheck](Cube.TestBridge.Checks.PlayerHeightCheck.md), 
 [PlayersMatchObjectTableCheck](Cube.TestBridge.Checks.PlayersMatchObjectTableCheck.md), 
 [SettingsCheck](Cube.TestBridge.Checks.SettingsCheck.md), 
 [SettingsWindowCheck](Cube.TestBridge.Checks.SettingsWindowCheck.md), 
