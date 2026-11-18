@@ -72,8 +72,8 @@ public const int DefaultCapacity = 2000
 
 ### <a id="Cube_Core_CollisionBoxSet_Diagonal"></a> Diagonal
 
-The cube's horizontal half-diagonal per unit of half-edge (√2): the furthest a corner of the cube reaches
-sideways from the centre at any yaw.
+The cube's horizontal half-diagonal per unit of half-edge (√2, rounded up so a corner is never missed): the
+furthest a corner of the cube reaches sideways from the centre at any yaw.
 
 ```csharp
 private const float Diagonal = 1.41422
@@ -373,8 +373,9 @@ The cube's edge now.
 
 `sceneStamp` [ulong](https://learn.microsoft.com/dotnet/api/system.uint64)
 
-Whatever identifies the loaded collision to the reader (for example the zone, collider count and first collider
-address combined, as #28 suggests). Core only compares it.
+Whatever identifies the loaded collision to the reader (in the plugin, the first collider's address and the
+collider count, as #28 suggests, with the detail level folded in by [Stamp](Cube.Core.CollisionDetails.md#Cube_Core_CollisionDetails_Stamp)). Core
+only compares it; zone changes are handled separately by [CollisionCache](Cube.Core.CollisionCache.md#Cube_Core_CollisionCache).
 
 #### Returns
 

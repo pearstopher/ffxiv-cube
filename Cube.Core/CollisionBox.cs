@@ -14,7 +14,7 @@ namespace Cube.Core;
 /// navigate by, cost one memory read each, and need no triangles.
 /// </para>
 /// <para>
-/// World-axis-aligned, like the player cubes (<see cref="CubeGeometry.AddSolidCube"/>), so a box turns with the rest
+/// World-axis-aligned, like the player cubes (both drawn by <see cref="BoxProjector"/>), so a box turns with the rest
 /// of the cube's contents when the camera turns and the cached list never has to be rebuilt for a yaw change. Two
 /// <see cref="Vector3"/>s, 24 bytes, so the bounded cache in <see cref="CollisionBoxSet"/> stays small.
 /// </para>

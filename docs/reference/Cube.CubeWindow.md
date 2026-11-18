@@ -23,9 +23,10 @@ internal sealed class CubeWindow : Window, IWindow
 
 ## Remarks
 
-Each frame: build the [CubeSpace](Cube.Core.CubeSpace.md#Cube_Core_CubeSpace) and fitted [ViewProjection](Cube.Core.ViewProjection.md#Cube_Core_ViewProjection), let Core fill the reused
-[DrawList](Cube.CubeWindow.md#Cube_CubeWindow_DrawList), sort it far to near, issue one ImGui call per primitive, then draw the view control on
-top ([DrawViewControl](Cube.CubeWindow.md#Cube_CubeWindow_DrawViewControl)). Nothing here allocates
+Each frame: build the [CubeSpace](Cube.Core.CubeSpace.md#Cube_Core_CubeSpace) and fitted [ViewProjection](Cube.Core.ViewProjection.md#Cube_Core_ViewProjection), read the players, let the
+collision reader do its budgeted share of gathering and clip the cached boxes to the cube (only when either
+changed), let Core fill the reused [DrawList](Cube.CubeWindow.md#Cube_CubeWindow_DrawList), sort it far to near, issue one ImGui call per primitive,
+then draw the view control on top ([DrawViewControl](Cube.CubeWindow.md#Cube_CubeWindow_DrawViewControl)). Nothing here allocates
 (PROJECT.md, "Efficiency and memory"); Dalamud skips [Draw](Cube.CubeWindow.md#Cube_CubeWindow_Draw) entirely while the window is closed.
 
 ## Constructors

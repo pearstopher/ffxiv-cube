@@ -165,14 +165,6 @@ public ReadOnlySpan<CollisionBox> Items { get; }
 
 ## Methods
 
-### <a id="Cube_Core_ClippedCollision_Clear"></a> Clear\(\)
-
-Empties the list, so the next [Update](Cube.Core.ClippedCollision.md#Cube_Core_ClippedCollision_Update) clips again.
-
-```csharp
-public void Clear()
-```
-
 ### <a id="Cube_Core_ClippedCollision_Update_Cube_Core_CubeSpace__Cube_Core_CollisionCache_"></a> Update\(in CubeSpace, CollisionCache\)
 
 Clips the cache's ready boxes to the cube if either changed since the last call.

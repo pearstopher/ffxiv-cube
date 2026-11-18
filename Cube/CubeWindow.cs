@@ -16,9 +16,10 @@ namespace Cube;
 /// wireframe cube with the player at its centre).
 /// </summary>
 /// <remarks>
-/// Each frame: build the <see cref="CubeSpace"/> and fitted <see cref="ViewProjection"/>, let Core fill the reused
-/// <see cref="DrawList"/>, sort it far to near, issue one ImGui call per primitive, then draw the view control on
-/// top (<see cref="DrawViewControl"/>). Nothing here allocates
+/// Each frame: build the <see cref="CubeSpace"/> and fitted <see cref="ViewProjection"/>, read the players, let the
+/// collision reader do its budgeted share of gathering and clip the cached boxes to the cube (only when either
+/// changed), let Core fill the reused <see cref="DrawList"/>, sort it far to near, issue one ImGui call per primitive,
+/// then draw the view control on top (<see cref="DrawViewControl"/>). Nothing here allocates
 /// (PROJECT.md, "Efficiency and memory"); Dalamud skips <see cref="Draw"/> entirely while the window is closed.
 /// </remarks>
 internal sealed class CubeWindow : Window
