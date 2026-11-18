@@ -13,6 +13,18 @@ Writes a file so that readers only ever see the old or the complete new content,
 Formats the build details the plugin logs when it loads, so a stale build
 (wrong configuration, or not rebuilt) is obvious in <code>/xllog</code>.
 
+ [CollisionBoxSet](Cube.Core.CollisionBoxSet.md)
+
+The cached collision boxes around the cube (PROJECT.md, "Collision (phase 2)" and "Efficiency and memory"): the
+game reader walks the client's collision scene and offers every box it finds; this class culls them to the area
+around the cube, merges the cheap cases, holds at most a fixed number, and says when the list is stale.
+
+ [CollisionClipper](Cube.Core.CollisionClipper.md)
+
+Clips collision boxes to the cube (PROJECT.md, "Collision (phase 2)": each collider inside or crossing the cube is
+shown as a simplified box, clipped to the cube). Boxes wholly outside are left out; the rest are cut back to the
+part inside.
+
  [Colour](Cube.Core.Colour.md)
 
 Packs and shades colours in the 32-bit layout ImGui uses (<code>0xAABBGGRR</code>), without Core depending on ImGui.
@@ -96,6 +108,11 @@ areas; the window is just empty then, never an error).
 
 ### Structs
 
+ [CollisionBox](Cube.Core.CollisionBox.md)
+
+One piece of collision as a simplified, world-axis-aligned box (PROJECT.md, "Collision (phase 2)": each collider
+inside or crossing the cube is shown as a simplified box, not the game's model).
+
  [CubeSpace](Cube.Core.CubeSpace.md)
 
 The cube of space around the local player (PROJECT.md, "Exact behaviour rules", Cube): centred on the player,
@@ -106,6 +123,11 @@ Answers "is this point inside?" and turns world positions into cube-local view c
 
 One thing to draw, already projected to window pixels: the plugin turns each into one ImGui call
 (PROJECT.md, "Cheap drawing": the fewest primitives that do the job).
+
+ [CollisionClipper.Footprint](Cube.Core.CollisionClipper.Footprint.md)
+
+The cube's square footprint in world X/Z (stored as `System.Numerics.Vector2` X and Y), with its bounds for the
+cheap reject. Computed once per clip pass.
 
  [GameState](Cube.Core.GameState.md)
 

@@ -30,6 +30,14 @@ so a stale or wrong-configuration build is obvious.
 
 Compares packed colours allowing one step of rounding per channel.
 
+ [CollisionBoxTests](Cube.Tests.CollisionBoxTests.md)
+
+Checks the collision box model (PROJECT.md, "Collision (phase 2)": colliders inside or crossing the cube are shown
+as simplified boxes clipped to the cube; stale data is refreshed when the player moves; "Efficiency and memory":
+bounded cache with a hard cap, collision data dropped on a zone change, no per-frame allocations). The box source
+(one box per mesh node or primitive collider through its world matrix) is the #28 recommendation in
+<code>docs/research-notes.md</code>.
+
  [CoreAssemblyTests](Cube.Tests.CoreAssemblyTests.md)
 
 Checks that Core stays free of Dalamud, game structs and Lumina, so all its logic can be unit tested
