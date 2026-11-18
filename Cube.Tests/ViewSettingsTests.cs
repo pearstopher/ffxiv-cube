@@ -25,11 +25,72 @@ public class ViewSettingsTests
         var settings = new CubeSettings();
         var revision = settings.Revision;
 
-        settings.SetView(ViewOrientation.FromDegrees(45, 60));
+        var view = ViewOrientation.FromDegrees(45, 60);
 
-        Assert.Equal(45f, settings.ViewYawDegrees, 3);
-        Assert.Equal(60f, settings.ViewPitchDegrees, 3);
+        settings.SetView(view);
+
+        Assert.Equal(view.Rotation, settings.ViewRotation);
+        Assert.Equal(view, settings.View);
         Assert.True(settings.Revision > revision);
+    }
+
+    [Fact]
+    public void Rolled_view_is_stored_as_is()
+    {
+        var settings = new CubeSettings();
+        var rolled = new ViewOrientation(Quaternion.Concatenate(
+            ViewOrientation.Default.Rotation,
+            Quaternion.CreateFromAxisAngle(Vector3.UnitZ, 0.5f)));
+
+        settings.SetView(rolled);
+
+        Assert.Equal(rolled, settings.View);
+    }
+
+    [Theory]
+    [InlineData(45f, 60f)]
+    [InlineData(-120f, -20f)]
+    [InlineData(0f, 90f)]
+    public void Old_file_with_yaw_and_tilt_loads_as_the_same_orientation(float yaw, float pitch)
+    {
+        // A version-1 file: the old fields are read, the rotation field is missing (so it has its default).
+        var settings = new CubeSettings { ViewYawDegrees = yaw, ViewPitchDegrees = pitch };
+
+        settings.Upgrade(1);
+
+        Assert.Equal(ViewOrientation.FromDegrees(yaw, pitch).Rotation.W, settings.View.Rotation.W, 5);
+        Assert.Equal(ViewOrientation.FromDegrees(yaw, pitch).Forward.X, settings.View.Forward.X, 5);
+        Assert.Equal(ViewOrientation.FromDegrees(yaw, pitch).Up.Z, settings.View.Up.Z, 5);
+    }
+
+    [Fact]
+    public void Old_file_from_before_the_view_control_loads_the_default_view()
+    {
+        var settings = new CubeSettings();
+
+        settings.Upgrade(1);
+
+        Assert.Equal(ViewOrientation.Default.Forward, settings.View.Forward);
+    }
+
+    [Fact]
+    public void Current_file_keeps_its_rotation_and_ignores_the_old_fields()
+    {
+        var view = ViewOrientation.FromDegrees(80, -10);
+        var settings = new CubeSettings { ViewRotation = view.Rotation, ViewYawDegrees = 10, ViewPitchDegrees = 10 };
+
+        settings.Upgrade(CubeSettings.RotationViewVersion);
+
+        Assert.Equal(view, settings.View);
+    }
+
+    [Fact]
+    public void Old_fields_are_never_written_to_the_file()
+    {
+        var settings = new CubeSettings();
+
+        Assert.False(settings.ShouldSerializeViewYawDegrees());
+        Assert.False(settings.ShouldSerializeViewPitchDegrees());
     }
 
     [Fact]
@@ -56,18 +117,36 @@ public class ViewSettingsTests
     }
 
     [Theory]
-    [InlineData(float.NaN, 10f, 0f, 30f)]
-    [InlineData(20f, float.PositiveInfinity, 0f, 30f)]
-    [InlineData(400f, 120f, 40f, 90f)]
-    [InlineData(-30f, -95f, -30f, -90f)]
-    public void Bad_saved_view_values_are_repaired(float yaw, float pitch, float expectedYaw, float expectedPitch)
+    [InlineData(float.NaN, 0f, 0f, 1f)]
+    [InlineData(0f, float.PositiveInfinity, 0f, 1f)]
+    [InlineData(0f, 0f, 0f, 0f)]
+    public void Corrupt_saved_rotation_becomes_the_default_view(float x, float y, float z, float w)
     {
-        var settings = new CubeSettings { ViewYawDegrees = yaw, ViewPitchDegrees = pitch };
+        var settings = new CubeSettings { ViewRotation = new Quaternion(x, y, z, w) };
 
         settings.Changed();
 
-        Assert.Equal(expectedYaw, settings.ViewYawDegrees, 3);
-        Assert.Equal(expectedPitch, settings.ViewPitchDegrees, 3);
+        Assert.Equal(ViewOrientation.Default, settings.View);
+    }
+
+    [Fact]
+    public void Unnormalised_saved_rotation_is_normalised()
+    {
+        var settings = new CubeSettings { ViewRotation = ViewOrientation.FromDegrees(30, 20).Rotation * 3f };
+
+        settings.Changed();
+
+        Assert.Equal(1f, settings.ViewRotation.Length(), 5);
+    }
+
+    [Fact]
+    public void Corrupt_old_yaw_and_tilt_give_the_default_view()
+    {
+        var settings = new CubeSettings { ViewYawDegrees = float.NaN, ViewPitchDegrees = float.PositiveInfinity };
+
+        settings.Upgrade(1);
+
+        Assert.Equal(ViewOrientation.Default.Forward, settings.View.Forward);
     }
 
     [Fact]

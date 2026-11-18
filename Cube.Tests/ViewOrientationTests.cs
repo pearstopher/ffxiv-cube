@@ -5,8 +5,9 @@ namespace Cube.Tests;
 
 /// <summary>
 /// Checks the user's view orientation and the projection it drives (PROJECT.md, "View orientation control": the view
-/// control turns how the cube is shown, yaw and tilt; default from above and behind at 30°, front face away; the
-/// orientation is saved and can be reset; "Efficiency and memory": no per-frame allocations).
+/// control is a rotate gizmo that turns how the cube is shown, any orientation including roll; default from above and
+/// behind at 30°, front face away; orientations saved by the old yaw-and-tilt control carry over; "Efficiency and
+/// memory": no per-frame allocations).
 /// </summary>
 public class ViewOrientationTests
 {
@@ -41,7 +42,7 @@ public class ViewOrientationTests
             Assert.Equal((p.Z * cos) - (p.Y * sin), projection.Depth(p), 4);
         }
 
-        Assert.Equal(new Vector3(0, sin, -cos), projection.TowardsViewer);
+        Assert.Equal(new Vector3(0, sin, -cos), projection.TowardsViewer, new VectorComparer(5));
     }
 
     [Theory]
@@ -61,7 +62,7 @@ public class ViewOrientationTests
         Assert.Equal(0f, Vector3.Dot(view.Right, view.Up), 4);
         Assert.Equal(0f, Vector3.Dot(view.Right, view.Forward), 4);
         Assert.Equal(0f, Vector3.Dot(view.Up, view.Forward), 4);
-        Assert.Equal(0f, view.Right.Y, 6); // the view never rolls
+        Assert.Equal(0f, view.Right.Y, 5); // a heading and tilt alone never roll the view
     }
 
     [Fact]
@@ -80,7 +81,7 @@ public class ViewOrientationTests
         var projection = Projection(ViewOrientation.FromDegrees(0, 90));
 
         Assert.Equal(Origin.Y - 50, projection.ToScreen(new Vector3(0, 0, 5)).Y, 3);
-        Assert.Equal(Origin, projection.ToScreen(new Vector3(0, 8, 0)));
+        Assert.Equal(Origin, projection.ToScreen(new Vector3(0, 8, 0)), new VectorComparer(3));
         Assert.True(projection.Depth(new Vector3(0, 5, 0)) < projection.Depth(new Vector3(0, -5, 0)));
     }
 
@@ -162,68 +163,114 @@ public class ViewOrientationTests
     [InlineData(-179f, 89f)]
     [InlineData(25f, 90f)]
     [InlineData(-60f, -90f)]
-    public void Gizmo_view_matrix_round_trips(float yaw, float pitch)
+    public void Old_yaw_and_tilt_give_the_same_projection_as_the_old_control(float yaw, float pitch)
     {
-        var view = ViewOrientation.FromDegrees(yaw, pitch);
+        // The old control's axes (#63), written out, so saved yaw/tilt values carry over exactly (PROJECT.md).
+        var (sinYaw, cosYaw) = MathF.SinCos(yaw * Deg);
+        var (sinPitch, cosPitch) = MathF.SinCos(pitch * Deg);
+        var right = new Vector3(cosYaw, 0, -sinYaw);
+        var up = new Vector3(sinYaw * sinPitch, cosPitch, cosYaw * sinPitch);
+        var projection = Projection(ViewOrientation.FromDegrees(yaw, pitch));
 
-        var back = ViewOrientation.FromGizmoView(view.ToGizmoView(8f));
-
-        Assert.Equal(view.YawDegrees, back.YawDegrees, 2);
-        Assert.Equal(view.PitchDegrees, back.PitchDegrees, 2);
-    }
-
-    [Fact]
-    public void Gizmo_view_matrix_matches_a_right_handed_look_at_from_above_and_behind()
-    {
-        // ImGuizmo's LookAt has the same layout as System.Numerics' right-handed CreateLookAt. View coordinates mirror
-        // Z, so "behind" (−Z in view coordinates) is +Z in ImGuizmo's world.
-        var (sin, cos) = MathF.SinCos(30 * Deg);
-        var eye = new Vector3(0, sin, cos) * 8f;
-        var expected = Matrix4x4.CreateLookAt(eye, Vector3.Zero, Vector3.UnitY);
-
-        var actual = ViewOrientation.Default.ToGizmoView(8f);
-
-        for (var row = 0; row < 4; row++)
+        foreach (var p in SamplePoints())
         {
-            for (var column = 0; column < 4; column++)
-            {
-                Assert.Equal(expected[row, column], actual[row, column], 4);
-            }
+            var screen = projection.ToScreen(p);
+            Assert.Equal(Origin.X + (Vector3.Dot(p, right) * 10), screen.X, 2);
+            Assert.Equal(Origin.Y - (Vector3.Dot(p, up) * 10), screen.Y, 2);
         }
     }
 
-    [Fact]
-    public void Gizmo_drag_to_the_side_reads_back_as_a_turned_view()
+    [Theory]
+    [InlineData(0f, 30f, 0f)]
+    [InlineData(45f, 30f, 0f)]
+    [InlineData(-120f, 10f, 40f)]
+    [InlineData(170f, -40f, -75f)]
+    [InlineData(25f, 90f, 120f)]
+    [InlineData(-60f, -90f, 180f)]
+    public void Rotation_round_trips_through_the_gizmo_model_matrix(float yaw, float pitch, float roll)
     {
-        // As ImGuizmo would after a drag: the camera moved round to the right of the cube (+X), level.
-        var dragged = Matrix4x4.CreateLookAt(new Vector3(8, 0, 0), Vector3.Zero, Vector3.UnitY);
+        var view = Rolled(ViewOrientation.FromDegrees(yaw, pitch), roll);
 
-        var view = ViewOrientation.FromGizmoView(dragged);
+        Assert.True(ViewOrientation.TryFromGizmoModel(view.ToGizmoModel(), out var back));
 
-        Assert.Equal(-90f, view.YawDegrees, 2);
-        Assert.Equal(0f, view.PitchDegrees, 2);
+        AssertSameAxes(view, back);
     }
 
     [Fact]
-    public void Gizmo_view_from_straight_above_keeps_its_heading()
+    public void Gizmo_model_of_the_default_view_is_seen_from_above_and_behind()
     {
-        // ImGuizmo's "top" face click: looking straight down with the screen's right still along +X.
-        var top = Matrix4x4.CreateLookAt(new Vector3(0, 8, 0), Vector3.Zero, -Vector3.UnitZ);
+        // The gizmo's camera sits on ImGuizmo's +Z axis. View coordinates mirror Z, so the cube's front (+Z) must point
+        // away from that camera and down the screen's depth, and its up (+Y) tilts towards the camera.
+        var model = ViewOrientation.Default.ToGizmoModel();
+        var (sin, cos) = MathF.SinCos(30 * Deg);
 
-        var view = ViewOrientation.FromGizmoView(top);
+        var front = Vector3.TransformNormal(-Vector3.UnitZ, model); // the cube's +Z, mirrored into ImGuizmo's world
+        var up = Vector3.TransformNormal(Vector3.UnitY, model);
 
-        Assert.Equal(0f, view.YawDegrees, 2);
-        Assert.Equal(90f, view.PitchDegrees, 2);
+        Assert.Equal(new Vector3(0, sin, -cos), front, new VectorComparer(4));
+        Assert.Equal(new Vector3(0, cos, sin), up, new VectorComparer(4));
     }
 
     [Fact]
-    public void Pitch_is_clamped_and_yaw_wrapped()
+    public void Dragging_the_x_ring_turns_the_cube_around_its_own_x_axis()
     {
-        var view = ViewOrientation.FromDegrees(370, 120);
+        // As ImGuizmo's rotate gizmo in local mode does: a turn around the model's own x axis, applied first.
+        var view = ViewOrientation.FromDegrees(35, 20);
+        var dragged = Matrix4x4.CreateRotationX(25 * Deg) * view.ToGizmoModel();
 
-        Assert.Equal(10f, view.YawDegrees, 3);
-        Assert.Equal(90f, view.PitchDegrees, 3);
-        Assert.Equal(-90f, ViewOrientation.FromDegrees(0, -200).PitchDegrees, 3);
+        Assert.True(ViewOrientation.TryFromGizmoModel(dragged, out var turned));
+
+        var before = Projection(view);
+        var after = Projection(turned);
+        Assert.Equal(before.ToScreen(Vector3.UnitX * 10), after.ToScreen(Vector3.UnitX * 10), new VectorComparer(3));
+        Assert.NotEqual(before.ToScreen(Vector3.UnitY * 10), after.ToScreen(Vector3.UnitY * 10));
+    }
+
+    [Fact]
+    public void Gizmo_drift_and_scale_are_removed()
+    {
+        var view = ViewOrientation.FromDegrees(-50, 40);
+        var scaled = Matrix4x4.CreateScale(1.03f) * view.ToGizmoModel();
+
+        Assert.True(ViewOrientation.TryFromGizmoModel(scaled, out var back));
+
+        AssertSameAxes(view, back);
+    }
+
+    [Fact]
+    public void Unusable_gizmo_matrix_is_rejected()
+    {
+        Assert.False(ViewOrientation.TryFromGizmoModel(default, out _));
+    }
+
+    [Fact]
+    public void Rolling_the_view_changes_the_projection()
+    {
+        var view = ViewOrientation.FromDegrees(20, 30);
+        var rolled = Rolled(view, 30);
+
+        Assert.NotEqual(0f, rolled.Right.Y, 3); // the screen's right is no longer level
+        Assert.NotEqual(Projection(view).ToScreen(new Vector3(5, 0, 0)), Projection(rolled).ToScreen(new Vector3(5, 0, 0)));
+    }
+
+    [Fact]
+    public void Default_view_is_unchanged_from_the_old_control_default()
+    {
+        AssertSameAxes(ViewOrientation.FromDegrees(0, ViewOrientation.DefaultPitchDegrees), ViewOrientation.Default);
+    }
+
+    [Fact]
+    public void Unusable_rotation_falls_back_to_the_default()
+    {
+        Assert.Equal(ViewOrientation.Default, new ViewOrientation(default));
+        Assert.Equal(ViewOrientation.Default, new ViewOrientation(new Quaternion(float.NaN, 0, 0, 1)));
+    }
+
+    [Fact]
+    public void Old_tilt_is_clamped_and_heading_wrapped()
+    {
+        AssertSameAxes(ViewOrientation.FromDegrees(10, 90), ViewOrientation.FromDegrees(370, 120));
+        AssertSameAxes(ViewOrientation.FromDegrees(0, -90), ViewOrientation.FromDegrees(0, -200));
     }
 
     [Fact]
@@ -236,11 +283,35 @@ public class ViewOrientationTests
 
         Allocations.AssertNone(() =>
         {
-            var matrix = view.ToGizmoView(8f);
-            var back = ViewOrientation.FromGizmoView(matrix);
-            sink += projection.ToScreen(point).X + projection.Depth(point) + back.Yaw;
+            var matrix = view.ToGizmoModel();
+            ViewOrientation.TryFromGizmoModel(matrix, out var back);
+            sink += projection.ToScreen(point).X + projection.Depth(point) + back.Rotation.W;
         });
 
         Assert.True(float.IsFinite(sink));
+    }
+
+    private static ViewOrientation Rolled(ViewOrientation view, float degrees) =>
+        new(Quaternion.Concatenate(view.Rotation, Quaternion.CreateFromAxisAngle(Vector3.UnitZ, degrees * Deg)));
+
+    private static void AssertSameAxes(ViewOrientation expected, ViewOrientation actual)
+    {
+        var comparer = new VectorComparer(4);
+        Assert.Equal(expected.Right, actual.Right, comparer);
+        Assert.Equal(expected.Up, actual.Up, comparer);
+        Assert.Equal(expected.Forward, actual.Forward, comparer);
+    }
+
+    private sealed class VectorComparer(int digits) : IEqualityComparer<Vector3>, IEqualityComparer<Vector2>
+    {
+        private readonly float tolerance = MathF.Pow(10, -digits);
+
+        public bool Equals(Vector3 x, Vector3 y) => Vector3.Distance(x, y) <= this.tolerance;
+
+        public bool Equals(Vector2 x, Vector2 y) => Vector2.Distance(x, y) <= this.tolerance;
+
+        public int GetHashCode(Vector3 obj) => 0;
+
+        public int GetHashCode(Vector2 obj) => 0;
     }
 }

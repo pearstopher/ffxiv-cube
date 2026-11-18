@@ -22,8 +22,12 @@ public class ProjectionAndDrawListTests
     public void Default_elevation_is_30_degrees()
     {
         Assert.Equal(30f, ViewOrientation.DefaultPitchDegrees);
-        Assert.Equal(Elevation, ViewOrientation.Default.Pitch, 6);
-        Assert.Equal(0f, ViewOrientation.Default.Yaw);
+        // Looking down 30° below the horizontal, straight ahead (no heading, no roll).
+        var forward = ViewOrientation.Default.Forward;
+        Assert.Equal(-MathF.Sin(Elevation), forward.Y, 5);
+        Assert.Equal(MathF.Cos(Elevation), forward.Z, 5);
+        Assert.Equal(0f, forward.X, 5);
+        Assert.Equal(1f, ViewOrientation.Default.Right.X, 5);
     }
 
     [Fact]

@@ -3,9 +3,8 @@ using System.Numerics;
 namespace Cube.Core;
 
 /// <summary>
-/// How the user has turned the cube on screen with the view control (PROJECT.md, "View orientation control"): a
-/// heading (yaw) and a tilt (pitch) of the viewer around the cube. Default: from above and behind, 30° elevation,
-/// front face away from the viewer.
+/// How the user has turned the cube on screen with the view control (PROJECT.md, "View orientation control"): a full
+/// rotation, roll included. Default: from above and behind, 30° elevation, front face away from the viewer.
 /// </summary>
 /// <remarks>
 /// <para>
@@ -14,14 +13,15 @@ namespace Cube.Core;
 /// never changes what is inside the cube.
 /// </para>
 /// <para>
-/// Two angles rather than a full rotation, because the view control never rolls the view (ImGuizmo keeps the world's
-/// up direction, even when looking straight down) and two numbers are easy to save, check and reset. The viewer's
-/// axes are worked out once in the constructor, so <see cref="ViewProjection"/> only does dot products per point.
+/// A quaternion rather than angles, because the control is ImGuizmo's rotate gizmo, whose rings can turn the cube
+/// around any axis, so any orientation is allowed (PROJECT.md: "including roll"). The rotation takes a point in view
+/// coordinates to the viewer's (right, up, forward) frame. The viewer's axes are worked out once in the constructor,
+/// so <see cref="ViewProjection"/> only does dot products per point.
 /// </para>
 /// <para>
-/// The view control is ImGuizmo's view manipulator, which works on a right-handed camera view matrix.
-/// <see cref="ToGizmoView"/> and <see cref="FromGizmoView"/> convert, so the plugin can hand ImGuizmo a matrix and
-/// read the user's change back. Pure maths, so it is unit tested without the game.
+/// Orientations saved by the old yaw-and-tilt control (#63) are converted with <see cref="FromDegrees"/>.
+/// <see cref="ToGizmoModel"/> and <see cref="TryFromGizmoModel"/> convert to and from the model matrix the gizmo
+/// turns. Pure maths, so it is unit tested without the game.
 /// </para>
 /// </remarks>
 public readonly struct ViewOrientation : IEquatable<ViewOrientation>
@@ -29,39 +29,36 @@ public readonly struct ViewOrientation : IEquatable<ViewOrientation>
     /// <summary>Default tilt of the view above the horizontal, in degrees (PROJECT.md: 30°).</summary>
     public const float DefaultPitchDegrees = 30f;
 
-    /// <summary>Highest tilt: looking straight down. Lower limit is straight up (the negative).</summary>
+    /// <summary>Highest tilt the old yaw-and-tilt control allowed: looking straight down (and −90° straight up).</summary>
     public const float MaxPitchDegrees = 90f;
 
     /// <summary>Converts degrees to radians.</summary>
     private const float Radians = MathF.PI / 180f;
 
-    /// <summary>Creates an orientation, wrapping the yaw into −π…π and clamping the pitch to ±90°.</summary>
-    /// <param name="yaw">
-    /// The viewer's heading, in radians: 0 looks forward (+Z in view coordinates, the front face away from the viewer),
-    /// positive turns the viewer to the right (looking from above, clockwise).
+    /// <summary>
+    /// Creates an orientation from a rotation, normalised. A rotation that isn't usable (zero length or not a number,
+    /// e.g. from a corrupt file) gives the default view, so a bad value never produces a broken cube.
+    /// </summary>
+    /// <param name="rotation">
+    /// Takes a point in view coordinates to the viewer's frame: x along the screen's right, y up, z away from the
+    /// viewer.
     /// </param>
-    /// <param name="pitch">Tilt of the view above the horizontal, in radians; negative looks up from below.</param>
-    public ViewOrientation(float yaw, float pitch)
+    public ViewOrientation(Quaternion rotation)
     {
-        this.Yaw = MathF.IEEERemainder(yaw, 2f * MathF.PI);
-        this.Pitch = Math.Clamp(pitch, -MaxPitchDegrees * Radians, MaxPitchDegrees * Radians);
-        var (sinYaw, cosYaw) = MathF.SinCos(this.Yaw);
-        var (sinPitch, cosPitch) = MathF.SinCos(this.Pitch);
-        this.Right = new Vector3(cosYaw, 0, -sinYaw);
-        this.Up = new Vector3(sinYaw * sinPitch, cosPitch, cosYaw * sinPitch);
-        this.Forward = new Vector3(sinYaw * cosPitch, -sinPitch, cosYaw * cosPitch);
+        this.Rotation = Quaternion.Normalize(IsUsable(rotation) ? rotation : DefaultRotation());
+        var m = Matrix4x4.CreateFromQuaternion(this.Rotation);
+        this.Right = new Vector3(m.M11, m.M21, m.M31);
+        this.Up = new Vector3(m.M12, m.M22, m.M32);
+        this.Forward = new Vector3(m.M13, m.M23, m.M33);
     }
 
     /// <summary>The default view (PROJECT.md): from behind, 30° above, front face away.</summary>
-    public static ViewOrientation Default => new(0f, DefaultPitchDegrees * Radians);
+    public static ViewOrientation Default => new(DefaultRotation());
 
-    /// <summary>The viewer's heading, in radians (−π…π).</summary>
-    public float Yaw { get; }
+    /// <summary>The rotation from view coordinates to the viewer's frame, normalised. This is what's saved.</summary>
+    public Quaternion Rotation { get; }
 
-    /// <summary>The view's tilt above the horizontal, in radians (−π/2…π/2).</summary>
-    public float Pitch { get; }
-
-    /// <summary>The screen's right direction, in view coordinates. Always horizontal: the view never rolls.</summary>
+    /// <summary>The screen's right direction, in view coordinates.</summary>
     public Vector3 Right { get; }
 
     /// <summary>The screen's up direction, in view coordinates.</summary>
@@ -70,82 +67,111 @@ public readonly struct ViewOrientation : IEquatable<ViewOrientation>
     /// <summary>The direction the viewer looks in, in view coordinates; depth grows along it.</summary>
     public Vector3 Forward { get; }
 
-    /// <summary>The yaw in degrees, as saved in the settings.</summary>
-    public float YawDegrees => this.Yaw / Radians;
-
-    /// <summary>The pitch in degrees, as saved in the settings.</summary>
-    public float PitchDegrees => this.Pitch / Radians;
-
-    /// <summary>Two orientations are equal when their angles are exactly equal.</summary>
+    /// <summary>Two orientations are equal when their rotations are exactly equal.</summary>
     /// <param name="left">One orientation.</param>
     /// <param name="right">The other.</param>
     public static bool operator ==(ViewOrientation left, ViewOrientation right) => left.Equals(right);
 
-    /// <summary>Two orientations differ when either angle differs.</summary>
+    /// <summary>Two orientations differ when their rotations differ.</summary>
     /// <param name="left">One orientation.</param>
     /// <param name="right">The other.</param>
     public static bool operator !=(ViewOrientation left, ViewOrientation right) => !left.Equals(right);
 
-    /// <summary>An orientation from angles in degrees, as stored in the settings.</summary>
-    /// <param name="yawDegrees">Heading, in degrees.</param>
-    /// <param name="pitchDegrees">Tilt, in degrees.</param>
-    public static ViewOrientation FromDegrees(float yawDegrees, float pitchDegrees) =>
-        new(yawDegrees * Radians, pitchDegrees * Radians);
-
     /// <summary>
-    /// Reads an orientation back from an ImGuizmo view matrix (after the user dragged or clicked the view control).
-    /// Any roll is dropped, and a view that somehow went past straight up or down is clamped.
+    /// An orientation from a heading and a tilt in degrees: the old yaw-and-tilt control's saved values (#63), and a
+    /// handy way to name a view in tests. The tilt is clamped to ±90°, as the old control did.
     /// </summary>
-    /// <remarks>
-    /// The matrix's columns are the camera's right, up and back axes in ImGuizmo's world, which is view coordinates
-    /// with Z mirrored (see <see cref="ToGizmoView"/>). The yaw comes from the right axis, which stays horizontal and
-    /// well defined even looking straight down; if it ever isn't usable, the forward direction is used instead.
-    /// </remarks>
-    /// <param name="view">The view matrix ImGuizmo returned.</param>
-    public static ViewOrientation FromGizmoView(in Matrix4x4 view)
+    /// <param name="yawDegrees">
+    /// The viewer's heading: 0 looks forward (+Z in view coordinates, the front face away from the viewer), positive
+    /// turns the viewer to the right (looking from above, clockwise).
+    /// </param>
+    /// <param name="pitchDegrees">Tilt of the view above the horizontal; negative looks up from below.</param>
+    public static ViewOrientation FromDegrees(float yawDegrees, float pitchDegrees)
     {
-        var right = new Vector3(view.M11, view.M21, -view.M31);
-        var forward = new Vector3(-view.M13, -view.M23, view.M33);
-        var yaw = (right.X * right.X) + (right.Z * right.Z) > 1e-6f
-            ? MathF.Atan2(-right.Z, right.X)
-            : MathF.Atan2(forward.X, forward.Z);
-        var (sinYaw, cosYaw) = MathF.SinCos(yaw);
-        var horizontal = (forward.X * sinYaw) + (forward.Z * cosYaw);
-        return new ViewOrientation(yaw, MathF.Atan2(-forward.Y, horizontal));
+        var (sinYaw, cosYaw) = MathF.SinCos(yawDegrees * Radians);
+        var (sinPitch, cosPitch) = MathF.SinCos(Math.Clamp(pitchDegrees, -MaxPitchDegrees, MaxPitchDegrees) * Radians);
+        var right = new Vector3(cosYaw, 0, -sinYaw);
+        var up = new Vector3(sinYaw * sinPitch, cosPitch, cosYaw * sinPitch);
+        var forward = new Vector3(sinYaw * cosPitch, -sinPitch, cosYaw * cosPitch);
+        return new ViewOrientation(Quaternion.CreateFromRotationMatrix(FromAxes(right, up, forward)));
     }
 
     /// <summary>
-    /// The camera view matrix ImGuizmo's view manipulator expects for this orientation: right-handed, looking at the
-    /// cube's centre from <paramref name="distance"/> away, laid out like <see cref="Matrix4x4.CreateLookAt"/>.
+    /// Reads an orientation back from the model matrix ImGuizmo's rotate gizmo returned after a drag. Any scale or
+    /// drift the gizmo's maths added is removed.
+    /// </summary>
+    /// <param name="model">The model matrix, laid out as by <see cref="ToGizmoModel"/>.</param>
+    /// <param name="view">The orientation it holds.</param>
+    /// <returns>False if the matrix holds no usable rotation; the caller then keeps the old view.</returns>
+    public static bool TryFromGizmoModel(in Matrix4x4 model, out ViewOrientation view)
+    {
+        // A (nearly) flat matrix has no rotation to read, though Decompose may still "succeed" on it.
+        var unmirrored = Mirror(model);
+        if (MathF.Abs(unmirrored.GetDeterminant()) > 1e-6f
+            && Matrix4x4.Decompose(unmirrored, out _, out var rotation, out _)
+            && IsUsable(rotation))
+        {
+            view = new ViewOrientation(rotation);
+            return true;
+        }
+
+        view = Default;
+        return false;
+    }
+
+    /// <summary>
+    /// The model matrix for ImGuizmo's rotate gizmo: the cube's rotation as seen by a camera on the +Z axis looking
+    /// at the centre (laid out like <see cref="Matrix4x4.CreateLookAt"/>, the way ImGuizmo expects).
     /// </summary>
     /// <remarks>
     /// View coordinates are left-handed (right, up, forward), ImGuizmo's world is right-handed, so Z is mirrored on
-    /// the way in and out. The widget's own cube therefore turns exactly like the drawn cube.
+    /// both sides of the rotation. The gizmo's x, y and z rings then lie around the cube's own x, y and z axes, so the
+    /// ring colours match the cube's axes and dragging the x ring turns the cube around its x axis.
     /// </remarks>
-    /// <param name="distance">How far the camera is from the centre; only matters to ImGuizmo's own maths.</param>
-    public Matrix4x4 ToGizmoView(float distance)
-    {
-        var x = Mirror(this.Right);
-        var y = Mirror(this.Up);
-        var z = -Mirror(this.Forward);
-        var eye = z * distance;
-        return new Matrix4x4(
-            x.X, y.X, z.X, 0,
-            x.Y, y.Y, z.Y, 0,
-            x.Z, y.Z, z.Z, 0,
-            -Vector3.Dot(x, eye), -Vector3.Dot(y, eye), -Vector3.Dot(z, eye), 1);
-    }
+    public Matrix4x4 ToGizmoModel() => Mirror(Matrix4x4.CreateFromQuaternion(this.Rotation));
 
     /// <inheritdoc/>
-    public bool Equals(ViewOrientation other) => this.Yaw == other.Yaw && this.Pitch == other.Pitch;
+    public bool Equals(ViewOrientation other) => this.Rotation == other.Rotation;
 
     /// <inheritdoc/>
     public override bool Equals(object? obj) => obj is ViewOrientation other && this.Equals(other);
 
     /// <inheritdoc/>
-    public override int GetHashCode() => HashCode.Combine(this.Yaw, this.Pitch);
+    public override int GetHashCode() => this.Rotation.GetHashCode();
 
-    /// <summary>Converts between view coordinates and ImGuizmo's right-handed world by mirroring Z.</summary>
-    /// <param name="v">A direction.</param>
-    private static Vector3 Mirror(Vector3 v) => new(v.X, v.Y, -v.Z);
+    /// <summary>The default rotation: heading 0, tilt 30° (computed, not stored, so <see cref="Default"/> can't recurse).</summary>
+    private static Quaternion DefaultRotation()
+    {
+        var (sin, cos) = MathF.SinCos(DefaultPitchDegrees * Radians);
+        return Quaternion.CreateFromRotationMatrix(FromAxes(Vector3.UnitX, new Vector3(0, cos, sin), new Vector3(0, -sin, cos)));
+    }
+
+    /// <summary>A rotation matrix whose columns are the viewer's axes, so a point times it gives its viewer coordinates.</summary>
+    /// <param name="right">The screen's right, in view coordinates.</param>
+    /// <param name="up">The screen's up.</param>
+    /// <param name="forward">The viewing direction.</param>
+    private static Matrix4x4 FromAxes(Vector3 right, Vector3 up, Vector3 forward) => new(
+        right.X, up.X, forward.X, 0,
+        right.Y, up.Y, forward.Y, 0,
+        right.Z, up.Z, forward.Z, 0,
+        0, 0, 0, 1);
+
+    /// <summary>
+    /// Converts a rotation between view coordinates and ImGuizmo's right-handed world by mirroring Z on both sides
+    /// (S·M·S with S = diag(1, 1, −1)), which negates the entries that mix Z with X or Y. Its own inverse.
+    /// </summary>
+    /// <param name="m">A rotation matrix.</param>
+    private static Matrix4x4 Mirror(Matrix4x4 m)
+    {
+        m.M13 = -m.M13;
+        m.M23 = -m.M23;
+        m.M31 = -m.M31;
+        m.M32 = -m.M32;
+        return m;
+    }
+
+    /// <summary>Whether a rotation can be normalised: every part a number and not (nearly) zero length.</summary>
+    /// <param name="q">The rotation.</param>
+    private static bool IsUsable(Quaternion q) =>
+        float.IsFinite(q.X) && float.IsFinite(q.Y) && float.IsFinite(q.Z) && float.IsFinite(q.W) && q.LengthSquared() > 1e-6f;
 }

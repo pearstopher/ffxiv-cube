@@ -33,6 +33,12 @@ internal sealed class DrawBudgetCheck : BridgeCheck
     /// <inheritdoc/>
     public override string Name => "draw-within-budget";
 
+    /// <summary>
+    /// Room for the 150 frames even when the game runs in the background at about 10 fps (its own frame limiter); the
+    /// budget is per frame, so a slow frame rate mustn't fail the check (#79).
+    /// </summary>
+    public override System.TimeSpan Timeout => System.TimeSpan.FromSeconds(30);
+
     /// <inheritdoc/>
     public override IEnumerable<CheckStep> Run(BridgeContext context)
     {

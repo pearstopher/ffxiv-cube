@@ -114,11 +114,14 @@ into a PNG) paints what the dump says, in order, and writes a valid PNG.
 
 Locates files in the repository from a test's output folder, for tests that inspect the repo or build output.
 
+ [ViewOrientationTests.VectorComparer](Cube.Tests.ViewOrientationTests.VectorComparer.md)
+
  [ViewOrientationTests](Cube.Tests.ViewOrientationTests.md)
 
 Checks the user's view orientation and the projection it drives (PROJECT.md, "View orientation control": the view
-control turns how the cube is shown, yaw and tilt; default from above and behind at 30°, front face away; the
-orientation is saved and can be reset; "Efficiency and memory": no per-frame allocations).
+control is a rotate gizmo that turns how the cube is shown, any orientation including roll; default from above and
+behind at 30°, front face away; orientations saved by the old yaw-and-tilt control carry over; "Efficiency and
+memory": no per-frame allocations).
 
  [ViewSettingsTests](Cube.Tests.ViewSettingsTests.md)
 
