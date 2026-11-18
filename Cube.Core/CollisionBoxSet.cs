@@ -61,6 +61,9 @@ public sealed class CollisionBoxSet
     /// <summary>The cube edge the boxes were gathered for, already clamped.</summary>
     private float edge;
 
+    /// <summary>Set by <see cref="MarkStale"/>: the boxes are kept but <see cref="NeedsRefresh"/> asks for a new gather.</summary>
+    private bool stale;
+
     /// <summary>Creates an empty set.</summary>
     /// <param name="capacity">Most boxes kept.</param>
     public CollisionBoxSet(int capacity = DefaultCapacity)
@@ -128,7 +131,7 @@ public sealed class CollisionBoxSet
     public bool NeedsRefresh(Vector3 playerPosition, float edge, ulong sceneStamp)
     {
         edge = CubeSpace.ClampEdge(edge);
-        if (!this.HasData || sceneStamp != this.stamp || edge != this.edge)
+        if (!this.HasData || this.stale || sceneStamp != this.stamp || edge != this.edge)
         {
             return true;
         }
@@ -149,6 +152,7 @@ public sealed class CollisionBoxSet
         this.stamp = sceneStamp;
         this.Region = RegionFor(playerPosition, this.edge);
         this.HasData = true;
+        this.stale = false;
         this.Count = 0;
         this.Offered = 0;
         this.Merged = 0;
@@ -169,6 +173,12 @@ public sealed class CollisionBoxSet
         this.Dropped = 0;
         this.Invalid = 0;
     }
+
+    /// <summary>
+    /// Keeps the boxes but makes <see cref="NeedsRefresh"/> true, so they stay drawn until a new gather replaces them
+    /// (<see cref="CollisionCache.Invalidate"/>).
+    /// </summary>
+    public void MarkStale() => this.stale = true;
 
     /// <summary>
     /// Whether a box reaches into the gathered region. The reader calls it on collider and node boxes to skip

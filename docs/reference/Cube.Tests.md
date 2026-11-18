@@ -38,6 +38,13 @@ bounded cache with a hard cap, collision data dropped on a zone change, no per-f
 (one box per mesh node or primitive collider through its world matrix) is the #28 recommendation in
 <code>docs/research-notes.md</code>.
 
+ [CollisionCacheTests](Cube.Tests.CollisionCacheTests.md)
+
+Checks the collision reader's gathering rules (PROJECT.md, "Collision (phase 2)": expensive gathering is spread
+over frames with a time budget and cached, areas not yet processed are simply empty, stale data is refreshed when
+the player moves; "Efficiency and memory": bounded memory, collision data dropped on a zone change, no per-frame
+allocations). The game side is replaced by a fake scene whose colliders each cost a set number of clock ticks.
+
  [CoreAssemblyTests](Cube.Tests.CoreAssemblyTests.md)
 
 Checks that Core stays free of Dalamud, game structs and Lumina, so all its logic can be unit tested
@@ -147,3 +154,9 @@ the camera's direction vector (docs/research-notes.md, #10).
 
 Checks when the cube is hidden (PROJECT.md, "When hidden": not logged in, during loading screens, cutscenes,
 GPose and in PvP areas; shown otherwise).
+
+### Structs
+
+ [CollisionCacheTests.FakeSource](Cube.Tests.CollisionCacheTests.FakeSource.md)
+
+A scene of fixed boxes, one per collider, whose clock advances a set amount per collider offered.

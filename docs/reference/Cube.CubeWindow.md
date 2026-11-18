@@ -182,6 +182,30 @@ private readonly GameStateReader gameState
 
  [GameStateReader](Cube.Game.GameStateReader.md)
 
+### <a id="Cube_CubeWindow_gatherBytes"></a> gatherBytes
+
+Bytes this frame's collision gather allocated, subtracted from the draw cost. Debug builds only.
+
+```csharp
+private long gatherBytes
+```
+
+#### Field Value
+
+ [long](https://learn.microsoft.com/dotnet/api/system.int64)
+
+### <a id="Cube_CubeWindow_gatherTicks"></a> gatherTicks
+
+Ticks this frame's collision gather took, subtracted from the draw cost. Debug builds only.
+
+```csharp
+private long gatherTicks
+```
+
+#### Field Value
+
+ [long](https://learn.microsoft.com/dotnet/api/system.int64)
+
 ### <a id="Cube_CubeWindow_hasSpace"></a> hasSpace
 
 Whether [LastSpace](Cube.CubeWindow.md#Cube_CubeWindow_LastSpace) holds a real frame's cube, so its rotation can be reused.
@@ -257,6 +281,19 @@ private float yaw
 
 ## Properties
 
+### <a id="Cube_CubeWindow_Collision"></a> Collision
+
+The collision around the cube (PROJECT.md, "Collision (phase 2)"), gathered over frames while the cube is shown.
+Read by the test bridge; drawn from #31.
+
+```csharp
+internal CollisionReader Collision { get; }
+```
+
+#### Property Value
+
+ [CollisionReader](Cube.Game.CollisionReader.md)
+
 ### <a id="Cube_CubeWindow_DrawCost"></a> DrawCost
 
 Time and allocations of each [Draw](Cube.CubeWindow.md#Cube_CubeWindow_Draw) call, read by the in-game test bridge to check
@@ -309,6 +346,20 @@ internal FakePlayers Fakes { get; }
 #### Property Value
 
  [FakePlayers](Cube.TestBridge.FakePlayers.md)
+
+### <a id="Cube_CubeWindow_GatherCost"></a> GatherCost
+
+Time and allocations of each frame's collision gathering, on frames where a gather ran. PROJECT.md's budgets
+exempt "budgeted background gathering" from the draw budget, so these frames' gathering is taken out of
+[DrawCost](Cube.CubeWindow.md#Cube_CubeWindow_DrawCost) and checked here against its own budget instead. Debug builds only.
+
+```csharp
+internal DrawCostSampler GatherCost { get; }
+```
+
+#### Property Value
+
+ [DrawCostSampler](Cube.Core.DrawCostSampler.md)
 
 ### <a id="Cube_CubeWindow_LastFontSize"></a> LastFontSize
 
@@ -728,3 +779,23 @@ How many calls were made.
 
 Labels are clipped to the window by the window draw list's own clip rectangle, so names near the edge are cut
 off rather than spilling over the game. The text is the cached name string, so no string is built here.
+
+### <a id="Cube_CubeWindow_UpdateCollision_System_Numerics_Vector3_System_Single_"></a> UpdateCollision\(Vector3, float\)
+
+Lets the collision reader do this frame's share of gathering (PROJECT.md, "Collision (phase 2)"). In Debug builds
+a frame where a gather ran is timed on its own and recorded in [GatherCost](Cube.CubeWindow.md#Cube_CubeWindow_GatherCost), and kept out of the
+draw budget, which PROJECT.md says doesn't cover budgeted background gathering.
+
+```csharp
+private void UpdateCollision(Vector3 centre, float edge)
+```
+
+#### Parameters
+
+`centre` [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
+
+The cube's centre.
+
+`edge` [float](https://learn.microsoft.com/dotnet/api/system.single)
+
+The cube's edge in yalms.

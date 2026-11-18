@@ -19,6 +19,11 @@ The cached collision boxes around the cube (PROJECT.md, "Collision (phase 2)" an
 game reader walks the client's collision scene and offers every box it finds; this class culls them to the area
 around the cube, merges the cheap cases, holds at most a fixed number, and says when the list is stale.
 
+ [CollisionCache](Cube.Core.CollisionCache.md)
+
+Gathers the collision boxes around the cube a few colliders per frame, within a time budget, and keeps the last
+complete set for drawing (PROJECT.md, "Collision (phase 2)" and "Efficiency and memory").
+
  [CollisionClipper](Cube.Core.CollisionClipper.md)
 
 Clips collision boxes to the cube (PROJECT.md, "Collision (phase 2)": each collider inside or crossing the cube is
@@ -154,6 +159,13 @@ rotation, roll included. Default: from above and behind, 30° elevation, front f
 
 Projects view coordinates (from [CubeSpace](Cube.Core.CubeSpace.md#Cube_Core_CubeSpace)) onto the window, as seen from the user's chosen
 [ViewOrientation](Cube.Core.ViewOrientation.md#Cube_Core_ViewOrientation) (PROJECT.md, "View orientation control"; default from above and behind at 30°).
+
+### Interfaces
+
+ [ICollisionSource](Cube.Core.ICollisionSource.md)
+
+Where [CollisionCache](Cube.Core.CollisionCache.md#Cube_Core_CollisionCache) gets its boxes from: in the plugin, the game's collision scene
+(<code>Cube.Game.CollisionReader</code>); in the tests, a list of fake colliders.
 
 ### Enums
 
