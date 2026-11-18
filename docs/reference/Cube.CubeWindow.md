@@ -783,7 +783,7 @@ off rather than spilling over the game. The text is the cached name string, so n
 ### <a id="Cube_CubeWindow_UpdateCollision_System_Numerics_Vector3_System_Single_"></a> UpdateCollision\(Vector3, float\)
 
 Lets the collision reader do this frame's share of gathering (PROJECT.md, "Collision (phase 2)"). In Debug builds
-a frame where a gather ran is timed on its own and recorded in [GatherCost](Cube.CubeWindow.md#Cube_CubeWindow_GatherCost), and kept out of the
+a frame where a gather ran is timed on its own and recorded in <code>GatherCost</code> (Debug only), and kept out of the
 draw budget, which PROJECT.md says doesn't cover budgeted background gathering.
 
 ```csharp

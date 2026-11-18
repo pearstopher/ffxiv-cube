@@ -391,7 +391,7 @@ internal sealed class CubeWindow : Window
 
     /// <summary>
     /// Lets the collision reader do this frame's share of gathering (PROJECT.md, "Collision (phase 2)"). In Debug builds
-    /// a frame where a gather ran is timed on its own and recorded in <see cref="GatherCost"/>, and kept out of the
+    /// a frame where a gather ran is timed on its own and recorded in <c>GatherCost</c> (Debug only), and kept out of the
     /// draw budget, which PROJECT.md says doesn't cover budgeted background gathering.
     /// </summary>
     /// <param name="centre">The cube's centre.</param>
