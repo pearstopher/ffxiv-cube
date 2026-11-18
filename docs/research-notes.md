@@ -94,6 +94,55 @@ Dalamud already hides plugin windows during cutscenes, GPose and when the user h
 
 Everything above is a memory read on the framework thread: no hooks, no signatures of our own, no game functions called, nothing sent. Nearby players' positions and names are what the client already shows in game (and what Mappy and MiniMappingway draw on maps). Names are only drawn on screen (PROJECT.md, "Privacy"); the probe logs counts and the local player's position, never names.
 
+## Named NPCs in the object table (#73)
+
+Checked 2026-11-17 against FFXIVClientStructs (`GameObjectManager.ObjectArrays`, `GameObject`, `ObjectKind`, `BattleNpcSubKind`, from the dev hooks folder's XML docs), then measured live with the bridge probe `probe-players-party-camera`, which now also watches the whole object table for 4 seconds (`NpcProbe`) and logs a `Probe #73` line with counts only, never names.
+
+### Live sample (one city sample, standing still)
+
+| What | Value |
+| --- | --- |
+| Object table length (`Objects.IndexSorted`) | **819** |
+| Frames sampled in 4 s | 66 (the game runs at ~16 fps in the background) |
+| Event NPCs per frame, max | 71, at slots **489–608** |
+| ...with an empty name | 25 (invisible event helpers; never drawn) |
+| Named NPCs per frame (filter below), max | 46 in the table, **22 inside the largest cube** (100 yalms) |
+| Battle NPCs | 0 (none in a city) |
+| Other objects | minion (`Companion`) at slot 13, event objects at 611–628, aetherytes at 612–616 |
+| Name changes | 0 across 46 distinct NPCs |
+
+The probe runs on every bridge run, so the next run in a FATE or dungeon adds battle NPC numbers to `dalamud.log` (`Probe #73`) without any code change.
+
+### Where NPCs live
+
+- **Battle NPCs** (enemies, guards, pets, chocobo companions, Trust members) are networked characters: slots **0–199**, even indexes, sharing those 100 slots with players (FFXIVClientStructs' notes, the same range `PlayerReader` already walks). So players and battle NPCs together are at most 100.
+- **Event NPCs** (townspeople, quest NPCs) are client-side objects above 199; measured at 489–608. The table is 819 long, so the reader walks the whole table once per frame (or 0–199 for battle NPCs plus 200–818 for event NPCs).
+- Minions, mounts, event objects and aetherytes have other `ObjectKind`s and are skipped by kind.
+
+### Filter rule for #74
+
+An object is a **named NPC** when all of these hold:
+
+1. `ObjectKind` is `EventNpc` or `BattleNpc`;
+2. its name's first byte isn't 0 (drops the nameless event helpers measured above);
+3. `OwnerId` is `0xE0000000` (no owner), and for battle NPCs `BattleNpcSubKind` is not `Pet` or `Buddy` (PROJECT.md, "NPCs": player-owned objects are left out). Checking both is cheap and covers either field being unset.
+
+Not yet measured: whether `BNpcPart` (weak spots) carry a name (if not, rule 2 drops them), and whether Trust members (`NpcPartyMember`) have an owner (no dungeon sample yet). Either way the rule is the spec's: owned objects are left out, unowned named ones are shown.
+
+### Cap and budget
+
+- **Recommended NPC cap: 50**, filled in object table order (battle NPCs first, since they sit in the lower slots), with the overflow counted like `PlayerSet.Dropped`. The live sample needed 22 in the largest cube.
+- **Why not more:** draw cost is about linear in drawn entries. At the player cap (101) `draw-within-budget` measures 0.22–0.29 ms; 151 entries is about 0.43 ms, inside the 0.5 ms budget. 200 entries would be about 0.55 ms, over it. #74's budget and soak checks run players and NPCs at their caps together, so the real number decides; lower the cap if they fail.
+- **Name cache:** keyed by object table slot, so it needs one slot per table index: 819 (plus the Debug fake slots), fixed at load. At 64 bytes of name per slot that is about 52 KB.
+
+### Name changes
+
+None seen. The name cache already compares the name bytes every frame and rebuilds only when they differ (PROJECT.md: labels rebuilt only when a name changes), so an NPC renamed mid-fight is handled without extra work.
+
+### Read-only and within the rules
+
+Same as players: a memory read of the object table on the framework thread, no hooks, no game functions, nothing sent. NPC names and positions are what the game already shows.
+
 ## Efficiency pass (#23)
 
 Measured 2026-11-17 in game, Debug build, with the bridge (`draw-within-budget`, `soak-ten-minutes-at-the-cap`).

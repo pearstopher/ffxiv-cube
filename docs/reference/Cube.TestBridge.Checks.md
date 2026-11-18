@@ -55,6 +55,11 @@ top of it, and the local player gets none (PROJECT.md, "Features": other players
 Checks no game-facing handler has caught an exception since the plugin loaded (CLAUDE.md, "Dalamud rules": wrap
 every handler in try/catch and log). Runs after the other checks, so it also covers everything they exercised.
 
+ [NpcProbe](Cube.TestBridge.Checks.NpcProbe.md)
+
+Running totals for the NPC research in [GameStateProbeCheck](Cube.TestBridge.Checks.GameStateProbeCheck.md#Cube_TestBridge_Checks_GameStateProbeCheck) (#73): per-frame counts by
+category, the largest count seen in any frame, the slot range each kind used, and name changes.
+
  [OrientationCheck](Cube.TestBridge.Checks.OrientationCheck.md)
 
 Checks both orientation modes (PROJECT.md, "Cube" and "Cube on screen never turns by itself"): in Camera mode the
