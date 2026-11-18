@@ -3,7 +3,7 @@ using System.Numerics;
 namespace Cube.Core;
 
 /// <summary>
-/// The user's settings (PROJECT.md, "Features": cube size, orientation mode, labels on/off, colours and opacity; "NPCs":
+/// The user's settings (PROJECT.md, "Features": cube size (width, height and depth since #90), orientation mode, labels on/off, colours and opacity; "NPCs":
 /// NPCs on/off; "View orientation control": the saved view orientation and the control's corner; #32: collision on/off
 /// and detail), with their defaults
 /// and the rules for valid values. The plugin's saved configuration derives from this, so the rules are unit tested
@@ -31,8 +31,18 @@ public class CubeSettings
     /// <summary>Lowest opacity allowed, so the cubes can be made faint but never vanish entirely.</summary>
     public const float MinOpacity = 0.1f;
 
-    /// <summary>The cube's edge in yalms (PROJECT.md: 10–100, default 40).</summary>
-    public float CubeEdge = CubeSpace.DefaultEdge;
+    /// <summary>
+    /// The cube's width (X), height (Y) and depth (Z) in yalms (PROJECT.md, "Cube": each 10–100, default 40; #90).
+    /// Change it with <see cref="SetSize"/> or <see cref="Zoom"/>, or bind a slider to a component and call
+    /// <see cref="Changed"/>.
+    /// </summary>
+    public Vector3 CubeSize = BoxExtents.DefaultSize;
+
+    /// <summary>
+    /// The single edge files saved before <see cref="BoxSizeVersion"/> stored. Only read from those files, so their
+    /// size carries over as a cube with that edge; never written again.
+    /// </summary>
+    public float CubeEdge = BoxExtents.Default;
 
     /// <summary>How the view turns (PROJECT.md, "View": Camera by default).</summary>
     public OrientationMode Orientation = OrientationMode.Camera;
@@ -78,6 +88,12 @@ public class CubeSettings
     public const int RotationViewVersion = 2;
 
     /// <summary>
+    /// The settings file format that stores the cube as <see cref="CubeSize"/> (#90). Files older than this stored a
+    /// single <see cref="CubeEdge"/>, which <see cref="Upgrade"/> turns into three equal extents.
+    /// </summary>
+    public const int BoxSizeVersion = 3;
+
+    /// <summary>
     /// The view control's rotation (PROJECT.md, "View orientation control": the chosen orientation is saved, any
     /// orientation including roll). Use <see cref="View"/> to read it.
     /// </summary>
@@ -113,7 +129,7 @@ public class CubeSettings
     /// </summary>
     public void Changed()
     {
-        this.CubeEdge = CubeSpace.ClampEdge(this.CubeEdge);
+        this.CubeSize = BoxExtents.Clamp(this.CubeSize);
         if (!Enum.IsDefined(this.Orientation))
         {
             this.Orientation = OrientationMode.Camera;
@@ -154,11 +170,38 @@ public class CubeSettings
         this.Changed();
     }
 
+    /// <summary>Stores a new cube size (from the scale gizmo's axis handles), clamped, and marks the settings changed.</summary>
+    /// <param name="size">The width, height and depth the user chose.</param>
+    public void SetSize(Vector3 size)
+    {
+        this.CubeSize = size;
+        this.Changed();
+    }
+
+    /// <summary>
+    /// Zooms the cube (PROJECT.md, "Zoom": all three extents scale together, keeping their ratios, clamped so none
+    /// leaves 10–100) and marks the settings changed.
+    /// </summary>
+    /// <param name="factor">How much to scale every extent by; below 1 zooms in (less space, contents look bigger).</param>
+    public void Zoom(float factor)
+    {
+        this.CubeSize = BoxExtents.Zoom(this.CubeSize, factor);
+        this.Changed();
+    }
+
+    /// <summary>Puts the cube back to its default size, 40 × 40 × 40 (the settings window's "Reset size").</summary>
+    public void ResetSize()
+    {
+        this.CubeSize = BoxExtents.DefaultSize;
+        this.Changed();
+    }
+
     /// <summary>
     /// Brings settings loaded from an older file format up to date, then repairs them with <see cref="Changed"/>.
     /// Files before <see cref="RotationViewVersion"/> stored the view as a heading and tilt; they become the same
     /// orientation (PROJECT.md: orientations saved by the old control carry over). A file from before the view
-    /// control existed has neither, so the old fields' defaults give the default view.
+    /// control existed has neither, so the old fields' defaults give the default view. Files before
+    /// <see cref="BoxSizeVersion"/> stored one cube edge; it becomes all three extents (#90).
     /// </summary>
     /// <param name="fileVersion">The format version the settings were saved with.</param>
     public void Upgrade(int fileVersion)
@@ -170,8 +213,17 @@ public class CubeSettings
             this.ViewRotation = ViewOrientation.FromDegrees(yaw, pitch).Rotation;
         }
 
+        if (fileVersion < BoxSizeVersion)
+        {
+            this.CubeSize = new Vector3(BoxExtents.Clamp(this.CubeEdge));
+        }
+
         this.Changed();
     }
+
+    /// <summary>Never writes the old single edge, so saved files only hold <see cref="CubeSize"/>; see <see cref="ShouldSerializeViewYawDegrees"/>.</summary>
+    /// <returns>Always false.</returns>
+    public bool ShouldSerializeCubeEdge() => false;
 
     /// <summary>
     /// Tells the JSON serialiser Dalamud uses (Newtonsoft, by naming convention) never to write the old heading, so
@@ -188,7 +240,7 @@ public class CubeSettings
     /// <param name="other">The settings to copy.</param>
     public void CopyFrom(CubeSettings other)
     {
-        this.CubeEdge = other.CubeEdge;
+        this.CubeSize = other.CubeSize;
         this.Orientation = other.Orientation;
         this.ShowLabels = other.ShowLabels;
         this.SelfColour = other.SelfColour;

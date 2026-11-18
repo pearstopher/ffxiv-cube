@@ -4,8 +4,8 @@ Namespace: [Cube.Core](Cube.Core.md)
 Assembly: Cube.Core.dll  
 
 Draws each player in the cube as a small solid cube in their relation's colour, with a name label for other
-players (PROJECT.md, "Players": player cube size fixed relative to the big cube, about 1/40 of its edge, minimum a
-few pixels; "Features": the local player is a cube at the centre in its own colour, other players are labelled
+players (PROJECT.md, "Players": player cube size fixed relative to the big cube, about 1/40 of its largest extent,
+minimum a few pixels; "Features": the local player is a cube at the centre in its own colour, other players are labelled
 with their names; "Labels": the name drawn next to the cube, overlaps are fine; "NPCs": named NPCs are shown the
 same way, in the NPC colour).
 
@@ -30,7 +30,7 @@ tagged with the player's index + 1.
 
 ### <a id="Cube_Core_PlayerCubes_EdgeFraction"></a> EdgeFraction
 
-Player cube edge as a fraction of the big cube's edge (PROJECT.md: about 1/40).
+Player cube edge as a fraction of the big cube's largest extent (PROJECT.md: about 1/40).
 
 ```csharp
 public const float EdgeFraction = 0.025
@@ -154,3 +154,8 @@ The projection, for the minimum on-screen size.
 #### Returns
 
  [float](https://learn.microsoft.com/dotnet/api/system.single)
+
+#### Remarks
+
+Follows the [Largest?text=largest+extent](Cube.Core.CubeSpace.md#Cube_Core_CubeSpace_Largest_text_largest_extent) (PROJECT.md, changed in #90), so a long thin box
+doesn't shrink its markers to dots along the short axes.

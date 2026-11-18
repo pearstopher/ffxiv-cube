@@ -23,7 +23,7 @@ Fakes are offered to the same [PlayerSet](Cube.Core.PlayerSet.md#Cube_Core_Playe
 exactly the same culling, classification and naming; fake NPCs use [OfferNpc](Cube.Core.PlayerSet.md#Cube_Core_PlayerSet_OfferNpc), so they are
 left out when the NPC setting is off, like real ones. They use object slots from [FirstSlot](Cube.TestBridge.FakePlayers.md#Cube_TestBridge_FakePlayers_FirstSlot) up (above the whole
 real object table) and entity ids from [FirstEntityId](Cube.TestBridge.FakePlayers.md#Cube_TestBridge_FakePlayers_FirstEntityId) up, so checks can tell them apart. Positions are
-fractions of the cube's half-edge in cube-local coordinates (see [FromView](Cube.Core.CubeSpace.md#Cube_Core_CubeSpace_FromView)), so the same set
+fractions of the cube's half-size on each axis in cube-local coordinates (see [FromView](Cube.Core.CubeSpace.md#Cube_Core_CubeSpace_FromView)), so the same set
 works at any cube size and stays put in the cube however the camera turns. A fake added with
 [AddAtWorld](Cube.TestBridge.FakePlayers.md#Cube_TestBridge_FakePlayers_AddAtWorld) is instead fixed in the world, like a real player, so it rotates with the contents.
 
@@ -135,7 +135,7 @@ Its label.
 
 `offset` [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
 
-Position as fractions of the half-edge from the cube centre (1 = on a face).
+Position as fractions of the half-size on each axis from the cube centre (1 = on a face).
 
 `relation` [PlayerRelation](Cube.Core.PlayerRelation.md)
 

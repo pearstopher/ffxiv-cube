@@ -158,6 +158,13 @@ public void Box_inside_the_region_is_kept()
 public void Boxes_that_differ_on_two_axes_are_not_merged()
 ```
 
+### <a id="Cube_Tests_CollisionBoxTests_Changing_one_extent_asks_for_a_new_gather"></a> Changing\_one\_extent\_asks\_for\_a\_new\_gather\(\)
+
+```csharp
+[Fact]
+public void Changing_one_extent_asks_for_a_new_gather()
+```
+
 ### <a id="Cube_Tests_CollisionBoxTests_Clipped_box_follows_the_turned_cube_closely"></a> Clipped\_box\_follows\_the\_turned\_cube\_closely\(\)
 
 ```csharp
@@ -240,6 +247,13 @@ public void Moving_a_quarter_of_the_cube_needs_a_new_gather()
 ```csharp
 [Fact]
 public void Node_bounds_through_a_translation_move_with_it()
+```
+
+### <a id="Cube_Tests_CollisionBoxTests_Region_covers_a_non_cube_box_at_every_yaw"></a> Region\_covers\_a\_non\_cube\_box\_at\_every\_yaw\(\)
+
+```csharp
+[Fact]
+public void Region_covers_a_non_cube_box_at_every_yaw()
 ```
 
 ### <a id="Cube_Tests_CollisionBoxTests_Region_covers_the_cube_at_every_yaw_with_a_margin"></a> Region\_covers\_the\_cube\_at\_every\_yaw\_with\_a\_margin\(\)

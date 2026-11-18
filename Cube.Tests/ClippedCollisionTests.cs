@@ -10,7 +10,7 @@ namespace Cube.Tests;
 /// </summary>
 public class ClippedCollisionTests
 {
-    private const float Edge = 40f;
+    private static readonly Vector3 Edge = new(40f);
     private const uint Zone = 132;
 
     private static readonly CollisionBox Inside = new(new Vector3(-2, -1, -2), new Vector3(2, 0, 2));

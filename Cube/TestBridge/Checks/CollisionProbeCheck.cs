@@ -56,10 +56,10 @@ internal sealed class CollisionProbeCheck(IPluginLog log) : BridgeCheck
     private const float HitTolerance = 0.25f;
 
     /// <summary>Half the largest cube edge: the worst case for counts and cost.</summary>
-    private const float MaxHalfEdge = Core.CubeSpace.MaxEdge / 2f;
+    private const float MaxHalfEdge = Core.BoxExtents.Max / 2f;
 
     /// <summary>Half the default cube edge: what most players will see.</summary>
-    private const float DefaultHalfEdge = Core.CubeSpace.DefaultEdge / 2f;
+    private const float DefaultHalfEdge = Core.BoxExtents.Default / 2f;
 
     /// <summary>Voxel cells per side of the largest cube: 50, so each cell is 2 yalms, about a character's height.</summary>
     private const int VoxelsPerSide = 50;
@@ -68,10 +68,10 @@ internal sealed class CollisionProbeCheck(IPluginLog log) : BridgeCheck
     private readonly List<(Vector3 Min, Vector3 Max)> leafBoxes = [];
 
     /// <summary>Cells covered by the leaf node boxes: how much of the cube the node boxes would fill if drawn.</summary>
-    private readonly VoxelGrid boxCells = new(VoxelsPerSide, Core.CubeSpace.MaxEdge);
+    private readonly VoxelGrid boxCells = new(VoxelsPerSide, Core.BoxExtents.Max);
 
     /// <summary>Cells touched by an actual triangle's bounds: what a coarse voxel grid would draw.</summary>
-    private readonly VoxelGrid triangleCells = new(VoxelsPerSide, Core.CubeSpace.MaxEdge);
+    private readonly VoxelGrid triangleCells = new(VoxelsPerSide, Core.BoxExtents.Max);
 
     /// <inheritdoc/>
     public override string Name => "probe-collision";
@@ -146,7 +146,7 @@ internal sealed class CollisionProbeCheck(IPluginLog log) : BridgeCheck
             $"{big.Leaves} leaf nodes (extent mean {big.MeanLeafExtent:0.#} max {big.MaxLeafExtent:0.#}), {big.Triangles} triangles, {big.NodesVisited} nodes visited. " +
             $"Default cube: {small.Colliders} colliders, {small.Leaves} leaf nodes, {small.Triangles} triangles. " +
             $"Per frame over {frames} frames: collider walk {collidersMs / frames:0.###} ms {collidersBytes / frames} B, node walk {nodesMs / frames:0.###} ms {nodesBytes / frames} B, {RayGrid * RayGrid} raycasts {raysMs / frames:0.###} ms. " +
-            $"Voxels ({VoxelsPerSide}^3, {Core.CubeSpace.MaxEdge / VoxelsPerSide:0.#} yalm cells): node boxes fill {first.BoxCells} ({first.BoxCells / cellCount:P1}), triangles touch {first.TriangleCells} ({first.TriangleCells / cellCount:P1}); triangle voxel walk {voxelMs / frames:0.###} ms {voxelBytes / frames} B. " +
+            $"Voxels ({VoxelsPerSide}^3, {Core.BoxExtents.Max / VoxelsPerSide:0.#} yalm cells): node boxes fill {first.BoxCells} ({first.BoxCells / cellCount:P1}), triangles touch {first.TriangleCells} ({first.TriangleCells / cellCount:P1}); triangle voxel walk {voxelMs / frames:0.###} ms {voxelBytes / frames} B. " +
             $"Raycasts: {hits}/{RayGrid * RayGrid} hit ({hitsByType}), {hitsInBoxes} inside a leaf node box, {hitsInCells} in a triangle cell."));
 
         yield return CheckStep.Pass(string.Create(
@@ -260,7 +260,7 @@ internal sealed class CollisionProbeCheck(IPluginLog log) : BridgeCheck
         ticks = Stopwatch.GetTimestamp();
         for (var i = 0; i < RayGrid * RayGrid; i++)
         {
-            BGCollisionModule.RaycastMaterialFilter(RayOrigin(centre, i), -Vector3.UnitY, out _, Core.CubeSpace.MaxEdge);
+            BGCollisionModule.RaycastMaterialFilter(RayOrigin(centre, i), -Vector3.UnitY, out _, Core.BoxExtents.Max);
         }
 
         sample.RaysMs = Stopwatch.GetElapsedTime(ticks).TotalMilliseconds;
@@ -272,7 +272,7 @@ internal sealed class CollisionProbeCheck(IPluginLog log) : BridgeCheck
     /// <param name="index">Grid point, row-major.</param>
     private static Vector3 RayOrigin(Vector3 centre, int index)
     {
-        var step = Core.CubeSpace.MaxEdge / RayGrid;
+        var step = Core.BoxExtents.Max / RayGrid;
         var x = centre.X - MaxHalfEdge + (step * ((index % RayGrid) + 0.5f));
         var z = centre.Z - MaxHalfEdge + (step * ((index / RayGrid) + 0.5f));
         return new Vector3(x, centre.Y + MaxHalfEdge, z);
@@ -444,7 +444,7 @@ internal sealed class CollisionProbeCheck(IPluginLog log) : BridgeCheck
         byType = default;
         for (var i = 0; i < RayGrid * RayGrid; i++)
         {
-            if (!BGCollisionModule.RaycastMaterialFilter(RayOrigin(centre, i), -Vector3.UnitY, out var hit, Core.CubeSpace.MaxEdge))
+            if (!BGCollisionModule.RaycastMaterialFilter(RayOrigin(centre, i), -Vector3.UnitY, out var hit, Core.BoxExtents.Max))
             {
                 continue;
             }

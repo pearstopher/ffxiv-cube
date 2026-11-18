@@ -8,6 +8,12 @@
 
 Writes a file so that readers only ever see the old or the complete new content, never a half-written one.
 
+ [BoxExtents](Cube.Core.BoxExtents.md)
+
+The rules for the cube's size (PROJECT.md, "Exact behaviour rules", Cube; changed 2026-11-18, #90): the cube is a
+box with three extents in yalms, width (x), height (y) and depth (z), each 10–100, default 40. Zoom scales all three
+together, keeping their ratios.
+
  [BuildInfo](Cube.Core.BuildInfo.md)
 
 Formats the build details the plugin logs when it loads, so a stale build
@@ -67,7 +73,7 @@ face shades every solid box uses.
 
  [CubeSettings](Cube.Core.CubeSettings.md)
 
-The user's settings (PROJECT.md, "Features": cube size, orientation mode, labels on/off, colours and opacity; "NPCs":
+The user's settings (PROJECT.md, "Features": cube size (width, height and depth since #90), orientation mode, labels on/off, colours and opacity; "NPCs":
 NPCs on/off; "View orientation control": the saved view orientation and the control's corner; #32: collision on/off
 and detail), with their defaults
 and the rules for valid values. The plugin's saved configuration derives from this, so the rules are unit tested
@@ -91,6 +97,12 @@ Decides when a repeated error is worth logging. A handler that fails every frame
 lines a second and bury everything else (CLAUDE.md, "Dalamud rules": catch and log, never let an exception reach
 the game).
 
+ [GizmoModel](Cube.Core.GizmoModel.md)
+
+The model matrix the corner gizmo works on, which carries both the view orientation (#79) and the cube's size
+(#90), and the rules for reading a drag back from it (PROJECT.md, "View orientation control" and "Control" under
+the box size: the axis handles change width, height or depth, the centre handle is zoom).
+
  [NameCache](Cube.Core.NameCache.md)
 
 Turns the game's UTF-8 name bytes into strings, once per name: a string is only built when the bytes in an
@@ -100,8 +112,8 @@ changes). Reading the same names every frame allocates nothing.
  [PlayerCubes](Cube.Core.PlayerCubes.md)
 
 Draws each player in the cube as a small solid cube in their relation's colour, with a name label for other
-players (PROJECT.md, "Players": player cube size fixed relative to the big cube, about 1/40 of its edge, minimum a
-few pixels; "Features": the local player is a cube at the centre in its own colour, other players are labelled
+players (PROJECT.md, "Players": player cube size fixed relative to the big cube, about 1/40 of its largest extent,
+minimum a few pixels; "Features": the local player is a cube at the centre in its own colour, other players are labelled
 with their names; "Labels": the name drawn next to the cube, overlaps are fine; "NPCs": named NPCs are shown the
 same way, in the NPC colour).
 
@@ -147,8 +159,9 @@ inside or crossing the cube is shown as a simplified box, not the game's model).
  [CubeSpace](Cube.Core.CubeSpace.md)
 
 The cube of space around the local player (PROJECT.md, "Exact behaviour rules", Cube): centred on the player,
-with an edge of 10–100 yalms (default 40), turned about the vertical axis by its alignment [Yaw](Cube.Core.CubeSpace.md#Cube_Core_CubeSpace_Yaw).
-Answers "is this point inside?" and turns world positions into cube-local view coordinates.
+a box with a width, height and depth of 10–100 yalms each (default 40, see [BoxExtents](Cube.Core.BoxExtents.md#Cube_Core_BoxExtents)), turned about
+the vertical axis by its alignment [Yaw](Cube.Core.CubeSpace.md#Cube_Core_CubeSpace_Yaw). Answers "is this point inside?" and turns world positions into
+cube-local view coordinates.
 
  [DrawPrimitive](Cube.Core.DrawPrimitive.md)
 
@@ -157,13 +170,17 @@ One thing to draw, already projected to window pixels: the plugin turns each int
 
  [CollisionClipper.Footprint](Cube.Core.CollisionClipper.Footprint.md)
 
-The cube's square footprint in world X/Z (stored as `System.Numerics.Vector2` X and Y), with its bounds for the
+The cube's rectangular footprint in world X/Z (stored as `System.Numerics.Vector2` X and Y), with its bounds for the
 cheap reject. Computed once per clip pass.
 
  [GameState](Cube.Core.GameState.md)
 
 The game states that decide whether the cube is drawn (PROJECT.md, "When hidden"). Read once per frame by the
 plugin from Dalamud's client state and condition flags (<code>docs/research-notes.md</code>, "When to hide").
+
+ [GizmoChange](Cube.Core.GizmoChange.md)
+
+What a gizmo drag changed ([Read](Cube.Core.GizmoModel.md#Cube_Core_GizmoModel_Read)).
 
  [NearbyPlayer](Cube.Core.NearbyPlayer.md)
 

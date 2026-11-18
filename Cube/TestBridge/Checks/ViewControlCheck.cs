@@ -211,7 +211,7 @@ internal sealed class ViewControlCheck(string folder) : BridgeCheck
         }
 
         var expected = new DrawList(16);
-        var projection = ViewProjection.Fit(window.LastRegionMin, window.LastRegionSize, window.LastSpace.HalfEdge, want);
+        var projection = ViewProjection.Fit(window.LastRegionMin, window.LastRegionSize, window.LastSpace.Half, want);
         CubeGeometry.AddWireCube(expected, window.LastSpace, projection, window.WireColour);
         var drawn = Lines(window);
         var expectedLines = new List<(Vector2 A, Vector2 B)>();

@@ -4,8 +4,9 @@ using Cube.Core;
 namespace Cube.Tests;
 
 /// <summary>
-/// Checks the cube of space (PROJECT.md, "Exact behaviour rules": Cube, Players): centred on the player, edge 10–100
-/// yalms (default 40), aligned by its yaw (Camera mode: front face where the camera looks; North up: east right,
+/// Checks the cube of space (PROJECT.md, "Exact behaviour rules": Cube, Players, Culling): centred on the player, a box
+/// whose width, height and depth are each 10–100 yalms (default 40), inside meaning inside on each axis separately,
+/// aligned by its yaw (Camera mode: front face where the camera looks; North up: east right,
 /// north forward); containment uses the aligned cube, so things enter and leave at the sides as the camera turns, and
 /// is inclusive on faces; players outside are not shown at all. Also the zero-allocation rule ("Efficiency and
 /// memory").
@@ -25,13 +26,52 @@ public class CubeSpaceTests
     [InlineData(float.NaN, 40)]
     public void Edge_is_clamped_to_10_to_100_yalms(float requested, float expected)
     {
-        Assert.Equal(expected, NorthUp(requested).Edge);
+        Assert.Equal(new Vector3(expected), NorthUp(requested).Size);
     }
 
     [Fact]
-    public void Default_edge_is_40_yalms()
+    public void Each_extent_is_clamped_separately()
     {
-        Assert.Equal(40f, CubeSpace.DefaultEdge);
+        var space = new CubeSpace(Player, new Vector3(5, 60, 250), 0);
+
+        Assert.Equal(new Vector3(10, 60, 100), space.Size);
+        Assert.Equal(new Vector3(5, 30, 50), space.Half);
+    }
+
+    [Fact]
+    public void Default_size_is_40_by_40_by_40()
+    {
+        Assert.Equal(new Vector3(40f), BoxExtents.DefaultSize);
+    }
+
+    [Fact]
+    public void Largest_is_the_biggest_extent()
+    {
+        Assert.Equal(70f, new CubeSpace(Player, new Vector3(20, 70, 30), 0).Largest);
+    }
+
+    [Fact]
+    public void Inside_on_two_axes_and_outside_on_the_third_is_outside()
+    {
+        // A box 20 wide, 60 tall, 40 deep, north up: half sizes 10, 30, 20.
+        var box = new CubeSpace(Player, new Vector3(20, 60, 40), ViewYaw.NorthUp);
+
+        Assert.True(box.Contains(Player + new Vector3(10, 30, -20)));       // a corner
+        Assert.False(box.Contains(Player + new Vector3(10.5f, 0, 0)));      // too far right only
+        Assert.False(box.Contains(Player + new Vector3(0, 30.5f, 0)));      // too high only
+        Assert.False(box.Contains(Player + new Vector3(0, 0, -20.5f)));     // too far forward only
+        Assert.True(box.Contains(Player + new Vector3(0, 25, 0)));          // tall, so 25 up is inside
+        Assert.False(NorthUp().Contains(Player + new Vector3(0, 25, 0)));   // but not in the 40 cube
+    }
+
+    [Fact]
+    public void Width_and_depth_follow_the_cube_axes_not_the_world()
+    {
+        // Wide and shallow, turned to face east: the width now runs north–south.
+        var box = new CubeSpace(Player, new Vector3(80, 40, 10), MathF.PI / 2);
+
+        Assert.True(box.Contains(Player + new Vector3(0, 0, 35)));   // 35 south = 35 to the right
+        Assert.False(box.Contains(Player + new Vector3(10, 0, 0)));  // 10 east = 10 forward, past the 5 half-depth
     }
 
     [Fact]
@@ -155,12 +195,13 @@ public class CubeSpaceTests
     public void Recentred_cube_keeps_the_view_rotation_and_moves_with_the_player()
     {
         var moved = Player + new Vector3(10, 2, -7);
-        var fresh = new CubeSpace(moved, 60, 0.9f);
+        var fresh = new CubeSpace(moved, new Vector3(60, 30, 50), 0.9f);
 
-        var recentred = new CubeSpace(Player, 40, 0.9f).Recentred(moved, 60);
+        var recentred = new CubeSpace(Player, 40, 0.9f).Recentred(moved, new Vector3(60, 30, 50));
 
         Assert.Equal(fresh.Centre, recentred.Centre);
-        Assert.Equal(fresh.Edge, recentred.Edge);
+        Assert.Equal(fresh.Size, recentred.Size);
+        Assert.Equal(fresh.Largest, recentred.Largest);
         Assert.Equal(fresh.Yaw, recentred.Yaw);
         Assert.Equal(fresh.ToView(moved + new Vector3(3, 1, 4)), recentred.ToView(moved + new Vector3(3, 1, 4)));
     }

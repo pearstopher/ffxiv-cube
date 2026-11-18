@@ -11,7 +11,7 @@ namespace Cube.Tests;
 /// </summary>
 public class CollisionCacheTests
 {
-    private const float Edge = 40f;
+    private static readonly Vector3 Edge = new(40f);
     private const uint Zone = 132;
     private const ulong Stamp = 7;
 
@@ -132,7 +132,7 @@ public class CollisionCacheTests
         }
 
         // Walk past the refresh threshold (a quarter of the edge).
-        var moved = new Vector3(Edge * 0.3f, 0, 0);
+        var moved = new Vector3(Edge.X * 0.3f, 0, 0);
         cache.Step(ref source, moved, Edge, Zone, Stamp);
 
         Assert.True(cache.IsGathering);
@@ -177,7 +177,7 @@ public class CollisionCacheTests
         var source = new FakeSource(Scene(5), ticksPerCollider: 1);
         cache.Step(ref source, Vector3.Zero, Edge, Zone, Stamp);
 
-        var moved = new Vector3(0, 0, Edge * 0.3f);
+        var moved = new Vector3(0, 0, Edge.Z * 0.3f);
         var completed = cache.Step(ref source, moved, Edge, Zone, Stamp);
 
         Assert.True(completed);
@@ -294,7 +294,7 @@ public class CollisionCacheTests
     {
         var cache = Cache(budget: 10);
         var source = new FakeSource(Scene(30), ticksPerCollider: 4);
-        var far = new Vector3(Edge, 0, 0);
+        var far = new Vector3(Edge.X, 0, 0);
 
         // Warm up: JIT and a full gather in both directions.
         for (var i = 0; i < 40; i++)

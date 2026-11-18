@@ -16,7 +16,7 @@ public class CollisionCubesTests
     private static CubeSpace Space(float yaw = 0f) => new(Vector3.Zero, 40, yaw);
 
     private static ViewProjection Projection(in CubeSpace space) =>
-        ViewProjection.Fit(Vector2.Zero, new Vector2(400, 400), space.HalfEdge, ViewOrientation.Default);
+        ViewProjection.Fit(Vector2.Zero, new Vector2(400, 400), space.Half, ViewOrientation.Default);
 
     private static NearbyPlayer Self() => new(0, 1, Vector3.Zero, PlayerRelation.Self, "Me");
 

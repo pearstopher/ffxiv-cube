@@ -82,6 +82,19 @@ private static readonly Matrix4x4 GizmoCamera
 
  [Matrix4x4](https://learn.microsoft.com/dotnet/api/system.numerics.matrix4x4)
 
+### <a id="Cube_CubeWindow_GizmoOperations"></a> GizmoOperations
+
+What the corner gizmo offers: the rotation rings (#79) and the scale handles (#90), whose axis handles resize
+one extent each and whose centre handle zooms.
+
+```csharp
+private const ImGuizmoOperation GizmoOperations = Rotate | Scale
+```
+
+#### Field Value
+
+ [ImGuizmoOperation](https://github.com/goatcorp/Dalamud/blob/master/imgui/Dalamud.Bindings.ImGuizmo/Generated/Enums/ImGuizmoOperation.cs)
+
 ### <a id="Cube_CubeWindow_GizmoProjection"></a> GizmoProjection
 
 A right-handed perspective projection for ImGuizmo, matching [GizmoCamera](Cube.CubeWindow.md#Cube_CubeWindow_GizmoCamera). The narrow field of view
@@ -172,6 +185,19 @@ private const float WireThickness = 1.5
 
  [float](https://learn.microsoft.com/dotnet/api/system.single)
 
+### <a id="Cube_CubeWindow_dragging"></a> dragging
+
+Whether the user is turning the view or resizing the cube with the control: set when ImGuizmo changes either,
+cleared (and the settings saved) once the mouse is released and the change has settled.
+
+```csharp
+private bool dragging
+```
+
+#### Field Value
+
+ [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
 ### <a id="Cube_CubeWindow_gameState"></a> gameState
 
 Reads the states that hide the cube.
@@ -243,19 +269,6 @@ private int settingsRevision
 #### Field Value
 
  [int](https://learn.microsoft.com/dotnet/api/system.int32)
-
-### <a id="Cube_CubeWindow_turning"></a> turning
-
-Whether the user is turning the view with the control: set when ImGuizmo changes the view, cleared (and the
-settings saved) once the mouse is released and the view has settled.
-
-```csharp
-private bool turning
-```
-
-#### Field Value
-
- [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
 ### <a id="Cube_CubeWindow_view"></a> view
 
@@ -724,8 +737,9 @@ private void DrawContents()
 
 ### <a id="Cube_CubeWindow_DrawViewControl_System_Numerics_Vector2_System_Numerics_Vector2_"></a> DrawViewControl\(Vector2, Vector2\)
 
-Draws ImGuizmo's rotate gizmo in the chosen corner (PROJECT.md, "View orientation control": a ring per axis
-plus an outer screen ring) and applies any turn the user makes with it.
+Draws ImGuizmo's rotate and scale gizmo in the chosen corner (PROJECT.md, "View orientation control": a ring per
+axis plus an outer screen ring; #90: scale handles that resize the cube per axis, and a centre handle that
+zooms) and applies any turn or resize the user makes with it.
 
 ```csharp
 private void DrawViewControl(Vector2 regionMin, Vector2 regionSize)
@@ -744,14 +758,15 @@ Size of the drawing region, in pixels.
 #### Remarks
 
 <p>
-ImGuizmo is handed the current orientation as a model matrix each frame ([ToGizmoModel](Cube.Core.ViewOrientation.md#Cube_Core_ViewOrientation_ToGizmoModel))
-and turns it while a ring is dragged. Local mode puts the x, y and z rings around the cube's own axes, so the
-ring colours match them. A changed matrix is read back into the settings; the projection then picks it up
-through the settings revision, so it is only rebuilt when the view really changes. The camera and the player
-never feed into this (PROJECT.md: only the control turns the view).
+ImGuizmo is handed the current orientation and size as one model matrix each frame ([Build](Cube.Core.GizmoModel.md#Cube_Core_GizmoModel_Build))
+and turns or scales it while a handle is dragged. Local mode puts the rings around, and the scale handles along,
+the cube's own axes, so the colours match them and a handle always changes the matching extent. A changed
+matrix is read back with [Read](Cube.Core.GizmoModel.md#Cube_Core_GizmoModel_Read), which keeps the turn and the resize apart; the
+projection picks a new view up through the settings revision, so it is only rebuilt when the view really
+changes. The camera and the player never feed into this (PROJECT.md: only the control turns the view).
 </p>
 <p>
-The file is saved once the turn is over (mouse released and no change this frame), not on every frame of a
+The file is saved once the drag is over (mouse released and no change this frame), not on every frame of a
 drag. ImGuizmo's global settings (gizmo size, orthographic mode) are left alone because other plugins share
 them; the size comes from the rectangle instead ([GizmoRectScale](Cube.CubeWindow.md#Cube_CubeWindow_GizmoRectScale)). Nothing here allocates: the
 matrices are structs passed by reference.
@@ -760,7 +775,7 @@ matrices are structs passed by reference.
 ### <a id="Cube_CubeWindow_PreDraw"></a> PreDraw\(\)
 
 Stops ImGui moving the window while the mouse is on the view control or the user is turning the view, so a
-drag on the control turns the cube instead of dragging the window around.
+drag on the control turns or resizes the cube instead of dragging the window around (#63, #79, #90).
 
 ```csharp
 public override void PreDraw()
@@ -814,14 +829,14 @@ How many calls were made.
 Labels are clipped to the window by the window draw list's own clip rectangle, so names near the edge are cut
 off rather than spilling over the game. The text is the cached name string, so no string is built here.
 
-### <a id="Cube_CubeWindow_UpdateCollision_System_Numerics_Vector3_System_Single_Cube_Core_CollisionDetail_"></a> UpdateCollision\(Vector3, float, CollisionDetail\)
+### <a id="Cube_CubeWindow_UpdateCollision_System_Numerics_Vector3_System_Numerics_Vector3_Cube_Core_CollisionDetail_"></a> UpdateCollision\(Vector3, Vector3, CollisionDetail\)
 
 Lets the collision reader do this frame's share of gathering (PROJECT.md, "Collision (phase 2)"). In Debug builds
 a frame where a gather ran is timed on its own and recorded in <code>GatherCost</code> (Debug only), and kept out of the
 draw budget, which PROJECT.md says doesn't cover budgeted background gathering.
 
 ```csharp
-private void UpdateCollision(Vector3 centre, float edge, CollisionDetail detail)
+private void UpdateCollision(Vector3 centre, Vector3 size, CollisionDetail detail)
 ```
 
 #### Parameters
@@ -830,9 +845,9 @@ private void UpdateCollision(Vector3 centre, float edge, CollisionDetail detail)
 
 The cube's centre.
 
-`edge` [float](https://learn.microsoft.com/dotnet/api/system.single)
+`size` [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
 
-The cube's edge in yalms.
+The cube's width, height and depth in yalms.
 
 `detail` [CollisionDetail](Cube.Core.CollisionDetail.md)
 

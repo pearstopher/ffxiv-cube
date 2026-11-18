@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Numerics;
 using Cube.Core;
@@ -97,7 +97,7 @@ internal sealed class OrientationCheck : BridgeCheck
         // Turning the camera: the wireframe stays, the contents rotate (#62).
         window.Settings.Orientation = OrientationMode.Camera;
         window.Settings.Changed();
-        var half = window.LastSpace.HalfEdge;
+        var half = MathF.Min(window.LastSpace.Half.X, window.LastSpace.Half.Z);
         var anchor = window.LastSpace.Centre;
         var east = anchor + new Vector3(0.5f * half, 0, 0);
         var corner = anchor + new Vector3(0.9f * half, 0, 0.9f * half);
@@ -212,7 +212,7 @@ internal sealed class OrientationCheck : BridgeCheck
     /// <summary>Whether a world-fixed fake is in the cube and drawn (it has at least one face tagged as its own).</summary>
     /// <param name="window">The cube window.</param>
     /// <param name="fakeIndex">Which fake, in the order added.</param>
-    private static bool HasFake(CubeWindow window, int fakeIndex)
+    internal static bool HasFake(CubeWindow window, int fakeIndex)
     {
         var players = window.Players.Items;
         for (var i = 0; i < players.Length; i++)

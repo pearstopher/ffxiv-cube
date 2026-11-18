@@ -67,10 +67,16 @@ internal sealed class CubeWindow : Window
     private ViewOrientation view = ViewOrientation.Default;
 
     /// <summary>
-    /// Whether the user is turning the view with the control: set when ImGuizmo changes the view, cleared (and the
-    /// settings saved) once the mouse is released and the view has settled.
+    /// Whether the user is turning the view or resizing the cube with the control: set when ImGuizmo changes either,
+    /// cleared (and the settings saved) once the mouse is released and the change has settled.
     /// </summary>
-    private bool turning;
+    private bool dragging;
+
+    /// <summary>
+    /// What the corner gizmo offers: the rotation rings (#79) and the scale handles (#90), whose axis handles resize
+    /// one extent each and whose centre handle zooms.
+    /// </summary>
+    private const ImGuizmoOperation GizmoOperations = ImGuizmoOperation.Rotate | ImGuizmoOperation.Scale;
 
     /// <summary>The cube's current alignment yaw; kept between frames so a vertical camera doesn't spin the contents.</summary>
     private float yaw;
@@ -379,11 +385,11 @@ internal sealed class CubeWindow : Window
         var regionSize = ImGui.GetContentRegionAvail();
         // The rotation is only recomputed when the yaw has actually changed.
         var space = this.hasSpace && yaw == this.yaw
-            ? this.LastSpace.Recentred(centre, settings.CubeEdge)
-            : new CubeSpace(centre, settings.CubeEdge, yaw);
+            ? this.LastSpace.Recentred(centre, settings.CubeSize)
+            : new CubeSpace(centre, settings.CubeSize, yaw);
         this.yaw = yaw;
         this.hasSpace = true;
-        var projection = ViewProjection.Fit(regionMin, regionSize, space.HalfEdge, this.view);
+        var projection = ViewProjection.Fit(regionMin, regionSize, space.Half, this.view);
 
         this.Players.Begin(space, settings.ShowNpcs);
         PlayerReader.Read(this.Players);
@@ -394,7 +400,7 @@ internal sealed class CubeWindow : Window
 
         if (settings.ShowCollision)
         {
-            this.UpdateCollision(centre, settings.CubeEdge, settings.CollisionDetail);
+            this.UpdateCollision(centre, space.Size, settings.CollisionDetail);
         }
         else
         {
@@ -420,14 +426,14 @@ internal sealed class CubeWindow : Window
     /// draw budget, which PROJECT.md says doesn't cover budgeted background gathering.
     /// </summary>
     /// <param name="centre">The cube's centre.</param>
-    /// <param name="edge">The cube's edge in yalms.</param>
+    /// <param name="size">The cube's width, height and depth in yalms.</param>
     /// <param name="detail">The collision detail setting (#32).</param>
-    private void UpdateCollision(Vector3 centre, float edge, CollisionDetail detail)
+    private void UpdateCollision(Vector3 centre, Vector3 size, CollisionDetail detail)
     {
 #if DEBUG
         var startBytes = GC.GetAllocatedBytesForCurrentThread();
         var startTicks = Stopwatch.GetTimestamp();
-        var completed = this.Collision.Update(centre, edge, detail);
+        var completed = this.Collision.Update(centre, size, detail);
         if (completed || this.Collision.Cache.IsGathering)
         {
             this.gatherTicks = Stopwatch.GetTimestamp() - startTicks;
@@ -435,13 +441,13 @@ internal sealed class CubeWindow : Window
             this.GatherCost.Record(this.gatherTicks, this.gatherBytes);
         }
 #else
-        this.Collision.Update(centre, edge, detail);
+        this.Collision.Update(centre, size, detail);
 #endif
     }
 
     /// <summary>
     /// Stops ImGui moving the window while the mouse is on the view control or the user is turning the view, so a
-    /// drag on the control turns the cube instead of dragging the window around.
+    /// drag on the control turns or resizes the cube instead of dragging the window around (#63, #79, #90).
     /// </summary>
     /// <remarks>
     /// ImGuizmo reads the mouse directly rather than claiming it as an ImGui item, so without this ImGui would treat
@@ -452,7 +458,7 @@ internal sealed class CubeWindow : Window
     {
         var overControl = this.WidgetSize > 0f
             && ImGui.IsMouseHoveringRect(this.WidgetMin, this.WidgetMin + new Vector2(this.WidgetSize), false);
-        if (overControl || this.turning)
+        if (overControl || this.dragging)
         {
             this.Flags |= ImGuiWindowFlags.NoMove;
         }
@@ -463,19 +469,21 @@ internal sealed class CubeWindow : Window
     }
 
     /// <summary>
-    /// Draws ImGuizmo's rotate gizmo in the chosen corner (PROJECT.md, "View orientation control": a ring per axis
-    /// plus an outer screen ring) and applies any turn the user makes with it.
+    /// Draws ImGuizmo's rotate and scale gizmo in the chosen corner (PROJECT.md, "View orientation control": a ring per
+    /// axis plus an outer screen ring; #90: scale handles that resize the cube per axis, and a centre handle that
+    /// zooms) and applies any turn or resize the user makes with it.
     /// </summary>
     /// <remarks>
     /// <para>
-    /// ImGuizmo is handed the current orientation as a model matrix each frame (<see cref="ViewOrientation.ToGizmoModel"/>)
-    /// and turns it while a ring is dragged. Local mode puts the x, y and z rings around the cube's own axes, so the
-    /// ring colours match them. A changed matrix is read back into the settings; the projection then picks it up
-    /// through the settings revision, so it is only rebuilt when the view really changes. The camera and the player
-    /// never feed into this (PROJECT.md: only the control turns the view).
+    /// ImGuizmo is handed the current orientation and size as one model matrix each frame (<see cref="GizmoModel.Build"/>)
+    /// and turns or scales it while a handle is dragged. Local mode puts the rings around, and the scale handles along,
+    /// the cube's own axes, so the colours match them and a handle always changes the matching extent. A changed
+    /// matrix is read back with <see cref="GizmoModel.Read"/>, which keeps the turn and the resize apart; the
+    /// projection picks a new view up through the settings revision, so it is only rebuilt when the view really
+    /// changes. The camera and the player never feed into this (PROJECT.md: only the control turns the view).
     /// </para>
     /// <para>
-    /// The file is saved once the turn is over (mouse released and no change this frame), not on every frame of a
+    /// The file is saved once the drag is over (mouse released and no change this frame), not on every frame of a
     /// drag. ImGuizmo's global settings (gizmo size, orthographic mode) are left alone because other plugins share
     /// them; the size comes from the rectangle instead (<see cref="GizmoRectScale"/>). Nothing here allocates: the
     /// matrices are structs passed by reference.
@@ -485,29 +493,46 @@ internal sealed class CubeWindow : Window
     /// <param name="regionSize">Size of the drawing region, in pixels.</param>
     private void DrawViewControl(Vector2 regionMin, Vector2 regionSize)
     {
-        var size = ViewWidget.Size(regionSize);
-        var position = ViewWidget.Position(regionMin, regionSize, this.Settings.ViewWidgetCorner, size);
+        var side = ViewWidget.Size(regionSize);
+        var position = ViewWidget.Position(regionMin, regionSize, this.Settings.ViewWidgetCorner, side);
         this.WidgetMin = position;
-        this.WidgetSize = size;
+        this.WidgetSize = side;
 
-        var rect = size * GizmoRectScale;
-        var centre = position + new Vector2(size / 2f);
+        var rect = side * GizmoRectScale;
+        var centre = position + new Vector2(side / 2f);
         ImGuizmo.SetDrawlist();
         ImGuizmo.SetRect(centre.X - (rect / 2f), centre.Y - (rect / 2f), rect, rect);
-        var model = this.view.ToGizmoModel();
+        var size = this.Settings.CubeSize;
+        var model = GizmoModel.Build(this.view, size);
         var before = model;
         var camera = GizmoCamera;
         var projection = GizmoProjection;
-        ImGuizmo.Manipulate(ref camera, ref projection, ImGuizmoOperation.Rotate, ImGuizmoMode.Local, ref model);
 
-        if (model != before && ViewOrientation.TryFromGizmoModel(model, out var turned))
+        // One call with Rotate | Scale, as #90 asks: ImGuizmo handles scale before rotation and keeps the model's
+        // scale through a turn, so the two share one matrix. If the combined call ever misbehaves in game, split it
+        // into two Manipulate calls on the same matrix (see docs/manual-tests.md, "Resize the cube").
+        ImGuizmo.Manipulate(ref camera, ref projection, GizmoOperations, ImGuizmoMode.Local, ref model);
+
+        var change = model != before ? GizmoModel.Read(model, this.view, size) : default;
+        if (change.ViewChanged || change.SizeChanged)
         {
-            this.Settings.SetView(turned);
-            this.turning = true;
+            // Only the part that moved is stored, so a resize never nudges the view and a turn never the size.
+            if (change.ViewChanged)
+            {
+                this.Settings.ViewRotation = change.View.Rotation;
+            }
+
+            if (change.SizeChanged)
+            {
+                this.Settings.CubeSize = change.Size;
+            }
+
+            this.Settings.Changed();
+            this.dragging = true;
         }
-        else if (this.turning && !ImGui.IsMouseDown(ImGuiMouseButton.Left))
+        else if (this.dragging && !ImGui.IsMouseDown(ImGuiMouseButton.Left))
         {
-            this.turning = false;
+            this.dragging = false;
             this.save();
         }
     }

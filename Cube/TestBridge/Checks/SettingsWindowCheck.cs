@@ -65,9 +65,18 @@ internal sealed class SettingsWindowCheck(SettingsWindow window, Configuration c
 
         using var json = JsonDocument.Parse(File.ReadAllText(configFile));
         var root = json.RootElement;
-        if (!root.TryGetProperty("CubeEdge", out var edge) || edge.GetSingle() != config.CubeEdge)
+        // The size is saved as width, height and depth (#90); the old single edge is never written again.
+        if (!root.TryGetProperty("CubeSize", out var size)
+            || !size.TryGetProperty("X", out var x) || x.GetSingle() != config.CubeSize.X
+            || !size.TryGetProperty("Y", out var y) || y.GetSingle() != config.CubeSize.Y
+            || !size.TryGetProperty("Z", out var z) || z.GetSingle() != config.CubeSize.Z)
         {
             return CheckStep.Fail("The saved file doesn't hold the current cube size.");
+        }
+
+        if (root.TryGetProperty("CubeEdge", out _))
+        {
+            return CheckStep.Fail("The saved file still holds the old single cube edge.");
         }
 
         // The collision settings (#32) are saved with the rest.
@@ -84,6 +93,6 @@ internal sealed class SettingsWindowCheck(SettingsWindow window, Configuration c
 
         return root.TryGetProperty("Revision", out _)
             ? CheckStep.Fail("The in-memory revision counter was saved to the file.")
-            : CheckStep.Pass($"Settings window drew; saved file holds cube size {config.CubeEdge} and version {Configuration.CurrentVersion}.");
+            : CheckStep.Pass($"Settings window drew; saved file holds cube size {config.CubeSize} and version {Configuration.CurrentVersion}.");
     }
 }

@@ -6,7 +6,7 @@ namespace Cube.Tests;
 
 /// <summary>
 /// Checks the settings' defaults and repair rules (PROJECT.md, "Features": settings for cube size, orientation mode,
-/// labels on/off, colours and opacity; "NPCs": on by default, purple; "Cube": edge 10–100, default 40; "View": Camera
+/// labels on/off, colours and opacity; "NPCs": on by default, purple; "Cube": width, height and depth each 10–100, default 40, zoom keeping their ratios, old single-edge files migrating (#90); "View": Camera
 /// mode by default; #32: collision on, full detail by default; saved files from older versions still load) and the
 /// <c>/cube config</c> command.
 /// </summary>
@@ -22,7 +22,7 @@ public class CubeSettingsTests
     {
         var settings = new CubeSettings();
 
-        Assert.Equal(40f, settings.CubeEdge);
+        Assert.Equal(new Vector3(40f), settings.CubeSize);
         Assert.Equal(OrientationMode.Camera, settings.Orientation);
         Assert.True(settings.ShowLabels);
         Assert.True(settings.ShowNpcs);
@@ -81,9 +81,9 @@ public class CubeSettingsTests
         const string old = """{ "CubeEdge": 60, "ShowLabels": false, "Opacity": 0.5 }""";
 
         var settings = JsonSerializer.Deserialize<CubeSettings>(old, JsonOptions)!;
-        settings.Changed();
+        settings.Upgrade(1);
 
-        Assert.Equal(60f, settings.CubeEdge);
+        Assert.Equal(new Vector3(60f), settings.CubeSize);
         Assert.False(settings.ShowLabels);
         Assert.True(settings.ShowNpcs);
         Assert.Equal(CubeSettings.DefaultNpcColour, settings.NpcColour);
@@ -117,11 +117,103 @@ public class CubeSettingsTests
     [InlineData(65f, 65f)]
     public void Cube_size_is_kept_within_10_to_100(float stored, float expected)
     {
-        var settings = new CubeSettings { CubeEdge = stored };
+        var settings = new CubeSettings { CubeSize = new Vector3(stored, 50, stored) };
 
         settings.Changed();
 
-        Assert.Equal(expected, settings.CubeEdge);
+        Assert.Equal(new Vector3(expected, 50, expected), settings.CubeSize);
+    }
+
+    [Theory]
+    [InlineData(1)]
+    [InlineData(2)]
+    public void Old_single_edge_becomes_all_three_extents(int fileVersion)
+    {
+        const string old = """{ "CubeEdge": 72, "Version": 2 }""";
+        var settings = JsonSerializer.Deserialize<CubeSettings>(old, JsonOptions)!;
+
+        settings.Upgrade(fileVersion);
+
+        Assert.Equal(new Vector3(72f), settings.CubeSize);
+    }
+
+    [Fact]
+    public void Old_out_of_range_edge_is_clamped_when_migrated()
+    {
+        var settings = new CubeSettings { CubeEdge = 400 };
+
+        settings.Upgrade(CubeSettings.RotationViewVersion);
+
+        Assert.Equal(new Vector3(100f), settings.CubeSize);
+    }
+
+    [Fact]
+    public void Current_files_keep_their_box_size_and_ignore_any_old_edge()
+    {
+        var settings = new CubeSettings { CubeSize = new Vector3(20, 80, 30), CubeEdge = 60 };
+
+        settings.Upgrade(CubeSettings.BoxSizeVersion);
+
+        Assert.Equal(new Vector3(20, 80, 30), settings.CubeSize);
+    }
+
+    [Fact]
+    public void Box_size_survives_a_save_and_load()
+    {
+        var saved = new CubeSettings { CubeSize = new Vector3(15, 90, 45) };
+
+        var loaded = JsonSerializer.Deserialize<CubeSettings>(JsonSerializer.Serialize(saved, JsonOptions), JsonOptions)!;
+        loaded.Upgrade(CubeSettings.BoxSizeVersion);
+
+        Assert.Equal(saved.CubeSize, loaded.CubeSize);
+    }
+
+    [Fact]
+    public void Old_edge_is_never_written_again()
+    {
+        Assert.False(new CubeSettings().ShouldSerializeCubeEdge());
+    }
+
+    [Fact]
+    public void Zoom_scales_every_extent_and_keeps_the_ratios()
+    {
+        var settings = new CubeSettings { CubeSize = new Vector3(20, 40, 30) };
+        var before = settings.Revision;
+
+        settings.Zoom(1.5f);
+
+        Assert.Equal(new Vector3(30, 60, 45), settings.CubeSize);
+        Assert.True(settings.Revision > before);
+    }
+
+    [Fact]
+    public void Reset_size_gives_40_by_40_by_40()
+    {
+        var settings = new CubeSettings { CubeSize = new Vector3(20, 90, 30) };
+
+        settings.ResetSize();
+
+        Assert.Equal(new Vector3(40f), settings.CubeSize);
+    }
+
+    [Fact]
+    public void Reset_to_defaults_gives_40_by_40_by_40()
+    {
+        var settings = new CubeSettings { CubeSize = new Vector3(20, 90, 30) };
+
+        settings.CopyFrom(new CubeSettings());
+
+        Assert.Equal(new Vector3(40f), settings.CubeSize);
+    }
+
+    [Fact]
+    public void Set_size_clamps_each_extent()
+    {
+        var settings = new CubeSettings();
+
+        settings.SetSize(new Vector3(2, 55, 300));
+
+        Assert.Equal(new Vector3(10, 55, 100), settings.CubeSize);
     }
 
     [Theory]
@@ -195,7 +287,7 @@ public class CubeSettingsTests
     {
         var source = new CubeSettings
         {
-            CubeEdge = 70, Orientation = OrientationMode.NorthUp, ShowLabels = false,
+            CubeSize = new Vector3(70, 20, 30), Orientation = OrientationMode.NorthUp, ShowLabels = false,
             SelfColour = Vector3.One, PartyColour = Vector3.Zero, OtherColour = new Vector3(0.5f), Opacity = 0.3f,
             ShowNpcs = false, NpcColour = new Vector3(0.2f), ShowCollision = false, CollisionDetail = CollisionDetail.Medium,
         };
@@ -204,7 +296,7 @@ public class CubeSettingsTests
 
         target.CopyFrom(source);
 
-        Assert.Equal(source.CubeEdge, target.CubeEdge);
+        Assert.Equal(source.CubeSize, target.CubeSize);
         Assert.Equal(source.Orientation, target.Orientation);
         Assert.Equal(source.ShowLabels, target.ShowLabels);
         Assert.Equal(source.SelfColour, target.SelfColour);

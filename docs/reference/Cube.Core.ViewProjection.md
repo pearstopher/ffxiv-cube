@@ -133,14 +133,15 @@ A point in view coordinates.
 
  [float](https://learn.microsoft.com/dotnet/api/system.single)
 
-### <a id="Cube_Core_ViewProjection_Fit_System_Numerics_Vector2_System_Numerics_Vector2_System_Single_Cube_Core_ViewOrientation__"></a> Fit\(Vector2, Vector2, float, in ViewOrientation\)
+### <a id="Cube_Core_ViewProjection_Fit_System_Numerics_Vector2_System_Numerics_Vector2_System_Numerics_Vector3_Cube_Core_ViewOrientation__"></a> Fit\(Vector2, Vector2, Vector3, in ViewOrientation\)
 
-The projection that fits a cube of the given size into a window region, centred. The scale fits the cube's
-bounding sphere (radius √3 × half the edge), so the cube never changes size on screen while the user turns it
-with the view control.
+The projection that fits a box of the given size into a window region, centred, at one scale for all axes so
+the box keeps its real proportions (PROJECT.md, "On screen"). The scale fits the box's bounding sphere (radius
+= the length of the half-size), so the box never changes size on screen while the user turns it with the view
+control, and its largest dimension fills the widget as the cube always has.
 
 ```csharp
-public static ViewProjection Fit(Vector2 regionMin, Vector2 regionSize, float halfEdge, in ViewOrientation orientation)
+public static ViewProjection Fit(Vector2 regionMin, Vector2 regionSize, Vector3 half, in ViewOrientation orientation)
 ```
 
 #### Parameters
@@ -153,9 +154,9 @@ Top-left of the drawing region, in pixels.
 
 Size of the drawing region, in pixels.
 
-`halfEdge` [float](https://learn.microsoft.com/dotnet/api/system.single)
+`half` [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
 
-Half the cube's edge, in yalms.
+Half the box's width, height and depth, in yalms ([Half](Cube.Core.CubeSpace.md#Cube_Core_CubeSpace_Half)).
 
 `orientation` [ViewOrientation](Cube.Core.ViewOrientation.md)
 
@@ -164,6 +165,11 @@ How the cube is turned on screen.
 #### Returns
 
  [ViewProjection](Cube.Core.ViewProjection.md)
+
+#### Remarks
+
+For a cube the radius is √3 × half the edge, the fit used before #90, so a 40 × 40 × 40 cube looks exactly as
+it did.
 
 ### <a id="Cube_Core_ViewProjection_ToScreen_System_Numerics_Vector3_"></a> ToScreen\(Vector3\)
 

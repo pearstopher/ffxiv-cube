@@ -125,8 +125,9 @@ projector for the frame instead ([PlayerCubes](Cube.Core.PlayerCubes.md#Cube_Cor
 ### <a id="Cube_Core_CubeGeometry_AddWireCube_Cube_Core_DrawList_Cube_Core_CubeSpace__Cube_Core_ViewProjection__System_UInt32_"></a> AddWireCube\(DrawList, in CubeSpace, in ViewProjection, uint\)
 
 Adds the big cube's 12 edges as lines, each at the depth of its midpoint. The corners are fixed cube-local
-points (± half the edge), independent of [Yaw](Cube.Core.CubeSpace.md#Cube_Core_CubeSpace_Yaw), so turning the camera leaves these
-primitives unchanged.
+points (± half the size on each axis), independent of [Yaw](Cube.Core.CubeSpace.md#Cube_Core_CubeSpace_Yaw), so turning the camera leaves
+these primitives unchanged. A box that isn't a cube is drawn in its real proportions (PROJECT.md, "On screen":
+a tall box is drawn tall).
 
 ```csharp
 public static void AddWireCube(DrawList list, in CubeSpace space, in ViewProjection projection, uint colour)

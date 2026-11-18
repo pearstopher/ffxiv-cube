@@ -34,8 +34,9 @@ public static class CubeGeometry
 
     /// <summary>
     /// Adds the big cube's 12 edges as lines, each at the depth of its midpoint. The corners are fixed cube-local
-    /// points (± half the edge), independent of <see cref="CubeSpace.Yaw"/>, so turning the camera leaves these
-    /// primitives unchanged.
+    /// points (± half the size on each axis), independent of <see cref="CubeSpace.Yaw"/>, so turning the camera leaves
+    /// these primitives unchanged. A box that isn't a cube is drawn in its real proportions (PROJECT.md, "On screen":
+    /// a tall box is drawn tall).
     /// </summary>
     /// <param name="list">The frame's draw list.</param>
     /// <param name="space">The cube, for its size.</param>
@@ -53,8 +54,8 @@ public static class CubeGeometry
                     continue;
                 }
 
-                var a = CornerSign(corner) * space.HalfEdge;
-                var b = CornerSign(corner | bit) * space.HalfEdge;
+                var a = CornerSign(corner) * space.Half;
+                var b = CornerSign(corner | bit) * space.Half;
                 list.AddLine(projection.ToScreen(a), projection.ToScreen(b), projection.Depth((a + b) / 2f), colour);
             }
         }

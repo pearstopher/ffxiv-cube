@@ -3,7 +3,7 @@
 Namespace: [Cube.Core](Cube.Core.md)  
 Assembly: Cube.Core.dll  
 
-The cube's square footprint in world X/Z (stored as `System.Numerics.Vector2` X and Y), with its bounds for the
+The cube's rectangular footprint in world X/Z (stored as `System.Numerics.Vector2` X and Y), with its bounds for the
 cheap reject. Computed once per clip pass.
 
 ```csharp
@@ -31,7 +31,7 @@ The cube.
 
 ### <a id="Cube_Core_CollisionClipper_Footprint_C0"></a> C0
 
-First corner, in order around the square.
+First corner, in order around the rectangle.
 
 ```csharp
 public Vector2 C0 { get; }

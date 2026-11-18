@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Numerics;
 using Cube.Core;
 
 namespace Cube.TestBridge.Checks;
@@ -28,9 +29,6 @@ internal sealed class CollisionDrawCheck : BridgeCheck
 
     /// <summary>How far a clipped box may reach past the cube, in yalms (rounding).</summary>
     private const float Tolerance = 0.01f;
-
-    /// <summary>The cube's horizontal half-diagonal per unit of half-edge: the furthest its footprint reaches at any yaw.</summary>
-    private const float Diagonal = 1.41422f;
 
     /// <summary>The user's settings before the check, restored by <see cref="Cleanup"/>.</summary>
     private readonly CubeSettings saved = new();
@@ -132,19 +130,19 @@ internal sealed class CollisionDrawCheck : BridgeCheck
     /// <returns>What was wrong, or null.</returns>
     private static string? CheckBoxesInCube(in CubeSpace space, ReadOnlySpan<CollisionBox> boxes)
     {
-        var half = space.HalfEdge;
-        var reach = (half * Diagonal) + Tolerance;
+        var half = space.Half;
+        var reach = new Vector2(half.X, half.Z).Length() + Tolerance;
         var centre = space.Centre;
         for (var i = 0; i < boxes.Length; i++)
         {
             var box = boxes[i];
             var outside =
-                box.Min.Y < centre.Y - half - Tolerance || box.Max.Y > centre.Y + half + Tolerance ||
+                box.Min.Y < centre.Y - half.Y - Tolerance || box.Max.Y > centre.Y + half.Y + Tolerance ||
                 box.Min.X < centre.X - reach || box.Max.X > centre.X + reach ||
                 box.Min.Z < centre.Z - reach || box.Max.Z > centre.Z + reach;
             if (outside || !box.IsValid)
             {
-                return string.Create(CultureInfo.InvariantCulture, $"Clipped box {i} ({box.Min}-{box.Max}) reaches outside the cube around {centre} (half edge {half}).");
+                return string.Create(CultureInfo.InvariantCulture, $"Clipped box {i} ({box.Min}-{box.Max}) reaches outside the cube around {centre} (half size {half}).");
             }
         }
 

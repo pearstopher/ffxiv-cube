@@ -66,14 +66,18 @@ internal sealed class PlayersMatchObjectTableCheck(IObjectTable objects) : Bridg
     /// <inheritdoc/>
     public override void Cleanup(BridgeContext context) => context.Window.IsOpen = this.wasOpen;
 
-    /// <summary>Whether a point is within a given half-size of the cube's centre on every axis (unclamped, unlike <see cref="CubeSpace"/>).</summary>
+    /// <summary>
+    /// Whether a point is inside the cube grown (or shrunk) by a margin on every axis, tested independently of
+    /// <see cref="CubeSpace.TryToView"/>: the cube's own axes, each against its own half-size (#90).
+    /// </summary>
     /// <param name="space">The cube.</param>
     /// <param name="point">A world position.</param>
-    /// <param name="half">Half-size to test against.</param>
-    private static bool Within(in CubeSpace space, System.Numerics.Vector3 point, float half)
+    /// <param name="margin">Yalms added to each half-size; negative shrinks it.</param>
+    private static bool Within(in CubeSpace space, System.Numerics.Vector3 point, float margin)
     {
-        var d = point - space.Centre;
-        return System.MathF.Abs(d.X) <= half && System.MathF.Abs(d.Y) <= half && System.MathF.Abs(d.Z) <= half;
+        var d = space.ToView(point);
+        var half = space.Half;
+        return System.MathF.Abs(d.X) <= half.X + margin && System.MathF.Abs(d.Y) <= half.Y + margin && System.MathF.Abs(d.Z) <= half.Z + margin;
     }
 
     /// <summary>Compares the window's players with the object table, one frame's worth.</summary>
@@ -117,7 +121,7 @@ internal sealed class PlayersMatchObjectTableCheck(IObjectTable objects) : Bridg
                 continue;
             }
 
-            if (Within(space, pc.Position, space.HalfEdge - BoundaryTolerance))
+            if (Within(space, pc.Position, -BoundaryTolerance))
             {
                 expected++;
                 if (!drawn.TryGetValue(pc.EntityId, out var relation))
@@ -135,7 +139,7 @@ internal sealed class PlayersMatchObjectTableCheck(IObjectTable objects) : Bridg
                     return CheckStep.Fail($"Player {pc.EntityId:X8} is classed {relation}; the object table says {want}.");
                 }
             }
-            else if (!Within(space, pc.Position, space.HalfEdge + BoundaryTolerance) && drawn.ContainsKey(pc.EntityId))
+            else if (!Within(space, pc.Position, BoundaryTolerance) && drawn.ContainsKey(pc.EntityId))
             {
                 return CheckStep.Fail($"A player outside the cube (entity {pc.EntityId:X8}) is in the window's players.");
             }
@@ -206,7 +210,7 @@ internal sealed class PlayersMatchObjectTableCheck(IObjectTable objects) : Bridg
                 continue;
             }
 
-            if (Within(space, obj.Position, space.HalfEdge - BoundaryTolerance))
+            if (Within(space, obj.Position, -BoundaryTolerance))
             {
                 expected++;
                 if (!full && !drawn.Contains(obj.ObjectIndex))
@@ -214,7 +218,7 @@ internal sealed class PlayersMatchObjectTableCheck(IObjectTable objects) : Bridg
                     return $"A named NPC inside the cube (slot {obj.ObjectIndex}, {kind}) is missing from the window's NPCs.";
                 }
             }
-            else if (!Within(space, obj.Position, space.HalfEdge + BoundaryTolerance) && drawn.Contains(obj.ObjectIndex))
+            else if (!Within(space, obj.Position, BoundaryTolerance) && drawn.Contains(obj.ObjectIndex))
             {
                 return $"A named NPC outside the cube (slot {obj.ObjectIndex}) is in the window's NPCs.";
             }

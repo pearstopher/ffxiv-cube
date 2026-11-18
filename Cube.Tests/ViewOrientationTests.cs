@@ -131,9 +131,9 @@ public class ViewOrientationTests
         var regionMin = new Vector2(10, 20);
         var regionSize = new Vector2(300, 200);
         var view = ViewOrientation.FromDegrees(yaw, pitch);
-        var projection = ViewProjection.Fit(regionMin, regionSize, 20, view);
+        var projection = ViewProjection.Fit(regionMin, regionSize, new Vector3(20), view);
 
-        Assert.Equal(ViewProjection.Fit(regionMin, regionSize, 20, ViewOrientation.Default).PixelsPerYalm, projection.PixelsPerYalm);
+        Assert.Equal(ViewProjection.Fit(regionMin, regionSize, new Vector3(20), ViewOrientation.Default).PixelsPerYalm, projection.PixelsPerYalm);
         for (var i = 0; i < 8; i++)
         {
             var corner = new Vector3((i & 1) != 0 ? 20 : -20, (i & 2) != 0 ? 20 : -20, (i & 4) != 0 ? 20 : -20);
@@ -277,7 +277,7 @@ public class ViewOrientationTests
     public void Projecting_and_converting_do_not_allocate()
     {
         var view = ViewOrientation.FromDegrees(30, 40);
-        var projection = ViewProjection.Fit(Vector2.Zero, new Vector2(400, 300), 20, view);
+        var projection = ViewProjection.Fit(Vector2.Zero, new Vector2(400, 300), new Vector3(20), view);
         var point = new Vector3(1, 2, 3);
         var sink = 0f;
 

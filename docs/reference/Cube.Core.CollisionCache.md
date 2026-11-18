@@ -32,7 +32,7 @@ there for busier places (PROJECT.md: "any expensive gathering is spread over fra
 </p>
 <p>
 <b>When to gather.</b> Only when [NeedsRefresh](Cube.Core.CollisionBoxSet.md#Cube_Core_CollisionBoxSet_NeedsRefresh) says the ready set is stale (player
-moved a quarter of the edge, edge or scene changed). A gather in progress restarts if the scene changes under it or
+moved a quarter of the box's extent, size or scene changed). A gather in progress restarts if the scene changes under it or
 the player has already walked out of its region, so a finished set always matches one scene and one place.
 </p>
 <p>
@@ -259,12 +259,12 @@ the old boxes stay drawn. The test bridge uses it to measure gathers on demand.
 public void Invalidate()
 ```
 
-### <a id="Cube_Core_CollisionCache_Start_System_Numerics_Vector3_System_Single_System_UInt64_"></a> Start\(Vector3, float, ulong\)
+### <a id="Cube_Core_CollisionCache_Start_System_Numerics_Vector3_System_Numerics_Vector3_System_UInt64_"></a> Start\(Vector3, Vector3, ulong\)
 
 Begins a new gather into [building](Cube.Core.CollisionCache.md#Cube_Core_CollisionCache_building) at the start of the scene's list.
 
 ```csharp
-private void Start(Vector3 position, float edge, ulong sceneStamp)
+private void Start(Vector3 position, Vector3 size, ulong sceneStamp)
 ```
 
 #### Parameters
@@ -273,21 +273,21 @@ private void Start(Vector3 position, float edge, ulong sceneStamp)
 
 The cube's centre.
 
-`edge` [float](https://learn.microsoft.com/dotnet/api/system.single)
+`size` [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
 
-The cube's edge.
+The cube's width, height and depth.
 
 `sceneStamp` [ulong](https://learn.microsoft.com/dotnet/api/system.uint64)
 
 The scene stamp.
 
-### <a id="Cube_Core_CollisionCache_Step__1___0__System_Numerics_Vector3_System_Single_System_UInt32_System_UInt64_"></a> Step<TSource\>\(ref TSource, Vector3, float, uint, ulong\)
+### <a id="Cube_Core_CollisionCache_Step__1___0__System_Numerics_Vector3_System_Numerics_Vector3_System_UInt32_System_UInt64_"></a> Step<TSource\>\(ref TSource, Vector3, Vector3, uint, ulong\)
 
 One frame's work: drops everything on a zone change, starts a gather if the ready set is stale, and continues the
 gather in progress until the budget is spent or the scene's list ends.
 
 ```csharp
-public bool Step<TSource>(ref TSource source, Vector3 position, float edge, uint zone, ulong sceneStamp) where TSource : struct, ICollisionSource
+public bool Step<TSource>(ref TSource source, Vector3 position, Vector3 size, uint zone, ulong sceneStamp) where TSource : struct, ICollisionSource
 ```
 
 #### Parameters
@@ -300,9 +300,9 @@ The source, positioned anywhere; [Seek](Cube.Core.ICollisionSource.md#Cube_Core_
 
 The cube's centre (the player).
 
-`edge` [float](https://learn.microsoft.com/dotnet/api/system.single)
+`size` [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
 
-The cube's edge in yalms.
+The cube's width, height and depth in yalms.
 
 `zone` [uint](https://learn.microsoft.com/dotnet/api/system.uint32)
 

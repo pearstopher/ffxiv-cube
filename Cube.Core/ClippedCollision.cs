@@ -7,7 +7,7 @@ namespace Cube.Core;
 /// "Collision (phase 2)": boxes clipped to the cube). Clips again only when the cube or the gathered boxes change.
 /// </summary>
 /// <remarks>
-/// PROJECT.md, "Efficiency and memory": recompute only when the inputs change. The inputs are the cube (centre, edge,
+/// PROJECT.md, "Efficiency and memory": recompute only when the inputs change. The inputs are the cube (centre, size,
 /// alignment yaw) and the cache's ready set (which set it is, whether it holds data, and how many gathers have
 /// completed); standing still with the camera still clips nothing. The buffer is allocated once at the cache's
 /// capacity, so clipping can never drop a box and memory never grows.
@@ -29,8 +29,8 @@ public sealed class ClippedCollision
     /// <summary>The cube's centre when clipped.</summary>
     private Vector3 centre;
 
-    /// <summary>The cube's edge when clipped.</summary>
-    private float edge;
+    /// <summary>The cube's size when clipped.</summary>
+    private Vector3 size;
 
     /// <summary>The cube's yaw when clipped.</summary>
     private float yaw;
@@ -60,7 +60,7 @@ public sealed class ClippedCollision
     {
         var ready = cache.Ready;
         if (ReferenceEquals(ready, this.set) && ready.HasData == this.hadData && cache.Completed == this.completed &&
-            cube.Centre == this.centre && cube.Edge == this.edge && cube.Yaw == this.yaw)
+            cube.Centre == this.centre && cube.Size == this.size && cube.Yaw == this.yaw)
         {
             return false;
         }
@@ -69,7 +69,7 @@ public sealed class ClippedCollision
         this.hadData = ready.HasData;
         this.completed = cache.Completed;
         this.centre = cube.Centre;
-        this.edge = cube.Edge;
+        this.size = cube.Size;
         this.yaw = cube.Yaw;
         this.Count = ready.HasData ? CollisionClipper.Clip(cube, ready.Items, this.boxes) : 0;
         this.Clips++;

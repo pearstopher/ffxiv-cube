@@ -4,8 +4,8 @@ namespace Cube.Core;
 
 /// <summary>
 /// Draws each player in the cube as a small solid cube in their relation's colour, with a name label for other
-/// players (PROJECT.md, "Players": player cube size fixed relative to the big cube, about 1/40 of its edge, minimum a
-/// few pixels; "Features": the local player is a cube at the centre in its own colour, other players are labelled
+/// players (PROJECT.md, "Players": player cube size fixed relative to the big cube, about 1/40 of its largest extent,
+/// minimum a few pixels; "Features": the local player is a cube at the centre in its own colour, other players are labelled
 /// with their names; "Labels": the name drawn next to the cube, overlaps are fine; "NPCs": named NPCs are shown the
 /// same way, in the NPC colour).
 /// </summary>
@@ -17,7 +17,7 @@ namespace Cube.Core;
 /// </remarks>
 public static class PlayerCubes
 {
-    /// <summary>Player cube edge as a fraction of the big cube's edge (PROJECT.md: about 1/40).</summary>
+    /// <summary>Player cube edge as a fraction of the big cube's largest extent (PROJECT.md: about 1/40).</summary>
     public const float EdgeFraction = 1f / 40f;
 
     /// <summary>Smallest on-screen edge of a player cube, in pixels, so players stay visible in a small window.</summary>
@@ -39,9 +39,13 @@ public static class PlayerCubes
     /// <summary>Half the edge of a player cube, in yalms, for this frame's cube and scale.</summary>
     /// <param name="space">The big cube.</param>
     /// <param name="projection">The projection, for the minimum on-screen size.</param>
+    /// <remarks>
+    /// Follows the <see cref="CubeSpace.Largest">largest extent</see> (PROJECT.md, changed in #90), so a long thin box
+    /// doesn't shrink its markers to dots along the short axes.
+    /// </remarks>
     public static float HalfSize(in CubeSpace space, in ViewProjection projection)
     {
-        var edge = space.Edge * EdgeFraction;
+        var edge = space.Largest * EdgeFraction;
         if (projection.PixelsPerYalm > 0)
         {
             edge = MathF.Max(edge, MinEdgePixels / projection.PixelsPerYalm);

@@ -198,10 +198,11 @@ The plugin parts the check can look at, and where it records metrics.
 
 ### <a id="Cube_TestBridge_Checks_PlayersMatchObjectTableCheck_Within_Cube_Core_CubeSpace__System_Numerics_Vector3_System_Single_"></a> Within\(in CubeSpace, Vector3, float\)
 
-Whether a point is within a given half-size of the cube's centre on every axis (unclamped, unlike [CubeSpace](Cube.Core.CubeSpace.md#Cube_Core_CubeSpace)).
+Whether a point is inside the cube grown (or shrunk) by a margin on every axis, tested independently of
+[TryToView](Cube.Core.CubeSpace.md#Cube_Core_CubeSpace_TryToView): the cube's own axes, each against its own half-size (#90).
 
 ```csharp
-private static bool Within(in CubeSpace space, Vector3 point, float half)
+private static bool Within(in CubeSpace space, Vector3 point, float margin)
 ```
 
 #### Parameters
@@ -214,9 +215,9 @@ The cube.
 
 A world position.
 
-`half` [float](https://learn.microsoft.com/dotnet/api/system.single)
+`margin` [float](https://learn.microsoft.com/dotnet/api/system.single)
 
-Half-size to test against.
+Yalms added to each half-size; negative shrinks it.
 
 #### Returns
 

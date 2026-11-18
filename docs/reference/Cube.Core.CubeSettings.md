@@ -3,7 +3,7 @@
 Namespace: [Cube.Core](Cube.Core.md)  
 Assembly: Cube.Core.dll  
 
-The user's settings (PROJECT.md, "Features": cube size, orientation mode, labels on/off, colours and opacity; "NPCs":
+The user's settings (PROJECT.md, "Features": cube size (width, height and depth since #90), orientation mode, labels on/off, colours and opacity; "NPCs":
 NPCs on/off; "View orientation control": the saved view orientation and the control's corner; #32: collision on/off
 and detail), with their defaults
 and the rules for valid values. The plugin's saved configuration derives from this, so the rules are unit tested
@@ -31,6 +31,19 @@ to rebuild its cached colours (PROJECT.md, "Efficiency and memory": recompute on
 
 ## Fields
 
+### <a id="Cube_Core_CubeSettings_BoxSizeVersion"></a> BoxSizeVersion
+
+The settings file format that stores the cube as [CubeSize](Cube.Core.CubeSettings.md#Cube_Core_CubeSettings_CubeSize) (#90). Files older than this stored a
+single [CubeEdge](Cube.Core.CubeSettings.md#Cube_Core_CubeSettings_CubeEdge), which [Upgrade](Cube.Core.CubeSettings.md#Cube_Core_CubeSettings_Upgrade) turns into three equal extents.
+
+```csharp
+public const int BoxSizeVersion = 3
+```
+
+#### Field Value
+
+ [int](https://learn.microsoft.com/dotnet/api/system.int32)
+
 ### <a id="Cube_Core_CubeSettings_CollisionDetail"></a> CollisionDetail
 
 How finely collision is drawn (#32); [Full](Cube.Core.CollisionDetail.md#Cube_Core_CollisionDetail_Full) by default.
@@ -45,7 +58,8 @@ public CollisionDetail CollisionDetail
 
 ### <a id="Cube_Core_CubeSettings_CubeEdge"></a> CubeEdge
 
-The cube's edge in yalms (PROJECT.md: 10–100, default 40).
+The single edge files saved before [BoxSizeVersion](Cube.Core.CubeSettings.md#Cube_Core_CubeSettings_BoxSizeVersion) stored. Only read from those files, so their
+size carries over as a cube with that edge; never written again.
 
 ```csharp
 public float CubeEdge
@@ -54,6 +68,20 @@ public float CubeEdge
 #### Field Value
 
  [float](https://learn.microsoft.com/dotnet/api/system.single)
+
+### <a id="Cube_Core_CubeSettings_CubeSize"></a> CubeSize
+
+The cube's width (X), height (Y) and depth (Z) in yalms (PROJECT.md, "Cube": each 10–100, default 40; #90).
+Change it with [SetSize](Cube.Core.CubeSettings.md#Cube_Core_CubeSettings_SetSize) or [Zoom](Cube.Core.CubeSettings.md#Cube_Core_CubeSettings_Zoom), or bind a slider to a component and call
+[Changed](Cube.Core.CubeSettings.md#Cube_Core_CubeSettings_Changed).
+
+```csharp
+public Vector3 CubeSize
+```
+
+#### Field Value
+
+ [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
 
 ### <a id="Cube_Core_CubeSettings_DefaultNpcColour"></a> DefaultNpcColour
 
@@ -378,6 +406,14 @@ public PlayerPalette Palette()
 
  [PlayerPalette](Cube.Core.PlayerPalette.md)
 
+### <a id="Cube_Core_CubeSettings_ResetSize"></a> ResetSize\(\)
+
+Puts the cube back to its default size, 40 × 40 × 40 (the settings window's "Reset size").
+
+```csharp
+public void ResetSize()
+```
+
 ### <a id="Cube_Core_CubeSettings_ResetView"></a> ResetView\(\)
 
 Puts the view back to the default (PROJECT.md: "There's a way to reset to the default").
@@ -385,6 +421,20 @@ Puts the view back to the default (PROJECT.md: "There's a way to reset to the de
 ```csharp
 public void ResetView()
 ```
+
+### <a id="Cube_Core_CubeSettings_SetSize_System_Numerics_Vector3_"></a> SetSize\(Vector3\)
+
+Stores a new cube size (from the scale gizmo's axis handles), clamped, and marks the settings changed.
+
+```csharp
+public void SetSize(Vector3 size)
+```
+
+#### Parameters
+
+`size` [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
+
+The width, height and depth the user chose.
 
 ### <a id="Cube_Core_CubeSettings_SetView_Cube_Core_ViewOrientation__"></a> SetView\(in ViewOrientation\)
 
@@ -399,6 +449,20 @@ public void SetView(in ViewOrientation view)
 `view` [ViewOrientation](Cube.Core.ViewOrientation.md)
 
 The orientation the user chose.
+
+### <a id="Cube_Core_CubeSettings_ShouldSerializeCubeEdge"></a> ShouldSerializeCubeEdge\(\)
+
+Never writes the old single edge, so saved files only hold [CubeSize](Cube.Core.CubeSettings.md#Cube_Core_CubeSettings_CubeSize); see [ShouldSerializeViewYawDegrees](Cube.Core.CubeSettings.md#Cube_Core_CubeSettings_ShouldSerializeViewYawDegrees).
+
+```csharp
+public bool ShouldSerializeCubeEdge()
+```
+
+#### Returns
+
+ [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+Always false.
 
 ### <a id="Cube_Core_CubeSettings_ShouldSerializeViewPitchDegrees"></a> ShouldSerializeViewPitchDegrees\(\)
 
@@ -434,7 +498,8 @@ Always false.
 Brings settings loaded from an older file format up to date, then repairs them with [Changed](Cube.Core.CubeSettings.md#Cube_Core_CubeSettings_Changed).
 Files before [RotationViewVersion](Cube.Core.CubeSettings.md#Cube_Core_CubeSettings_RotationViewVersion) stored the view as a heading and tilt; they become the same
 orientation (PROJECT.md: orientations saved by the old control carry over). A file from before the view
-control existed has neither, so the old fields' defaults give the default view.
+control existed has neither, so the old fields' defaults give the default view. Files before
+[BoxSizeVersion](Cube.Core.CubeSettings.md#Cube_Core_CubeSettings_BoxSizeVersion) stored one cube edge; it becomes all three extents (#90).
 
 ```csharp
 public void Upgrade(int fileVersion)
@@ -489,3 +554,18 @@ The colour's own opacity before the setting is applied.
 #### Returns
 
  [uint](https://learn.microsoft.com/dotnet/api/system.uint32)
+
+### <a id="Cube_Core_CubeSettings_Zoom_System_Single_"></a> Zoom\(float\)
+
+Zooms the cube (PROJECT.md, "Zoom": all three extents scale together, keeping their ratios, clamped so none
+leaves 10–100) and marks the settings changed.
+
+```csharp
+public void Zoom(float factor)
+```
+
+#### Parameters
+
+`factor` [float](https://learn.microsoft.com/dotnet/api/system.single)
+
+How much to scale every extent by; below 1 zooms in (less space, contents look bigger).

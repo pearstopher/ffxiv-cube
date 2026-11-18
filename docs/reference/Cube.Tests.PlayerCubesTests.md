@@ -3,7 +3,7 @@
 Namespace: [Cube.Tests](Cube.Tests.md)  
 Assembly: Cube.Tests.dll  
 
-Checks players are drawn as small coloured cubes (PROJECT.md, "Players": about 1/40 of the big cube's edge, minimum
+Checks players are drawn as small coloured cubes (PROJECT.md, "Players": about 1/40 of the big cube's largest extent, minimum
 a few pixels; "Colours": one colour each for self, party/alliance, others and NPCs; "NPCs": drawn like players, in
 the NPC colour; "Draw order": near cubes cover far ones; "Efficiency and memory": no per-frame allocations).
 
@@ -103,6 +103,13 @@ private static NearbyPlayer Player(Vector3 position, PlayerRelation relation)
 #### Returns
 
  [NearbyPlayer](Cube.Core.NearbyPlayer.md)
+
+### <a id="Cube_Tests_PlayerCubesTests_Player_cube_follows_the_largest_extent_of_a_box"></a> Player\_cube\_follows\_the\_largest\_extent\_of\_a\_box\(\)
+
+```csharp
+[Fact]
+public void Player_cube_follows_the_largest_extent_of_a_box()
+```
 
 ### <a id="Cube_Tests_PlayerCubesTests_Player_cube_is_one_fortieth_of_the_big_cube"></a> Player\_cube\_is\_one\_fortieth\_of\_the\_big\_cube\(\)
 

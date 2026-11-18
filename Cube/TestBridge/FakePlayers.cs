@@ -15,7 +15,7 @@ namespace Cube.TestBridge;
 /// exactly the same culling, classification and naming; fake NPCs use <see cref="PlayerSet.OfferNpc"/>, so they are
 /// left out when the NPC setting is off, like real ones. They use object slots from <see cref="FirstSlot"/> up (above the whole
 /// real object table) and entity ids from <see cref="FirstEntityId"/> up, so checks can tell them apart. Positions are
-/// fractions of the cube's half-edge in cube-local coordinates (see <see cref="CubeSpace.FromView"/>), so the same set
+/// fractions of the cube's half-size on each axis in cube-local coordinates (see <see cref="CubeSpace.FromView"/>), so the same set
 /// works at any cube size and stays put in the cube however the camera turns. A fake added with
 /// <see cref="AddAtWorld"/> is instead fixed in the world, like a real player, so it rotates with the contents.
 /// </remarks>
@@ -111,7 +111,7 @@ internal sealed class FakePlayers
 
     /// <summary>Adds one fake.</summary>
     /// <param name="name">Its label.</param>
-    /// <param name="offset">Position as fractions of the half-edge from the cube centre (1 = on a face).</param>
+    /// <param name="offset">Position as fractions of the half-size on each axis from the cube centre (1 = on a face).</param>
     /// <param name="relation">Party, other or NPC (fakes are never Self).</param>
     public void Add(string name, Vector3 offset, PlayerRelation relation) =>
         this.fakes.Add(new Fake(Encoding.UTF8.GetBytes(name), offset, relation, false));
@@ -137,7 +137,7 @@ internal sealed class FakePlayers
         for (var i = 0; i < this.fakes.Count; i++)
         {
             var fake = this.fakes[i];
-            var position = fake.IsWorld ? fake.Offset : space.FromView(fake.Offset * space.HalfEdge);
+            var position = fake.IsWorld ? fake.Offset : space.FromView(fake.Offset * space.Half);
             if (fake.Relation == PlayerRelation.Npc)
             {
                 // Rejected by the set while NPCs are turned off, like a real NPC.
@@ -152,7 +152,7 @@ internal sealed class FakePlayers
 
     /// <summary>One fake player or NPC.</summary>
     /// <param name="Name">UTF-8 name bytes, encoded once.</param>
-    /// <param name="Offset">Position as fractions of the half-edge in cube-local coordinates, or a world position if <paramref name="IsWorld"/>.</param>
+    /// <param name="Offset">Position as fractions of the half-size on each axis in cube-local coordinates, or a world position if <paramref name="IsWorld"/>.</param>
     /// <param name="Relation">Party, other or NPC.</param>
     /// <param name="IsWorld">Whether <paramref name="Offset"/> is a fixed world position.</param>
     private readonly record struct Fake(byte[] Name, Vector3 Offset, PlayerRelation Relation, bool IsWorld);

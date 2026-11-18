@@ -55,7 +55,7 @@ internal sealed class CollisionZoneChangesCheck : BridgeCheck
         window.IsOpen = true;
         settings.ShowCollision = true;
         settings.CollisionDetail = CollisionDetail.Full;
-        settings.CubeEdge = CubeSpace.MaxEdge;
+        settings.CubeSize = new System.Numerics.Vector3(BoxExtents.Max);
         settings.Changed();
 
         // Two gathers, so both of the cache's sets have been the ready one.

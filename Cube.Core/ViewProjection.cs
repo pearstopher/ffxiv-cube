@@ -50,18 +50,23 @@ public readonly struct ViewProjection
     public Vector3 TowardsViewer => -this.Orientation.Forward;
 
     /// <summary>
-    /// The projection that fits a cube of the given size into a window region, centred. The scale fits the cube's
-    /// bounding sphere (radius √3 × half the edge), so the cube never changes size on screen while the user turns it
-    /// with the view control.
+    /// The projection that fits a box of the given size into a window region, centred, at one scale for all axes so
+    /// the box keeps its real proportions (PROJECT.md, "On screen"). The scale fits the box's bounding sphere (radius
+    /// = the length of the half-size), so the box never changes size on screen while the user turns it with the view
+    /// control, and its largest dimension fills the widget as the cube always has.
     /// </summary>
+    /// <remarks>
+    /// For a cube the radius is √3 × half the edge, the fit used before #90, so a 40 × 40 × 40 cube looks exactly as
+    /// it did.
+    /// </remarks>
     /// <param name="regionMin">Top-left of the drawing region, in pixels.</param>
     /// <param name="regionSize">Size of the drawing region, in pixels.</param>
-    /// <param name="halfEdge">Half the cube's edge, in yalms.</param>
+    /// <param name="half">Half the box's width, height and depth, in yalms (<see cref="CubeSpace.Half"/>).</param>
     /// <param name="orientation">How the cube is turned on screen.</param>
-    public static ViewProjection Fit(Vector2 regionMin, Vector2 regionSize, float halfEdge, in ViewOrientation orientation)
+    public static ViewProjection Fit(Vector2 regionMin, Vector2 regionSize, Vector3 half, in ViewOrientation orientation)
     {
-        var reach = halfEdge * MathF.Sqrt(3f);
-        var scale = MathF.Max(0f, MathF.Min(regionSize.X, regionSize.Y) / (2f * reach) * FillFraction);
+        var reach = half.Length();
+        var scale = reach > 0f ? MathF.Max(0f, MathF.Min(regionSize.X, regionSize.Y) / (2f * reach) * FillFraction) : 0f;
         return new ViewProjection(orientation, regionMin + (regionSize / 2f), scale);
     }
 

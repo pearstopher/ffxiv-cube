@@ -21,6 +21,11 @@ and catch code that allocates, including small amortised growth.
 Checks the in-game bridge's results are written atomically (PROJECT.md, "Automated testing":
 the script polls the results file, so it must never see half a file).
 
+ [BoxExtentsTests](Cube.Tests.BoxExtentsTests.md)
+
+Checks the box size rules (PROJECT.md, "Cube" and "Zoom", #90): each extent 10–100, default 40; zoom scales all
+three together keeping their ratios, clamped so no extent leaves 10–100; zooming in means less space.
+
  [BuildInfoTests](Cube.Tests.BuildInfoTests.md)
 
 Checks the build line logged on load (CLAUDE.md: log which build is running and when it was built),
@@ -72,14 +77,15 @@ without the game (CLAUDE.md, "Reference: the previous plugin" layout rule).
  [CubeSettingsTests](Cube.Tests.CubeSettingsTests.md)
 
 Checks the settings' defaults and repair rules (PROJECT.md, "Features": settings for cube size, orientation mode,
-labels on/off, colours and opacity; "NPCs": on by default, purple; "Cube": edge 10–100, default 40; "View": Camera
+labels on/off, colours and opacity; "NPCs": on by default, purple; "Cube": width, height and depth each 10–100, default 40, zoom keeping their ratios, old single-edge files migrating (#90); "View": Camera
 mode by default; #32: collision on, full detail by default; saved files from older versions still load) and the
 <code>/cube config</code> command.
 
  [CubeSpaceTests](Cube.Tests.CubeSpaceTests.md)
 
-Checks the cube of space (PROJECT.md, "Exact behaviour rules": Cube, Players): centred on the player, edge 10–100
-yalms (default 40), aligned by its yaw (Camera mode: front face where the camera looks; North up: east right,
+Checks the cube of space (PROJECT.md, "Exact behaviour rules": Cube, Players, Culling): centred on the player, a box
+whose width, height and depth are each 10–100 yalms (default 40), inside meaning inside on each axis separately,
+aligned by its yaw (Camera mode: front face where the camera looks; North up: east right,
 north forward); containment uses the aligned cube, so things enter and leave at the sides as the camera turns, and
 is inclusive on faces; players outside are not shown at all. Also the zero-allocation rule ("Efficiency and
 memory").
@@ -101,9 +107,16 @@ and that measuring is itself allocation-free with bounded memory.
 Checks repeated errors are logged sparingly (CLAUDE.md, "Dalamud rules": every game-facing handler catches and
 logs; a handler failing every frame must not flood the log).
 
+ [GizmoModelTests](Cube.Tests.GizmoModelTests.md)
+
+Checks the corner gizmo's shared model matrix (PROJECT.md, "View orientation control"; #90 "Control"): the axis
+handles change width, height or depth in the cube's own axes whatever the orientation, the centre handle zooms
+keeping the ratios, a turn never changes the size and a resize never changes the view. ImGuizmo's handles are
+simulated by scaling the matrix's rows (its local axes) the way its scale operation does.
+
  [PlayerCubesTests](Cube.Tests.PlayerCubesTests.md)
 
-Checks players are drawn as small coloured cubes (PROJECT.md, "Players": about 1/40 of the big cube's edge, minimum
+Checks players are drawn as small coloured cubes (PROJECT.md, "Players": about 1/40 of the big cube's largest extent, minimum
 a few pixels; "Colours": one colour each for self, party/alliance, others and NPCs; "NPCs": drawn like players, in
 the NPC colour; "Draw order": near cubes cover far ones; "Efficiency and memory": no per-frame allocations).
 

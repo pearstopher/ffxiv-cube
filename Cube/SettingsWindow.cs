@@ -7,7 +7,7 @@ namespace Cube;
 
 /// <summary>
 /// The settings window, opened with <c>/cube config</c> or Dalamud's settings button (PROJECT.md, "Features": cube
-/// size, orientation mode, labels on/off, colours and opacity; "NPCs": NPCs on/off and their colour; "View orientation
+/// width, height and depth with zoom and reset size (#90), orientation mode, labels on/off, colours and opacity; "NPCs": NPCs on/off and their colour; "View orientation
 /// control": the control's corner and a way to reset the view; #32: collision on/off and detail).
 /// </summary>
 /// <remarks>
@@ -68,8 +68,33 @@ internal sealed class SettingsWindow : Window
     {
         var c = this.config;
 
+        // The cube's size (PROJECT.md, "Cube", #90): one slider per extent, and zoom buttons that scale all three
+        // together keeping their ratios. Zooming in means less space, so the contents look bigger.
         ImGui.SetNextItemWidth(200);
-        this.Track(ImGui.SliderFloat("Cube size (yalms)", ref c.CubeEdge, CubeSpace.MinEdge, CubeSpace.MaxEdge, "%.0f"));
+        this.Track(ImGui.SliderFloat("Width (yalms)", ref c.CubeSize.X, BoxExtents.Min, BoxExtents.Max, "%.0f"));
+        ImGui.SetNextItemWidth(200);
+        this.Track(ImGui.SliderFloat("Height (yalms)", ref c.CubeSize.Y, BoxExtents.Min, BoxExtents.Max, "%.0f"));
+        ImGui.SetNextItemWidth(200);
+        this.Track(ImGui.SliderFloat("Depth (yalms)", ref c.CubeSize.Z, BoxExtents.Min, BoxExtents.Max, "%.0f"));
+        if (ImGui.Button("Zoom in"))
+        {
+            c.Zoom(1f / BoxExtents.ZoomStep);
+            this.save();
+        }
+
+        ImGui.SameLine();
+        if (ImGui.Button("Zoom out"))
+        {
+            c.Zoom(BoxExtents.ZoomStep);
+            this.save();
+        }
+
+        ImGui.SameLine();
+        if (ImGui.Button("Reset size"))
+        {
+            c.ResetSize();
+            this.save();
+        }
 
         // The names describe what happens to the contents, not what turns: the cube's frame stays still on screen in
         // both modes (PROJECT.md, "Cube" and "Cube on screen never turns by itself").

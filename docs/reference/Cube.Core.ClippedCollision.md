@@ -18,7 +18,7 @@ public sealed class ClippedCollision
 
 ## Remarks
 
-PROJECT.md, "Efficiency and memory": recompute only when the inputs change. The inputs are the cube (centre, edge,
+PROJECT.md, "Efficiency and memory": recompute only when the inputs change. The inputs are the cube (centre, size,
 alignment yaw) and the cache's ready set (which set it is, whether it holds data, and how many gathers have
 completed); standing still with the camera still clips nothing. The buffer is allocated once at the cache's
 capacity, so clipping can never drop a box and memory never grows.
@@ -77,18 +77,6 @@ private long completed
 
  [long](https://learn.microsoft.com/dotnet/api/system.int64)
 
-### <a id="Cube_Core_ClippedCollision_edge"></a> edge
-
-The cube's edge when clipped.
-
-```csharp
-private float edge
-```
-
-#### Field Value
-
- [float](https://learn.microsoft.com/dotnet/api/system.single)
-
 ### <a id="Cube_Core_ClippedCollision_hadData"></a> hadData
 
 Whether that set held data when clipped.
@@ -112,6 +100,18 @@ private CollisionBoxSet? set
 #### Field Value
 
  [CollisionBoxSet](Cube.Core.CollisionBoxSet.md)?
+
+### <a id="Cube_Core_ClippedCollision_size"></a> size
+
+The cube's size when clipped.
+
+```csharp
+private Vector3 size
+```
+
+#### Field Value
+
+ [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
 
 ### <a id="Cube_Core_ClippedCollision_yaw"></a> yaw
 
