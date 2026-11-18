@@ -16,6 +16,12 @@ Research probe for #28 (where to get collision data): measures, in the running g
 ways of finding what the player would bump into inside the cube, so <code>docs/research-notes.md</code> can pick
 one on numbers rather than guesses.
 
+ [CollisionReaderCheck](Cube.TestBridge.Checks.CollisionReaderCheck.md)
+
+Checks the collision reader (#30; PROJECT.md, "Collision (phase 2)" and "Efficiency and memory") in the running
+game: once the first gather completes there is a box under the player's feet, and repeated gathers stay within
+their per-frame time budget, allocate nothing and stay under the box cap.
+
  [DrawBudgetCheck](Cube.TestBridge.Checks.DrawBudgetCheck.md)
 
 Checks the draw path stays within PROJECT.md's phase 1 budgets ("Efficiency and memory"):
@@ -133,3 +139,9 @@ One frame's measurements.
  [CollisionProbeCheck.TypeCounts](Cube.TestBridge.Checks.CollisionProbeCheck.TypeCounts.md)
 
 Colliders counted by type, without a dictionary so the timed walk allocates nothing.
+
+### Enums
+
+ [CollisionReaderCheck.Floor](Cube.TestBridge.Checks.CollisionReaderCheck.Floor.md)
+
+What [FindFloor](Cube.TestBridge.Checks.CollisionReaderCheck.md#Cube_TestBridge_Checks_CollisionReaderCheck_FindFloor) found.

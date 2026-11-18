@@ -128,6 +128,12 @@ internal sealed class CubeWindow : Window
     /// </summary>
     internal PlayerSet Players { get; } = new(PlayerCapacity, new NameCache(NameSlots), PlayerReader.MaxNpcs);
 
+    /// <summary>
+    /// The collision around the cube (PROJECT.md, "Collision (phase 2)"), gathered over frames while the cube is shown.
+    /// Read by the test bridge; drawn from #31.
+    /// </summary>
+    internal CollisionReader Collision { get; } = new();
+
     /// <summary>Whether the last frame found a local player to centre the cube on.</summary>
     internal bool LastHadLocalPlayer { get; private set; }
 
@@ -195,6 +201,19 @@ internal sealed class CubeWindow : Window
     /// <summary>Bytes allocated in <see cref="NameBuildFrames"/>. Debug builds only.</summary>
     internal long NameBuildBytes { get; private set; }
 
+    /// <summary>
+    /// Time and allocations of each frame's collision gathering, on frames where a gather ran. PROJECT.md's budgets
+    /// exempt "budgeted background gathering" from the draw budget, so these frames' gathering is taken out of
+    /// <see cref="DrawCost"/> and checked here against its own budget instead. Debug builds only.
+    /// </summary>
+    internal DrawCostSampler GatherCost { get; } = new(240, Stopwatch.Frequency);
+
+    /// <summary>Ticks this frame's collision gather took, subtracted from the draw cost. Debug builds only.</summary>
+    private long gatherTicks;
+
+    /// <summary>Bytes this frame's collision gather allocated, subtracted from the draw cost. Debug builds only.</summary>
+    private long gatherBytes;
+
     /// <summary>Synthetic players the test bridge can inject (#16). Empty unless a check enables them. Debug builds only.</summary>
     internal TestBridge.FakePlayers Fakes { get; } = new();
 #endif
@@ -249,11 +268,13 @@ internal sealed class CubeWindow : Window
     {
 #if DEBUG
         var startBuilds = this.Players.Names.Builds;
+        this.gatherTicks = 0;
+        this.gatherBytes = 0;
         var startBytes = GC.GetAllocatedBytesForCurrentThread();
         var startTicks = Stopwatch.GetTimestamp();
         this.SafeDrawContents();
-        var elapsed = Stopwatch.GetTimestamp() - startTicks;
-        var allocated = GC.GetAllocatedBytesForCurrentThread() - startBytes;
+        var elapsed = Stopwatch.GetTimestamp() - startTicks - this.gatherTicks;
+        var allocated = GC.GetAllocatedBytesForCurrentThread() - startBytes - this.gatherBytes;
         if (this.Players.Names.Builds != startBuilds)
         {
             // A new name came into view and its label string was built: allowed (PROJECT.md: labels are rebuilt
@@ -357,6 +378,8 @@ internal sealed class CubeWindow : Window
         this.Fakes.Offer(this.Players, space);
 #endif
 
+        this.UpdateCollision(centre, settings.CubeEdge);
+
         BuildFrame(this.DrawList, space, projection, this.Players.Items, this.Palette, this.ShowLabels, this.WireColour);
         this.LastSpace = space;
         this.LastProjection = projection;
@@ -364,6 +387,30 @@ internal sealed class CubeWindow : Window
         this.LastRegionSize = regionSize;
         this.LastSubmitted = this.Submit(ImGui.GetWindowDrawList(), this.DrawList.Items, this.Players.Items);
         this.DrawViewControl(regionMin, regionSize);
+    }
+
+    /// <summary>
+    /// Lets the collision reader do this frame's share of gathering (PROJECT.md, "Collision (phase 2)"). In Debug builds
+    /// a frame where a gather ran is timed on its own and recorded in <c>GatherCost</c> (Debug only), and kept out of the
+    /// draw budget, which PROJECT.md says doesn't cover budgeted background gathering.
+    /// </summary>
+    /// <param name="centre">The cube's centre.</param>
+    /// <param name="edge">The cube's edge in yalms.</param>
+    private void UpdateCollision(Vector3 centre, float edge)
+    {
+#if DEBUG
+        var startBytes = GC.GetAllocatedBytesForCurrentThread();
+        var startTicks = Stopwatch.GetTimestamp();
+        var completed = this.Collision.Update(centre, edge);
+        if (completed || this.Collision.Cache.IsGathering)
+        {
+            this.gatherTicks = Stopwatch.GetTimestamp() - startTicks;
+            this.gatherBytes = GC.GetAllocatedBytesForCurrentThread() - startBytes;
+            this.GatherCost.Record(this.gatherTicks, this.gatherBytes);
+        }
+#else
+        this.Collision.Update(centre, edge);
+#endif
     }
 
     /// <summary>

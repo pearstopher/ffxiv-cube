@@ -144,6 +144,18 @@ private float edge
 
  [float](https://learn.microsoft.com/dotnet/api/system.single)
 
+### <a id="Cube_Core_CollisionBoxSet_stale"></a> stale
+
+Set by [MarkStale](Cube.Core.CollisionBoxSet.md#Cube_Core_CollisionBoxSet_MarkStale): the boxes are kept but [NeedsRefresh](Cube.Core.CollisionBoxSet.md#Cube_Core_CollisionBoxSet_NeedsRefresh) asks for a new gather.
+
+```csharp
+private bool stale
+```
+
+#### Field Value
+
+ [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
 ### <a id="Cube_Core_CollisionBoxSet_stamp"></a> stamp
 
 The scene stamp the boxes were gathered for (see [Begin](Cube.Core.CollisionBoxSet.md#Cube_Core_CollisionBoxSet_Begin)).
@@ -298,6 +310,15 @@ zone). The buffer is kept for reuse, so the next gather allocates nothing.
 
 ```csharp
 public void Clear()
+```
+
+### <a id="Cube_Core_CollisionBoxSet_MarkStale"></a> MarkStale\(\)
+
+Keeps the boxes but makes [NeedsRefresh](Cube.Core.CollisionBoxSet.md#Cube_Core_CollisionBoxSet_NeedsRefresh) true, so they stay drawn until a new gather replaces them
+([Invalidate](Cube.Core.CollisionCache.md#Cube_Core_CollisionCache_Invalidate)).
+
+```csharp
+public void MarkStale()
 ```
 
 ### <a id="Cube_Core_CollisionBoxSet_Meets_System_Single_System_Single_System_Single_System_Single_"></a> Meets\(float, float, float, float\)
