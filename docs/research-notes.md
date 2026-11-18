@@ -115,3 +115,25 @@ Measured 2026-11-17 in game, Debug build, with the bridge (`draw-within-budget`,
 
 - Nothing allocating was left in the draw path; the earlier issues had already removed it and the checks had held it at 0 bytes. This pass added the measurements that prove it at the worst case and over time.
 - Release builds now size the name cache for the 200 real character slots only; the extra 100 slots for fake players exist in Debug builds only.
+
+## ImGuizmo's view manipulator (#63)
+
+Checked 2026-11-17 against `Dalamud.Bindings.ImGuizmo.dll` in the dev hooks folder (reflection over its public API) and ImGuizmo's C++ source (`CedricGuillemet/ImGuizmo`, `src/ImGuizmo.cpp`). The Dalamud.NET.Sdk references the binding automatically, so the plugin needs no extra package.
+
+### The calls
+
+- `ImGuizmo.SetDrawlist()`: draw into the current window's draw list. ImGuizmo also uses that window's name to decide whether the mouse is over "its" window.
+- `ImGuizmo.SetRect(x, y, w, h)`: the area ImGuizmo's context maps to.
+- `ImGuizmo.ViewManipulate(ref Matrix4x4 view, ref Matrix4x4 projection, ImGuizmoOperation, ImGuizmoMode, ref Matrix4x4 model, float length, Vector2 position, Vector2 size, uint backgroundColour)`: draws the x/y/z cube and edits `view` in place. There is also a short overload (`view, length, position, size, colour`).
+- `BeginFrame()` isn't needed: it only opens a full-screen invisible window and sets its draw list, which `SetDrawlist()` replaces.
+- The binding has no `IsUsingViewManipulate` or per-widget ID calls, so Dalamud ships an older ImGuizmo than current master.
+
+### How it behaves
+
+- `view` is a right-handed camera view matrix, the same layout as `Matrix4x4.CreateLookAt` (columns = camera right, up, back; translation in the last row). The widget orbits around the point `length` in front of the camera.
+- Dragging rotates around world up (mouse X) and the camera's right axis (mouse Y), keeps world up as the up vector, and clamps at straight up/down: **it never rolls**. So yaw + pitch is enough to store the view (`ViewOrientation`).
+- Clicking a face, edge or corner animates the view towards it over about 40 frames, editing `view` each frame. Looking straight down or up keeps a horizontal right vector, so the heading is still well defined.
+- **Use the 9-argument overload.** The short overload reads mouse-over and (in newer versions) handedness from state set by the last `Manipulate` call; this plugin never calls `Manipulate`. The long one sets that state first from the given projection (a right-handed perspective) and model (identity).
+- **Mouse.** It reads the mouse directly and only starts a drag when no ImGui item is active, so an invisible button over it would block it. Without one, ImGui would treat the drag as a drag on empty window space and move the window, so the cube window sets `NoMove` while the mouse is over the widget or a turn is in progress.
+- It has no double-click handling, so "reset" is a button in the settings window.
+- Measured with the bridge: drawing the widget every frame keeps `draw-within-budget` at 0 bytes allocated per frame.

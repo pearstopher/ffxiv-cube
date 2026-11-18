@@ -3,8 +3,8 @@ using System.Numerics;
 namespace Cube.Core;
 
 /// <summary>
-/// Projects view coordinates (from <see cref="CubeSpace"/>) onto the window: a fixed-angle view from above
-/// and behind (PROJECT.md, "View": default 30° elevation).
+/// Projects view coordinates (from <see cref="CubeSpace"/>) onto the window, as seen from the user's chosen
+/// <see cref="ViewOrientation"/> (PROJECT.md, "View orientation control"; default from above and behind at 30°).
 /// </summary>
 /// <remarks>
 /// <para>
@@ -13,39 +13,29 @@ namespace Cube.Core;
 /// sort only needs one depth per primitive.
 /// </para>
 /// <para>
-/// The viewer looks forward (+Z in view coordinates) and down by <see cref="Elevation"/>. On screen, a point
-/// further forward or higher appears higher; <see cref="Depth"/> grows with distance from the viewer.
+/// The viewer looks along <see cref="ViewOrientation.Forward"/>. On screen, a point's position is its component along
+/// the orientation's right and up axes; <see cref="Depth"/> is its component along the forward axis, so it grows with
+/// distance from the viewer. The axes are copied from the orientation, so each point costs two or three dot products.
 /// </para>
 /// </remarks>
 public readonly struct ViewProjection
 {
-    /// <summary>Default elevation of the view, in degrees (PROJECT.md).</summary>
-    public const float DefaultElevationDegrees = 30f;
-
     /// <summary>Fraction of the window the cube may fill, leaving a margin for labels.</summary>
     public const float FillFraction = 0.9f;
 
-    /// <summary>Cosine of the elevation.</summary>
-    private readonly float cos;
-
-    /// <summary>Sine of the elevation.</summary>
-    private readonly float sin;
-
     /// <summary>Creates a projection.</summary>
-    /// <param name="elevation">Angle of the view above the horizontal, in radians.</param>
+    /// <param name="orientation">How the cube is turned on screen.</param>
     /// <param name="origin">Window position (pixels) of the cube's centre.</param>
     /// <param name="pixelsPerYalm">Scale from yalms to pixels.</param>
-    public ViewProjection(float elevation, Vector2 origin, float pixelsPerYalm)
+    public ViewProjection(in ViewOrientation orientation, Vector2 origin, float pixelsPerYalm)
     {
-        this.Elevation = elevation;
+        this.Orientation = orientation;
         this.Origin = origin;
         this.PixelsPerYalm = pixelsPerYalm;
-        this.cos = MathF.Cos(elevation);
-        this.sin = MathF.Sin(elevation);
     }
 
-    /// <summary>Angle of the view above the horizontal, in radians.</summary>
-    public float Elevation { get; }
+    /// <summary>How the cube is turned on screen.</summary>
+    public ViewOrientation Orientation { get; }
 
     /// <summary>Screen position (pixels) of the cube's centre.</summary>
     public Vector2 Origin { get; }
@@ -55,38 +45,36 @@ public readonly struct ViewProjection
 
     /// <summary>
     /// Direction from the scene towards the viewer, in view coordinates. A face is visible when its outward
-    /// normal points this way.
+    /// normal points this way; when the view is tilted from below, that makes bottom faces visible and top faces not.
     /// </summary>
-    public Vector3 TowardsViewer => new(0, this.sin, -this.cos);
+    public Vector3 TowardsViewer => -this.Orientation.Forward;
 
     /// <summary>
-    /// The projection that fits a cube of the given size into a window region, centred. The scale allows for
-    /// a corner swinging out to √2 × half the edge horizontally: the camera no longer turns the wireframe (#62),
-    /// but the user's view control (PROJECT.md, "View orientation control") will, and the cube shouldn't change
-    /// size when it does.
+    /// The projection that fits a cube of the given size into a window region, centred. The scale fits the cube's
+    /// bounding sphere (radius √3 × half the edge), so the cube never changes size on screen while the user turns it
+    /// with the view control.
     /// </summary>
     /// <param name="regionMin">Top-left of the drawing region, in pixels.</param>
     /// <param name="regionSize">Size of the drawing region, in pixels.</param>
     /// <param name="halfEdge">Half the cube's edge, in yalms.</param>
-    /// <param name="elevation">Elevation of the view, in radians.</param>
-    public static ViewProjection Fit(Vector2 regionMin, Vector2 regionSize, float halfEdge, float elevation)
+    /// <param name="orientation">How the cube is turned on screen.</param>
+    public static ViewProjection Fit(Vector2 regionMin, Vector2 regionSize, float halfEdge, in ViewOrientation orientation)
     {
-        var reach = halfEdge * MathF.Sqrt(2f);
-        var halfWidth = reach;
-        var halfHeight = (reach * MathF.Sin(elevation)) + (halfEdge * MathF.Cos(elevation));
-        var scale = MathF.Max(0f, MathF.Min(regionSize.X / (2f * halfWidth), regionSize.Y / (2f * halfHeight)) * FillFraction);
-        return new ViewProjection(elevation, regionMin + (regionSize / 2f), scale);
+        var reach = halfEdge * MathF.Sqrt(3f);
+        var scale = MathF.Max(0f, MathF.Min(regionSize.X, regionSize.Y) / (2f * reach) * FillFraction);
+        return new ViewProjection(orientation, regionMin + (regionSize / 2f), scale);
     }
 
     /// <summary>The window position (pixels) of a point in view coordinates.</summary>
     /// <param name="view">A point in view coordinates (right, up, forward), in yalms.</param>
     public Vector2 ToScreen(Vector3 view)
     {
-        var up = (view.Y * this.cos) + (view.Z * this.sin);
-        return new Vector2(this.Origin.X + (view.X * this.PixelsPerYalm), this.Origin.Y - (up * this.PixelsPerYalm));
+        var right = Vector3.Dot(view, this.Orientation.Right);
+        var up = Vector3.Dot(view, this.Orientation.Up);
+        return new Vector2(this.Origin.X + (right * this.PixelsPerYalm), this.Origin.Y - (up * this.PixelsPerYalm));
     }
 
     /// <summary>Distance of a point from the viewer along the view direction; larger is further away.</summary>
     /// <param name="view">A point in view coordinates.</param>
-    public float Depth(Vector3 view) => (view.Z * this.cos) - (view.Y * this.sin);
+    public float Depth(Vector3 view) => Vector3.Dot(view, this.Orientation.Forward);
 }

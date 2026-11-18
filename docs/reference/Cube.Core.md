@@ -34,7 +34,8 @@ only the visible faces of a cube).
 
  [CubeSettings](Cube.Core.CubeSettings.md)
 
-The user's settings (PROJECT.md, "Features": cube size, orientation mode, labels on/off, colours and opacity),
+The user's settings (PROJECT.md, "Features": cube size, orientation mode, labels on/off, colours and opacity; "View
+orientation control": the saved view orientation and the control's corner),
 with their defaults and the rules for valid values. The plugin's saved configuration derives from this, so the
 rules are unit tested without Dalamud.
 
@@ -75,6 +76,11 @@ The players inside the cube this frame (PROJECT.md, "Players": every player char
 position is inside the cube; players outside are not shown at all). The game reader offers every player it
 finds; this class culls, classifies and names them.
 
+ [ViewWidget](Cube.Core.ViewWidget.md)
+
+Where the view control goes and how big it is (PROJECT.md, "View orientation control": a small control in a corner
+of the window). Kept in Core so the placement rules are unit tested.
+
  [ViewYaw](Cube.Core.ViewYaw.md)
 
 Chooses the cube's alignment yaw (PROJECT.md, "Cube"): in <b>Camera</b> mode it follows the game camera's
@@ -114,10 +120,16 @@ One player inside the cube this frame: where they are, how they relate to the lo
 One colour per player relation (PROJECT.md, "Colours": self, party/alliance members, everyone else; one colour
 each). Built from the user's [CubeSettings](Cube.Core.CubeSettings.md#Cube_Core_CubeSettings).
 
+ [ViewOrientation](Cube.Core.ViewOrientation.md)
+
+How the user has turned the cube on screen with the view control (PROJECT.md, "View orientation control"): a
+heading (yaw) and a tilt (pitch) of the viewer around the cube. Default: from above and behind, 30° elevation,
+front face away from the viewer.
+
  [ViewProjection](Cube.Core.ViewProjection.md)
 
-Projects view coordinates (from [CubeSpace](Cube.Core.CubeSpace.md#Cube_Core_CubeSpace)) onto the window: a fixed-angle view from above
-and behind (PROJECT.md, "View": default 30° elevation).
+Projects view coordinates (from [CubeSpace](Cube.Core.CubeSpace.md#Cube_Core_CubeSpace)) onto the window, as seen from the user's chosen
+[ViewOrientation](Cube.Core.ViewOrientation.md#Cube_Core_ViewOrientation) (PROJECT.md, "View orientation control"; default from above and behind at 30°).
 
 ### Enums
 
@@ -138,3 +150,8 @@ What a [DrawPrimitive](Cube.Core.DrawPrimitive.md#Cube_Core_DrawPrimitive) draws
  [Visibility](Cube.Core.Visibility.md)
 
 Whether the cube is drawn, and if not, why (PROJECT.md, "When hidden"). Decided by [VisibilityRules](Cube.Core.VisibilityRules.md#Cube_Core_VisibilityRules).
+
+ [WidgetCorner](Cube.Core.WidgetCorner.md)
+
+Which corner of the cube window the view control sits in (PROJECT.md, "View orientation control": bottom right by
+default). Placement is worked out by [Position](Cube.Core.ViewWidget.md#Cube_Core_ViewWidget_Position).

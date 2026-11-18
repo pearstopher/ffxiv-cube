@@ -86,7 +86,7 @@ public class SnapshotTests
     {
         var size = new Vector2(200, 200);
         var space = new Cube.Core.CubeSpace(Vector3.Zero, 40, 0.5f);
-        var projection = Cube.Core.ViewProjection.Fit(Vector2.Zero, size, space.HalfEdge, MathF.PI / 6);
+        var projection = Cube.Core.ViewProjection.Fit(Vector2.Zero, size, space.HalfEdge, Cube.Core.ViewOrientation.Default);
         var list = new Cube.Core.DrawList(64);
         Cube.Core.CubeGeometry.AddWireCube(list, space, projection, 0xFFFFFFFF);
         Cube.Core.CubeGeometry.AddSolidCube(list, space, projection, Vector3.Zero, 2, Green);

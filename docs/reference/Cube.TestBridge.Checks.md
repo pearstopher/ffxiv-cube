@@ -89,6 +89,12 @@ Soak: draws the worst case for ten minutes and checks nothing grows (PROJECT.md,
 bytes allocated per frame in steady state, bounded memory, nothing grows with time spent in game). Runs only when
 asked for with <code>ingame_test.py --soak</code>.
 
+ [ViewControlCheck](Cube.TestBridge.Checks.ViewControlCheck.md)
+
+Checks the view orientation control (PROJECT.md, "View orientation control"): a turned view changes the projected
+wireframe exactly as Core says, turning the camera never changes the view, the control is drawn in the chosen
+corner, and resetting brings back the default view. Writes a draw-list snapshot from several angles.
+
  [WindowOpenCloseCheck](Cube.TestBridge.Checks.WindowOpenCloseCheck.md)
 
 Checks the cube window draws when opened and stops drawing when closed (PROJECT.md, "Features":

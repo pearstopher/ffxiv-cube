@@ -3,7 +3,8 @@ using System.Numerics;
 namespace Cube.Core;
 
 /// <summary>
-/// The user's settings (PROJECT.md, "Features": cube size, orientation mode, labels on/off, colours and opacity),
+/// The user's settings (PROJECT.md, "Features": cube size, orientation mode, labels on/off, colours and opacity; "View
+/// orientation control": the saved view orientation and the control's corner),
 /// with their defaults and the rules for valid values. The plugin's saved configuration derives from this, so the
 /// rules are unit tested without Dalamud.
 /// </summary>
@@ -48,6 +49,22 @@ public class CubeSettings
     public float Opacity = 1f;
 
     /// <summary>
+    /// The view control's heading, in degrees (PROJECT.md, "View orientation control": the chosen orientation is
+    /// saved). Degrees, so a hand-edited file is readable. Use <see cref="View"/> to read it.
+    /// </summary>
+    public float ViewYawDegrees;
+
+    /// <summary>The view control's tilt above the horizontal, in degrees (default 30°, ±90° at most).</summary>
+    public float ViewPitchDegrees = ViewOrientation.DefaultPitchDegrees;
+
+    /// <summary>Which corner of the cube window the view control is drawn in (PROJECT.md: bottom right by default).</summary>
+    public WidgetCorner ViewWidgetCorner = WidgetCorner.BottomRight;
+
+    /// <summary>The saved view orientation.</summary>
+    [System.Runtime.Serialization.IgnoreDataMember]
+    public ViewOrientation View => ViewOrientation.FromDegrees(this.ViewYawDegrees, this.ViewPitchDegrees);
+
+    /// <summary>
     /// Goes up by one on every <see cref="Changed"/>; readers compare it with the revision they last built from.
     /// Not saved (<see cref="System.Runtime.Serialization.IgnoreDataMemberAttribute"/> is honoured by the JSON
     /// serialiser Dalamud uses for configurations, without Core referencing it).
@@ -71,7 +88,37 @@ public class CubeSettings
         this.PartyColour = ValidColour(this.PartyColour, DefaultPartyColour);
         this.OtherColour = ValidColour(this.OtherColour, DefaultOtherColour);
         this.Opacity = float.IsNaN(this.Opacity) ? 1f : Math.Clamp(this.Opacity, MinOpacity, 1f);
+        if (!float.IsFinite(this.ViewYawDegrees) || !float.IsFinite(this.ViewPitchDegrees))
+        {
+            this.ViewYawDegrees = 0f;
+            this.ViewPitchDegrees = ViewOrientation.DefaultPitchDegrees;
+        }
+
+        this.ViewYawDegrees = MathF.IEEERemainder(this.ViewYawDegrees, 360f);
+        this.ViewPitchDegrees = Math.Clamp(this.ViewPitchDegrees, -ViewOrientation.MaxPitchDegrees, ViewOrientation.MaxPitchDegrees);
+        if (!Enum.IsDefined(this.ViewWidgetCorner))
+        {
+            this.ViewWidgetCorner = WidgetCorner.BottomRight;
+        }
+
         this.Revision++;
+    }
+
+    /// <summary>Stores a new view orientation (from the view control) and marks the settings changed.</summary>
+    /// <param name="view">The orientation the user chose.</param>
+    public void SetView(in ViewOrientation view)
+    {
+        this.ViewYawDegrees = view.YawDegrees;
+        this.ViewPitchDegrees = view.PitchDegrees;
+        this.Changed();
+    }
+
+    /// <summary>Puts the view back to the default (PROJECT.md: "There's a way to reset to the default").</summary>
+    public void ResetView()
+    {
+        this.ViewYawDegrees = 0f;
+        this.ViewPitchDegrees = ViewOrientation.DefaultPitchDegrees;
+        this.Changed();
     }
 
     /// <summary>Copies every setting from another instance, then marks them changed. Used to undo test changes.</summary>
@@ -85,6 +132,9 @@ public class CubeSettings
         this.PartyColour = other.PartyColour;
         this.OtherColour = other.OtherColour;
         this.Opacity = other.Opacity;
+        this.ViewYawDegrees = other.ViewYawDegrees;
+        this.ViewPitchDegrees = other.ViewPitchDegrees;
+        this.ViewWidgetCorner = other.ViewWidgetCorner;
         this.Changed();
     }
 

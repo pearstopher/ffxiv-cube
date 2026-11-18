@@ -3,7 +3,8 @@
 Namespace: [Cube.Core](Cube.Core.md)  
 Assembly: Cube.Core.dll  
 
-The user's settings (PROJECT.md, "Features": cube size, orientation mode, labels on/off, colours and opacity),
+The user's settings (PROJECT.md, "Features": cube size, orientation mode, labels on/off, colours and opacity; "View
+orientation control": the saved view orientation and the control's corner),
 with their defaults and the rules for valid values. The plugin's saved configuration derives from this, so the
 rules are unit tested without Dalamud.
 
@@ -161,6 +162,43 @@ public bool ShowLabels
 
  [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
+### <a id="Cube_Core_CubeSettings_ViewPitchDegrees"></a> ViewPitchDegrees
+
+The view control's tilt above the horizontal, in degrees (default 30°, ±90° at most).
+
+```csharp
+public float ViewPitchDegrees
+```
+
+#### Field Value
+
+ [float](https://learn.microsoft.com/dotnet/api/system.single)
+
+### <a id="Cube_Core_CubeSettings_ViewWidgetCorner"></a> ViewWidgetCorner
+
+Which corner of the cube window the view control is drawn in (PROJECT.md: bottom right by default).
+
+```csharp
+public WidgetCorner ViewWidgetCorner
+```
+
+#### Field Value
+
+ [WidgetCorner](Cube.Core.WidgetCorner.md)
+
+### <a id="Cube_Core_CubeSettings_ViewYawDegrees"></a> ViewYawDegrees
+
+The view control's heading, in degrees (PROJECT.md, "View orientation control": the chosen orientation is
+saved). Degrees, so a hand-edited file is readable. Use [View](Cube.Core.CubeSettings.md#Cube_Core_CubeSettings_View) to read it.
+
+```csharp
+public float ViewYawDegrees
+```
+
+#### Field Value
+
+ [float](https://learn.microsoft.com/dotnet/api/system.single)
+
 ## Properties
 
 ### <a id="Cube_Core_CubeSettings_Revision"></a> Revision
@@ -177,6 +215,19 @@ public int Revision { get; private set; }
 #### Property Value
 
  [int](https://learn.microsoft.com/dotnet/api/system.int32)
+
+### <a id="Cube_Core_CubeSettings_View"></a> View
+
+The saved view orientation.
+
+```csharp
+[IgnoreDataMember]
+public ViewOrientation View { get; }
+```
+
+#### Property Value
+
+ [ViewOrientation](Cube.Core.ViewOrientation.md)
 
 ## Methods
 
@@ -236,6 +287,28 @@ public PlayerPalette Palette()
 #### Returns
 
  [PlayerPalette](Cube.Core.PlayerPalette.md)
+
+### <a id="Cube_Core_CubeSettings_ResetView"></a> ResetView\(\)
+
+Puts the view back to the default (PROJECT.md: "There's a way to reset to the default").
+
+```csharp
+public void ResetView()
+```
+
+### <a id="Cube_Core_CubeSettings_SetView_Cube_Core_ViewOrientation__"></a> SetView\(in ViewOrientation\)
+
+Stores a new view orientation (from the view control) and marks the settings changed.
+
+```csharp
+public void SetView(in ViewOrientation view)
+```
+
+#### Parameters
+
+`view` [ViewOrientation](Cube.Core.ViewOrientation.md)
+
+The orientation the user chose.
 
 ### <a id="Cube_Core_CubeSettings_ValidColour_System_Numerics_Vector3_System_Numerics_Vector3_"></a> ValidColour\(Vector3, Vector3\)
 

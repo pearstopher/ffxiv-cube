@@ -73,7 +73,7 @@ public sealed class Plugin : IDalamudPlugin
     public Plugin()
     {
         this.configuration = Configuration.Load(PluginInterface);
-        this.cubeWindow = new CubeWindow(this.configuration, new Game.GameStateReader(ClientState, Condition));
+        this.cubeWindow = new CubeWindow(this.configuration, new Game.GameStateReader(ClientState, Condition), this.SaveConfiguration);
         this.settingsWindow = new SettingsWindow(this.configuration, this.SaveConfiguration);
         this.windowSystem.AddWindow(this.cubeWindow);
         this.windowSystem.AddWindow(this.settingsWindow);
@@ -120,6 +120,7 @@ public sealed class Plugin : IDalamudPlugin
             this.testBridge.Register(new TestBridge.Checks.PlayerCubesCheck());
             this.testBridge.Register(new TestBridge.Checks.LabelsCheck());
             this.testBridge.Register(new TestBridge.Checks.OrientationCheck());
+            this.testBridge.Register(new TestBridge.Checks.ViewControlCheck(this.testBridge.Folder));
             this.testBridge.Register(new TestBridge.Checks.SettingsCheck());
             this.testBridge.Register(new TestBridge.Checks.HiddenStatesCheck());
             this.testBridge.Register(new TestBridge.Checks.SettingsWindowCheck(this.settingsWindow, this.configuration, this.SaveConfiguration, PluginInterface.ConfigFile.FullName));

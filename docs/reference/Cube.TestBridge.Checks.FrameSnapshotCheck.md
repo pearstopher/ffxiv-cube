@@ -115,10 +115,10 @@ The same context the check ran with.
 
 ### <a id="Cube_TestBridge_Checks_FrameSnapshotCheck_Dump_Cube_CubeWindow_"></a> Dump\(CubeWindow\)
 
-Serialises the window's last frame.
+Serialises the window's last frame. Also used by [ViewControlCheck](Cube.TestBridge.Checks.ViewControlCheck.md#Cube_TestBridge_Checks_ViewControlCheck) for its angle snapshots.
 
 ```csharp
-private static string Dump(CubeWindow window)
+internal static string Dump(CubeWindow window)
 ```
 
 #### Parameters

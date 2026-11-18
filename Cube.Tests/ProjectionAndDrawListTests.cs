@@ -11,17 +11,19 @@ namespace Cube.Tests;
 /// </summary>
 public class ProjectionAndDrawListTests
 {
-    private static readonly float Elevation = ViewProjection.DefaultElevationDegrees * MathF.PI / 180f;
+    private static readonly float Elevation = ViewOrientation.DefaultPitchDegrees * MathF.PI / 180f;
     private static readonly Vector2 Origin = new(200, 150);
 
-    private static ViewProjection Projection() => new(Elevation, Origin, pixelsPerYalm: 10);
+    private static ViewProjection Projection() => new(ViewOrientation.Default, Origin, pixelsPerYalm: 10);
 
     private static CubeSpace Space(float yaw = 0) => new(Vector3.Zero, 40, yaw);
 
     [Fact]
     public void Default_elevation_is_30_degrees()
     {
-        Assert.Equal(30f, ViewProjection.DefaultElevationDegrees);
+        Assert.Equal(30f, ViewOrientation.DefaultPitchDegrees);
+        Assert.Equal(Elevation, ViewOrientation.Default.Pitch, 6);
+        Assert.Equal(0f, ViewOrientation.Default.Yaw);
     }
 
     [Fact]
@@ -73,7 +75,7 @@ public class ProjectionAndDrawListTests
         var regionMin = new Vector2(10, 20);
         var regionSize = new Vector2(300, 200);
         var space = Space(yaw);
-        var projection = ViewProjection.Fit(regionMin, regionSize, space.HalfEdge, Elevation);
+        var projection = ViewProjection.Fit(regionMin, regionSize, space.HalfEdge, ViewOrientation.Default);
 
         for (var i = 0; i < 8; i++)
         {
@@ -87,7 +89,7 @@ public class ProjectionAndDrawListTests
     [Fact]
     public void Fitted_projection_is_centred_in_the_region()
     {
-        var projection = ViewProjection.Fit(new Vector2(10, 10), new Vector2(300, 300), 20, Elevation);
+        var projection = ViewProjection.Fit(new Vector2(10, 10), new Vector2(300, 300), 20, ViewOrientation.Default);
 
         Assert.Equal(new Vector2(160, 160), projection.Origin);
         Assert.True(projection.PixelsPerYalm > 0);
@@ -235,7 +237,7 @@ public class ProjectionAndDrawListTests
     {
         var list = new DrawList(256);
         var space = Space(0.4f);
-        var projection = ViewProjection.Fit(Vector2.Zero, new Vector2(400, 300), space.HalfEdge, Elevation);
+        var projection = ViewProjection.Fit(Vector2.Zero, new Vector2(400, 300), space.HalfEdge, ViewOrientation.Default);
 
         Allocations.AssertNone(() =>
         {

@@ -24,17 +24,18 @@ internal sealed class CubeWindow : Window, IWindow
 ## Remarks
 
 Each frame: build the [CubeSpace](Cube.Core.CubeSpace.md#Cube_Core_CubeSpace) and fitted [ViewProjection](Cube.Core.ViewProjection.md#Cube_Core_ViewProjection), let Core fill the reused
-[DrawList](Cube.CubeWindow.md#Cube_CubeWindow_DrawList), sort it far to near, then issue one ImGui call per primitive. Nothing here allocates
+[DrawList](Cube.CubeWindow.md#Cube_CubeWindow_DrawList), sort it far to near, issue one ImGui call per primitive, then draw the view control on
+top ([DrawViewControl](Cube.CubeWindow.md#Cube_CubeWindow_DrawViewControl)). Nothing here allocates
 (PROJECT.md, "Efficiency and memory"); Dalamud skips [Draw](Cube.CubeWindow.md#Cube_CubeWindow_Draw) entirely while the window is closed.
 
 ## Constructors
 
-### <a id="Cube_CubeWindow__ctor_Cube_Core_CubeSettings_Cube_Game_GameStateReader_"></a> CubeWindow\(CubeSettings, GameStateReader\)
+### <a id="Cube_CubeWindow__ctor_Cube_Core_CubeSettings_Cube_Game_GameStateReader_System_Action_"></a> CubeWindow\(CubeSettings, GameStateReader, Action\)
 
 Creates the window, closed, with a sensible minimum size.
 
 ```csharp
-public CubeWindow(CubeSettings settings, GameStateReader gameState)
+public CubeWindow(CubeSettings settings, GameStateReader gameState, Action save)
 ```
 
 #### Parameters
@@ -46,6 +47,10 @@ The user's settings, read every frame; changes apply on the next frame.
 `gameState` [GameStateReader](Cube.Game.GameStateReader.md)
 
 Reads login, loading, cutscene and GPose state.
+
+`save` [Action](https://learn.microsoft.com/dotnet/api/system.action)
+
+Writes the settings to disk, after the user turns the view with the view control.
 
 ## Fields
 
@@ -62,17 +67,43 @@ internal const int DrawListCapacity = 1024
 
  [int](https://learn.microsoft.com/dotnet/api/system.int32)
 
-### <a id="Cube_CubeWindow_Elevation"></a> Elevation
+### <a id="Cube_CubeWindow_GizmoDistance"></a> GizmoDistance
 
-The view's elevation in radians (PROJECT.md: 30°).
+How far ImGuizmo's camera sits from the cube's centre. Only ImGuizmo's own maths uses it (it orbits around the
+point this far in front of the camera); the drawn cube is orthographic, so any positive value works.
 
 ```csharp
-private static readonly float Elevation
+private const float GizmoDistance = 8
 ```
 
 #### Field Value
 
  [float](https://learn.microsoft.com/dotnet/api/system.single)
+
+### <a id="Cube_CubeWindow_GizmoModel"></a> GizmoModel
+
+The model matrix ImGuizmo's context needs; unused by the view manipulator.
+
+```csharp
+private static readonly Matrix4x4 GizmoModel
+```
+
+#### Field Value
+
+ [Matrix4x4](https://learn.microsoft.com/dotnet/api/system.numerics.matrix4x4)
+
+### <a id="Cube_CubeWindow_GizmoProjection"></a> GizmoProjection
+
+A right-handed perspective projection handed to ImGuizmo, only so it sets up its context (mouse hover,
+handedness) the way its view manipulator expects. The cube itself is not drawn with it.
+
+```csharp
+private static readonly Matrix4x4 GizmoProjection
+```
+
+#### Field Value
+
+ [Matrix4x4](https://learn.microsoft.com/dotnet/api/system.numerics.matrix4x4)
 
 ### <a id="Cube_CubeWindow_NameSlots"></a> NameSlots
 
@@ -147,6 +178,18 @@ private bool hasSpace
 
  [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
+### <a id="Cube_CubeWindow_save"></a> save
+
+Writes the settings to disk; called when the user lets go of the view control.
+
+```csharp
+private readonly Action save
+```
+
+#### Field Value
+
+ [Action](https://learn.microsoft.com/dotnet/api/system.action)
+
 ### <a id="Cube_CubeWindow_settingsRevision"></a> settingsRevision
 
 The [Revision](Cube.Core.CubeSettings.md#Cube_Core_CubeSettings_Revision) the cached colours were built from; -1 forces a first build.
@@ -158,6 +201,31 @@ private int settingsRevision
 #### Field Value
 
  [int](https://learn.microsoft.com/dotnet/api/system.int32)
+
+### <a id="Cube_CubeWindow_turning"></a> turning
+
+Whether the user is turning the view with the control: set when ImGuizmo changes the view, cleared (and the
+settings saved) once the mouse is released and the view has settled.
+
+```csharp
+private bool turning
+```
+
+#### Field Value
+
+ [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+### <a id="Cube_CubeWindow_view"></a> view
+
+The view orientation from the settings, rebuilt with the colours only when the settings change.
+
+```csharp
+private ViewOrientation view
+```
+
+#### Field Value
+
+ [ViewOrientation](Cube.Core.ViewOrientation.md)
 
 ### <a id="Cube_CubeWindow_yaw"></a> yaw
 
@@ -458,6 +526,31 @@ internal GameState? SimulatedState { get; set; }
 
  [GameState](Cube.Core.GameState.md)?
 
+### <a id="Cube_CubeWindow_WidgetMin"></a> WidgetMin
+
+The view control's top-left last frame, in screen pixels. Used for the hover test in [PreDraw](Cube.CubeWindow.md#Cube_CubeWindow_PreDraw) and
+read by the test bridge.
+
+```csharp
+internal Vector2 WidgetMin { get; private set; }
+```
+
+#### Property Value
+
+ [Vector2](https://learn.microsoft.com/dotnet/api/system.numerics.vector2)
+
+### <a id="Cube_CubeWindow_WidgetSize"></a> WidgetSize
+
+The view control's side length last frame, in pixels; 0 when it wasn't drawn (cube hidden).
+
+```csharp
+internal float WidgetSize { get; private set; }
+```
+
+#### Property Value
+
+ [float](https://learn.microsoft.com/dotnet/api/system.single)
+
 ### <a id="Cube_CubeWindow_WireColour"></a> WireColour
 
 The last frame's edge colour, rebuilt with [Palette](Cube.CubeWindow.md#Cube_CubeWindow_Palette).
@@ -526,6 +619,55 @@ The plugin's per-frame draw path: builds the frame with Core and draws it.
 ```csharp
 private void DrawContents()
 ```
+
+### <a id="Cube_CubeWindow_DrawViewControl_System_Numerics_Vector2_System_Numerics_Vector2_"></a> DrawViewControl\(Vector2, Vector2\)
+
+Draws ImGuizmo's view manipulator in the chosen corner (PROJECT.md, "View orientation control") and applies
+any turn the user makes with it.
+
+```csharp
+private void DrawViewControl(Vector2 regionMin, Vector2 regionSize)
+```
+
+#### Parameters
+
+`regionMin` [Vector2](https://learn.microsoft.com/dotnet/api/system.numerics.vector2)
+
+Top-left of the drawing region, in pixels.
+
+`regionSize` [Vector2](https://learn.microsoft.com/dotnet/api/system.numerics.vector2)
+
+Size of the drawing region, in pixels.
+
+#### Remarks
+
+<p>
+ImGuizmo is handed the current orientation as a view matrix each frame and changes the matrix when the control
+is dragged, or animates it after a face is clicked. A changed matrix is read back into the settings; the
+projection then picks it up through the settings revision, so it is only rebuilt when the view really changes.
+The camera and the player never feed into this (PROJECT.md: only the control turns the view).
+</p>
+<p>
+The file is saved once the turn is over (mouse released and no change this frame), not on every frame of a
+drag. The 9-argument overload is used because it sets up ImGuizmo's context (mouse hover over this window,
+handedness) first; the short one relies on state from an earlier <code>Manipulate</code> call that this plugin never
+makes. Nothing here allocates: the matrices are structs passed by reference.
+</p>
+
+### <a id="Cube_CubeWindow_PreDraw"></a> PreDraw\(\)
+
+Stops ImGui moving the window while the mouse is on the view control or the user is turning the view, so a
+drag on the control turns the cube instead of dragging the window around.
+
+```csharp
+public override void PreDraw()
+```
+
+#### Remarks
+
+ImGuizmo reads the mouse directly rather than claiming it as an ImGui item, so without this ImGui would treat
+the drag as a drag on empty window space. An invisible button over the control can't be used instead: ImGuizmo
+ignores clicks while another item is active. Uses last frame's position, which is where the mouse went down.
 
 ### <a id="Cube_CubeWindow_SafeDrawContents"></a> SafeDrawContents\(\)
 
