@@ -145,7 +145,7 @@ internal sealed class CubeWindow : Window
     /// Name cache slots: one per object table index (players and NPCs are both keyed by slot), plus room above them
     /// for a full crowd of Debug-only fake players and fake NPCs (#16, #23, #74), so checks can measure at the caps.
     /// </summary>
-    internal const int NameSlots = PlayerReader.ObjectSlots + PlayerReader.MaxPlayers + PlayerReader.MaxNpcs;
+    internal const int NameSlots = PlayerReader.ObjectSlots + PlayerReader.MaxPlayers + PlayerReader.MaxNpcs + PlayerReader.MaxInteractables;
 #else
     /// <summary>
     /// Name cache slots: one per object table index, since NPCs live above the character slots (#73). Fixed, so memory
@@ -167,7 +167,7 @@ internal sealed class CubeWindow : Window
     /// The players and named NPCs inside the cube this frame (PROJECT.md, "Players" and "NPCs"), NPCs capped at
     /// <see cref="PlayerReader.MaxNpcs"/>. Read by the test bridge.
     /// </summary>
-    internal PlayerSet Players { get; } = new(PlayerCapacity, new NameCache(NameSlots), PlayerReader.MaxNpcs);
+    internal PlayerSet Players { get; } = new(PlayerCapacity, new NameCache(NameSlots), PlayerReader.MaxNpcs, PlayerReader.MaxInteractables);
 
     /// <summary>
     /// The collision around the cube (PROJECT.md, "Collision (phase 2)"), gathered over frames while the cube is shown.
@@ -296,12 +296,14 @@ internal sealed class CubeWindow : Window
     /// <param name="wireColour">The big cube's edge colour.</param>
     /// <param name="collision">The collision boxes clipped to the cube (PROJECT.md, "Collision (phase 2)").</param>
     /// <param name="collisionColour">The collision boxes' colour.</param>
-    internal static void BuildFrame(DrawList list, in CubeSpace space, in ViewProjection projection, ReadOnlySpan<NearbyPlayer> players, in PlayerPalette palette, bool labels, uint wireColour, ReadOnlySpan<ClippedBox> collision, uint collisionColour)
+    /// <param name="selfLabel">Whether the local player's own name is labelled (#112).</param>
+    /// <param name="namePosition">Whether names sit beside or above their cubes (#112).</param>
+    internal static void BuildFrame(DrawList list, in CubeSpace space, in ViewProjection projection, ReadOnlySpan<NearbyPlayer> players, in PlayerPalette palette, bool labels, uint wireColour, ReadOnlySpan<ClippedBox> collision, uint collisionColour, bool selfLabel = false, NamePosition namePosition = NamePosition.Side)
     {
         list.Clear();
         CubeGeometry.AddWireCube(list, space, projection, wireColour);
         CollisionCubes.Add(list, new BoxProjector(space, projection), collision, collisionColour);
-        PlayerCubes.Add(list, space, projection, players, palette, labels);
+        PlayerCubes.Add(list, space, projection, players, palette, labels, selfLabel, namePosition);
         list.SortBackToFront();
     }
 
@@ -320,12 +322,18 @@ internal sealed class CubeWindow : Window
     /// <summary>The last frame's label setting.</summary>
     internal bool ShowLabels { get; private set; }
 
+    /// <summary>The last frame's own-name setting (#112).</summary>
+    internal bool ShowOwnName { get; private set; }
+
+    /// <summary>The last frame's name position setting (#112).</summary>
+    internal NamePosition NamePosition { get; private set; }
+
 #if DEBUG
     /// <summary>
     /// The text of each label the last frame drew, in drawing order, so the bridge can check it against the player
     /// set. Holds references to the cached name strings, so recording allocates nothing. Debug builds only.
     /// </summary>
-    internal string[] LastLabelText { get; } = new string[PlayerCapacity + PlayerReader.MaxNpcs];
+    internal string[] LastLabelText { get; } = new string[PlayerCapacity + PlayerReader.MaxNpcs + PlayerReader.MaxInteractables];
 
     /// <summary>How many entries of <see cref="LastLabelText"/> the last frame filled.</summary>
     internal int LastLabelCount { get; private set; }
@@ -411,6 +419,8 @@ internal sealed class CubeWindow : Window
         }
 
         this.ShowLabels = settings.ShowLabels;
+        this.ShowOwnName = settings.ShowOwnName;
+        this.NamePosition = settings.NamePosition;
 
         // The cube follows the player, except that while they jump its height is held at the take-off height
         // (PROJECT.md, "Jump"; #105). The flag read is wrapped so a failure can never reach the game.
@@ -462,7 +472,7 @@ internal sealed class CubeWindow : Window
         this.hasSpace = true;
         var projection = ViewProjection.Fit(regionMin, regionSize, space.Half, this.view);
 
-        this.Players.Begin(space, settings.ShowNpcs);
+        this.Players.Begin(space, settings.ShowNpcs, settings.ShowPlayers, settings.ShowEnemies, settings.ShowInteractables);
         PlayerReader.Read(this.Players, localY);
 
 #if DEBUG
@@ -486,7 +496,7 @@ internal sealed class CubeWindow : Window
 #if DEBUG
         var buildStart = Stopwatch.GetTimestamp();
 #endif
-        BuildFrame(this.DrawList, space, projection, this.Players.Items, this.Palette, this.ShowLabels, this.WireColour, this.ClippedCollision.Items, this.CollisionColour);
+        BuildFrame(this.DrawList, space, projection, this.Players.Items, this.Palette, this.ShowLabels, this.WireColour, this.ClippedCollision.Items, this.CollisionColour, this.ShowOwnName, this.NamePosition);
         this.LastSpace = space;
         this.LastProjection = projection;
         this.LastRegionMin = regionMin;
@@ -705,7 +715,12 @@ internal sealed class CubeWindow : Window
                     break;
                 default:
                     var name = players[p.Tag - 1].Label;
-                    target.AddText(new Vector2(p.A.X, p.A.Y - halfLine), p.Colour, name);
+                    // Centred labels (#112): A is the middle of the text's bottom edge, so shift left by half the
+                    // measured width and up by a full line. Side labels are left-aligned and vertically centred.
+                    var at = p.B.X != 0f
+                        ? new Vector2(p.A.X - (ImGui.CalcTextSize(name).X / 2f), p.A.Y - this.LastFontSize)
+                        : new Vector2(p.A.X, p.A.Y - halfLine);
+                    target.AddText(at, p.Colour, name);
 #if DEBUG
                     this.LastLabelText[labels++] = name;
 #endif

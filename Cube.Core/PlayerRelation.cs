@@ -26,4 +26,10 @@ public enum PlayerRelation : byte
     /// everywhere else (NPC setting, NPC cap).
     /// </summary>
     Enemy = 4,
+
+    /// <summary>
+    /// An in-world interactable the game labels with words (#112): an event object such as "Entrance" or "Placard". Drawn
+    /// like an NPC in its own colour, with its own cap and toggle.
+    /// </summary>
+    Interactable = 5,
 }

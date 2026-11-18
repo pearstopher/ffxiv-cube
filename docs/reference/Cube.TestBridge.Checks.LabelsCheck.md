@@ -4,7 +4,7 @@ Namespace: [Cube.TestBridge.Checks](Cube.TestBridge.Checks.md)
 Assembly: Cube.dll  
 
 Checks every other player in the cube gets exactly one name label showing their name, next to their cube and on
-top of it, and the local player gets none (PROJECT.md, "Features": other players are labelled with their names;
+top of it, and the local player gets one only while the own-name setting (#112) is on (PROJECT.md, "Features": other players are labelled with their names;
 "Labels": the name drawn next to the cube). Uses the standard fake players (#16) so it works with nobody around.
 
 ```csharp

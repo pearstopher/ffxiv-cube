@@ -186,12 +186,12 @@ private void Add(DrawPrimitive primitive)
 
 The primitive; its sequence number is set here.
 
-### <a id="Cube_Core_DrawList_AddLabel_System_Numerics_Vector2_System_Single_System_UInt32_System_Int32_"></a> AddLabel\(Vector2, float, uint, int\)
+### <a id="Cube_Core_DrawList_AddLabel_System_Numerics_Vector2_System_Single_System_UInt32_System_Int32_System_Boolean_"></a> AddLabel\(Vector2, float, uint, int, bool\)
 
 Adds a player's name label ([Label](Cube.Core.PrimitiveKind.md#Cube_Core_PrimitiveKind_Label)).
 
 ```csharp
-public void AddLabel(Vector2 anchor, float depth, uint colour, int tag)
+public void AddLabel(Vector2 anchor, float depth, uint colour, int tag, bool centred = false)
 ```
 
 #### Parameters
@@ -211,6 +211,11 @@ Text colour.
 `tag` [int](https://learn.microsoft.com/dotnet/api/system.int32)
 
 The player's index + 1; the text is that player's name.
+
+`centred` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+True for a label centred above its cube (#112): <code class="paramref">anchor</code> is then the middle of the text's bottom
+edge. Stored as [B](Cube.Core.DrawPrimitive.md#Cube_Core_DrawPrimitive_B).X = 1 (unused by labels otherwise), so the primitive stays the same size.
 
 ### <a id="Cube_Core_DrawList_AddLine_System_Numerics_Vector2_System_Numerics_Vector2_System_Single_System_UInt32_"></a> AddLine\(Vector2, Vector2, float, uint\)
 

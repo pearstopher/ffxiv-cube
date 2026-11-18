@@ -145,6 +145,10 @@ internal sealed class FakePlayers
                 var isEnemy = fake.Relation == PlayerRelation.Enemy;
                 set.OfferNpc(FirstSlot + i, FirstEntityId + (uint)i, position, fake.Name, isEnemy, fake.IsTarget, fake.IsAttacker);
             }
+            else if (fake.Relation == PlayerRelation.Interactable)
+            {
+                set.OfferInteractable(FirstSlot + i, FirstEntityId + (uint)i, position, fake.Name);
+            }
             else
             {
                 set.Offer(FirstSlot + i, FirstEntityId + (uint)i, position, false, fake.Relation == PlayerRelation.Party, false, fake.Name, fake.IsTarget);

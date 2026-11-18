@@ -10,7 +10,8 @@ public enum PrimitiveKind : byte
     Quad,
 
     /// <summary>
-    /// A player's name label, anchored at <see cref="DrawPrimitive.A"/> (left end, vertically centred). The text is
+    /// A player's name label, anchored at <see cref="DrawPrimitive.A"/> (left end, vertically centred; or, when
+    /// <see cref="DrawPrimitive.B"/>.X is 1 (#112), the middle of the text's bottom edge). The text is
     /// not stored here: it is the name of the player <see cref="DrawPrimitive.Tag"/> points to, so the draw list stays
     /// a plain struct array and names are never copied (PROJECT.md, "Labels"; "Efficiency and memory").
     /// </summary>

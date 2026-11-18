@@ -445,3 +445,16 @@ Chosen reads, from FFXIVClientStructs (no hooks, no game calls beyond getters):
 - **Attacking:** the enemy's entity id is in `UIState.Hater.Haters` (the list behind the enmity UI), checked only for enemies.
 
 The fake-player bridge check (`enemy-markers`) covers the colour and label text. The real `IsHostile` and `Hater` reads need a fight to confirm; steps are in `docs/manual-tests.md`. Reliability of the hater list is not yet verified in game.
+
+## Text-labelled interactable objects (#112)
+
+Probe: the Debug bridge check `probe-interactables` logged every object near the player that isn't a character or NPC (`Probe #112` in `dalamud.log`), once in a housing ward. Fields compared: object kind, name, `NamePlateIconId`, targetable flag.
+
+| Kind | Examples seen | Verdict |
+| --- | --- | --- |
+| `EventObj` with a name | "Entrance", "Apartment Building Entrance", "Aethernet Shard", "Market Board", "Summoning Bell", "Placard" | text label: **shown** |
+| `EventObj` with an empty name | 784 sightings, all nameless | icon-only markers (arrows) and invisible triggers: left out |
+| `HousingEventObject` | letter boxes, chocobo stables, sprinklers, lamps, fountains | furniture/gardening: left out (a separate object kind) |
+| `Companion` | "Fox Kit" | minion: left out |
+
+`NamePlateIconId` was 0 for every object, so it can't separate icons from text. The targetable flag changes with distance for the same object ("Entrance" appears both ways), so it isn't used either. The rule is therefore **kind is `EventObj` and the name is non-empty** (`PlayerSet.IsTextInteractable`). Not seen in this one session: aetherytes (a separate `Aetheryte` kind), treasure coffers and gathering points; they are not included. Cap: 30 per frame (a ward showed a few dozen in range), with their own count so they can't push out players or NPCs.

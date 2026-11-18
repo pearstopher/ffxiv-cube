@@ -38,6 +38,19 @@ public const int CharacterSlots = 200
 
  [int](https://learn.microsoft.com/dotnet/api/system.int32)
 
+### <a id="Cube_Game_PlayerReader_MaxInteractables"></a> MaxInteractables
+
+The most text-labelled interactable objects drawn per frame (#112). A housing ward put a few dozen entrances and
+placards in range; the cap keeps the draw cost bounded and extras are dropped and counted.
+
+```csharp
+public const int MaxInteractables = 30
+```
+
+#### Field Value
+
+ [int](https://learn.microsoft.com/dotnet/api/system.int32)
+
 ### <a id="Cube_Game_PlayerReader_MaxNpcs"></a> MaxNpcs
 
 The most named NPCs drawn per frame (#73: a busy city put 22 in the largest cube; 50 players' worth of extra

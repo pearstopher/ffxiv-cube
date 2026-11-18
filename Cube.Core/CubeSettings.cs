@@ -31,6 +31,9 @@ public class CubeSettings
     /// <summary>Default enemy colour: red, so hostile battle NPCs stand apart from friendly ones (#111).</summary>
     public static readonly Vector3 DefaultEnemyColour = new(1f, 0.2f, 0.2f);
 
+    /// <summary>Default colour for text-labelled interactable objects: teal, distinct from the other kinds (#112).</summary>
+    public static readonly Vector3 DefaultInteractableColour = new(0.2f, 0.85f, 0.85f);
+
     /// <summary>Lowest opacity allowed, so the cubes can be made faint but never vanish entirely.</summary>
     public const float MinOpacity = 0.1f;
 
@@ -58,8 +61,26 @@ public class CubeSettings
     /// <summary>How the view turns (PROJECT.md, "View": Camera by default).</summary>
     public OrientationMode Orientation = OrientationMode.Camera;
 
-    /// <summary>Whether other players' names are drawn (PROJECT.md: labels on/off).</summary>
+    /// <summary>Whether other players', NPCs' and objects' names are drawn (PROJECT.md: labels on/off).</summary>
     public bool ShowLabels = true;
+
+    /// <summary>Whether the local player's own name is drawn next to their cube (#112), default on.</summary>
+    public bool ShowOwnName = true;
+
+    /// <summary>Whether names sit beside or above their cubes (#112); <see cref="Core.NamePosition.Side"/> by default.</summary>
+    public NamePosition NamePosition = NamePosition.Side;
+
+    /// <summary>Whether other players (party, alliance and everyone else) are shown (#112), default on. The local player is always shown.</summary>
+    public bool ShowPlayers = true;
+
+    /// <summary>Whether hostile battle NPCs are shown (#112), default on.</summary>
+    public bool ShowEnemies = true;
+
+    /// <summary>Whether text-labelled interactable objects are shown (#112), default on. When off the reader skips them.</summary>
+    public bool ShowInteractables = true;
+
+    /// <summary>Interactable objects' colour (#112). Files saved before it existed load the default.</summary>
+    public Vector3 InteractableColour = DefaultInteractableColour;
 
     /// <summary>The local player's colour (red, green, blue, each 0–1).</summary>
     public Vector3 SelfColour = DefaultSelfColour;
@@ -161,6 +182,12 @@ public class CubeSettings
         this.OtherColour = ValidColour(this.OtherColour, DefaultOtherColour);
         this.NpcColour = ValidColour(this.NpcColour, DefaultNpcColour);
         this.EnemyColour = ValidColour(this.EnemyColour, DefaultEnemyColour);
+        this.InteractableColour = ValidColour(this.InteractableColour, DefaultInteractableColour);
+        if (!Enum.IsDefined(this.NamePosition))
+        {
+            this.NamePosition = NamePosition.Side;
+        }
+
         this.Opacity = float.IsNaN(this.Opacity) ? 1f : Math.Clamp(this.Opacity, MinOpacity, 1f);
         // ViewOrientation normalises the rotation and replaces an unusable one with the default.
         this.ViewRotation = this.View.Rotation;
@@ -267,6 +294,12 @@ public class CubeSettings
         this.ShowNpcs = other.ShowNpcs;
         this.NpcColour = other.NpcColour;
         this.EnemyColour = other.EnemyColour;
+        this.ShowOwnName = other.ShowOwnName;
+        this.NamePosition = other.NamePosition;
+        this.ShowPlayers = other.ShowPlayers;
+        this.ShowEnemies = other.ShowEnemies;
+        this.ShowInteractables = other.ShowInteractables;
+        this.InteractableColour = other.InteractableColour;
         this.ShowCollision = other.ShowCollision;
         this.CollisionDetail = other.CollisionDetail;
         this.Opacity = other.Opacity;
@@ -281,7 +314,8 @@ public class CubeSettings
         Pack(this.PartyColour, this.Opacity),
         Pack(this.OtherColour, this.Opacity),
         Pack(this.NpcColour, this.Opacity),
-        Pack(this.EnemyColour, this.Opacity));
+        Pack(this.EnemyColour, this.Opacity),
+        Pack(this.InteractableColour, this.Opacity));
 
     /// <summary>A colour at the chosen opacity, packed for drawing; used for the wireframe.</summary>
     /// <param name="rgb">Red, green and blue, 0–1.</param>

@@ -125,8 +125,12 @@ public sealed class DrawList
     /// <param name="depth">Distance from the viewer: the player cube's, so the label sorts with its cube.</param>
     /// <param name="colour">Text colour.</param>
     /// <param name="tag">The player's index + 1; the text is that player's name.</param>
-    public void AddLabel(Vector2 anchor, float depth, uint colour, int tag) =>
-        this.Add(new DrawPrimitive { Kind = PrimitiveKind.Label, A = anchor, Depth = depth, Colour = colour, Tag = tag });
+    /// <param name="centred">
+    /// True for a label centred above its cube (#112): <paramref name="anchor"/> is then the middle of the text's bottom
+    /// edge. Stored as <see cref="DrawPrimitive.B"/>.X = 1 (unused by labels otherwise), so the primitive stays the same size.
+    /// </param>
+    public void AddLabel(Vector2 anchor, float depth, uint colour, int tag, bool centred = false) =>
+        this.Add(new DrawPrimitive { Kind = PrimitiveKind.Label, A = anchor, B = centred ? Vector2.UnitX : default, Depth = depth, Colour = colour, Tag = tag });
 
     /// <summary>Sorts so the farthest primitive comes first; ties keep the order they were added in.</summary>
     /// <remarks>

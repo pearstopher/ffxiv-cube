@@ -33,12 +33,12 @@ own cap: a crowd of NPCs can never push a player out, and NPCs can't push the fr
 
 ## Constructors
 
-### <a id="Cube_Core_PlayerSet__ctor_System_Int32_Cube_Core_NameCache_System_Int32_"></a> PlayerSet\(int, NameCache, int\)
+### <a id="Cube_Core_PlayerSet__ctor_System_Int32_Cube_Core_NameCache_System_Int32_System_Int32_"></a> PlayerSet\(int, NameCache, int, int\)
 
 Creates an empty set.
 
 ```csharp
-public PlayerSet(int capacity, NameCache names, int npcCapacity = 0)
+public PlayerSet(int capacity, NameCache names, int npcCapacity = 0, int interactableCapacity = 0)
 ```
 
 #### Parameters
@@ -55,6 +55,10 @@ The name cache; its slot count bounds the slots that can be offered.
 
 Most named NPCs held per frame, on top of the players; 0 keeps none.
 
+`interactableCapacity` [int](https://learn.microsoft.com/dotnet/api/system.int32)
+
+Most interactable objects held per frame, on top of both; 0 keeps none (#112).
+
 ## Fields
 
 ### <a id="Cube_Core_PlayerSet_NoOwner"></a> NoOwner
@@ -69,6 +73,18 @@ public const uint NoOwner = 3758096384
 #### Field Value
 
  [uint](https://learn.microsoft.com/dotnet/api/system.uint32)
+
+### <a id="Cube_Core_PlayerSet_interactableCapacity"></a> interactableCapacity
+
+Most interactable objects kept per frame (#112).
+
+```csharp
+private readonly int interactableCapacity
+```
+
+#### Field Value
+
+ [int](https://learn.microsoft.com/dotnet/api/system.int32)
 
 ### <a id="Cube_Core_PlayerSet_markers"></a> markers
 
@@ -142,6 +158,42 @@ private readonly NearbyPlayer[] players
 
  [NearbyPlayer](Cube.Core.NearbyPlayer.md)\[\]
 
+### <a id="Cube_Core_PlayerSet_showEnemies"></a> showEnemies
+
+Whether hostile NPCs are taken this frame.
+
+```csharp
+private bool showEnemies
+```
+
+#### Field Value
+
+ [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+### <a id="Cube_Core_PlayerSet_showNpcs"></a> showNpcs
+
+Whether friendly NPCs are taken this frame ([Begin](Cube.Core.PlayerSet.md#Cube_Core_PlayerSet_Begin)).
+
+```csharp
+private bool showNpcs
+```
+
+#### Field Value
+
+ [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+### <a id="Cube_Core_PlayerSet_showPlayers"></a> showPlayers
+
+Whether other players are taken this frame.
+
+```csharp
+private bool showPlayers
+```
+
+#### Field Value
+
+ [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
 ### <a id="Cube_Core_PlayerSet_space"></a> space
 
 The cube for this frame, set by [Begin](Cube.Core.PlayerSet.md#Cube_Core_PlayerSet_Begin).
@@ -174,6 +226,18 @@ How many players or NPCs inside the cube didn't fit this frame.
 
 ```csharp
 public int Dropped { get; private set; }
+```
+
+#### Property Value
+
+ [int](https://learn.microsoft.com/dotnet/api/system.int32)
+
+### <a id="Cube_Core_PlayerSet_InteractableCount"></a> InteractableCount
+
+How many of [Count](Cube.Core.PlayerSet.md#Cube_Core_PlayerSet_Count) are interactable objects (#112).
+
+```csharp
+public int InteractableCount { get; private set; }
 ```
 
 #### Property Value
@@ -240,6 +304,19 @@ public int Offered { get; private set; }
 
  [int](https://learn.microsoft.com/dotnet/api/system.int32)
 
+### <a id="Cube_Core_PlayerSet_ShowsInteractables"></a> ShowsInteractables
+
+Whether interactable objects are taken this frame (#112). The game reader checks it to skip the object part of the
+table altogether; [OfferInteractable](Cube.Core.PlayerSet.md#Cube_Core_PlayerSet_OfferInteractable) rejects every one while it's off.
+
+```csharp
+public bool ShowsInteractables { get; private set; }
+```
+
+#### Property Value
+
+ [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
 ### <a id="Cube_Core_PlayerSet_ShowsNpcs"></a> ShowsNpcs
 
 Whether NPCs are taken this frame (PROJECT.md, "NPCs": the on/off setting). The game reader checks it to skip
@@ -284,12 +361,12 @@ Whether this kind's cap is already reached.
 
 True if the offer should be kept.
 
-### <a id="Cube_Core_PlayerSet_Begin_Cube_Core_CubeSpace__System_Boolean_"></a> Begin\(in CubeSpace, bool\)
+### <a id="Cube_Core_PlayerSet_Begin_Cube_Core_CubeSpace__System_Boolean_System_Boolean_System_Boolean_System_Boolean_"></a> Begin\(in CubeSpace, bool, bool, bool, bool\)
 
 Starts a new frame: empties the set and sets the cube players are tested against.
 
 ```csharp
-public void Begin(in CubeSpace cube, bool npcs = true)
+public void Begin(in CubeSpace cube, bool npcs = true, bool players = true, bool enemies = true, bool interactables = true)
 ```
 
 #### Parameters
@@ -300,7 +377,19 @@ This frame's cube.
 
 `npcs` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-Whether named NPCs are shown this frame (the user's setting).
+Whether friendly named NPCs are shown this frame (the user's setting).
+
+`players` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+Whether other players are shown (#112); the local player always is.
+
+`enemies` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+Whether hostile NPCs are shown (#112).
+
+`interactables` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+Whether interactable objects are shown (#112).
 
 ### <a id="Cube_Core_PlayerSet_Classify_System_Boolean_System_Boolean_System_Boolean_"></a> Classify\(bool, bool, bool\)
 
@@ -385,6 +474,26 @@ Objects owned by a player (pets, chocobo companions) are left out by both their 
 sub-kind, so either field being unset still leaves them out. Nameless NPCs are the game's invisible event
 helpers. The caller has already checked the object kind is an event or battle NPC.
 
+### <a id="Cube_Core_PlayerSet_IsTextInteractable_System_ReadOnlySpan_System_Byte__"></a> IsTextInteractable\(ReadOnlySpan<byte\>\)
+
+Whether an object counts as a text-labelled interactable (#112; <code>docs/research-notes.md</code>): an event object
+with a name. Nameless event objects are the invisible triggers and icon-only markers (arrows); housing furniture
+and gardening plants are a different object kind and never reach here. The caller has checked the kind.
+
+```csharp
+public static bool IsTextInteractable(ReadOnlySpan<byte> nameUtf8)
+```
+
+#### Parameters
+
+`nameUtf8` [ReadOnlySpan](https://learn.microsoft.com/dotnet/api/system.readonlyspan\-1)<[byte](https://learn.microsoft.com/dotnet/api/system.byte)\>
+
+The game's zero-terminated name bytes.
+
+#### Returns
+
+ [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
 ### <a id="Cube_Core_PlayerSet_Offer_System_Int32_System_UInt32_System_Numerics_Vector3_System_Boolean_System_Boolean_System_Boolean_System_ReadOnlySpan_System_Byte__System_Boolean_"></a> Offer\(int, uint, Vector3, bool, bool, bool, ReadOnlySpan<byte\>, bool\)
 
 Offers one player. Outside the cube: rejected before anything else is done (no name lookup).
@@ -433,6 +542,44 @@ Whether this is the local player's current target (#111: gets a <code>[T]</code>
  [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
 True if the player is inside the cube and was kept.
+
+### <a id="Cube_Core_PlayerSet_OfferInteractable_System_Int32_System_UInt32_System_Numerics_Vector3_System_ReadOnlySpan_System_Byte__System_Boolean_"></a> OfferInteractable\(int, uint, Vector3, ReadOnlySpan<byte\>, bool\)
+
+Offers one text-labelled interactable object (the caller has applied [IsTextInteractable](Cube.Core.PlayerSet.md#Cube_Core_PlayerSet_IsTextInteractable); #112). It is
+culled like a player and kept as [Interactable](Cube.Core.PlayerRelation.md#Cube_Core_PlayerRelation_Interactable), up to its own cap, so a crowd of
+objects never pushes out players or NPCs. Rejected straight away while the toggle is off.
+
+```csharp
+public bool OfferInteractable(int slot, uint entityId, Vector3 position, ReadOnlySpan<byte> nameUtf8, bool isTarget = false)
+```
+
+#### Parameters
+
+`slot` [int](https://learn.microsoft.com/dotnet/api/system.int32)
+
+Object table index (must be below the name cache's slot count).
+
+`entityId` [uint](https://learn.microsoft.com/dotnet/api/system.uint32)
+
+The game's id for the object.
+
+`position` [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
+
+World position.
+
+`nameUtf8` [ReadOnlySpan](https://learn.microsoft.com/dotnet/api/system.readonlyspan\-1)<[byte](https://learn.microsoft.com/dotnet/api/system.byte)\>
+
+The game's name bytes.
+
+`isTarget` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+Whether it is the local player's current target (<code>[T]</code> marker).
+
+#### Returns
+
+ [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+True if the object is inside the cube and was kept.
 
 ### <a id="Cube_Core_PlayerSet_OfferNpc_System_Int32_System_UInt32_System_Numerics_Vector3_System_ReadOnlySpan_System_Byte__System_Boolean_System_Boolean_System_Boolean_"></a> OfferNpc\(int, uint, Vector3, ReadOnlySpan<byte\>, bool, bool, bool\)
 
