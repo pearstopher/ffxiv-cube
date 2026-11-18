@@ -22,6 +22,12 @@ Checks the collision boxes are drawn in the running game (#31; PROJECT.md, "Coll
 inside or crossing the cube is shown as a simplified box, clipped to the cube; "Draw order": far things first, with
 the players).
 
+ [CollisionInsideCubeCheck](Cube.TestBridge.Checks.CollisionInsideCubeCheck.md)
+
+Checks collision never reaches outside the cube on screen, at any camera angle, in either orientation mode (#93;
+PROJECT.md, "Collision (phase 2)": clipped to the cube; "Cube": in "Rotate contents with camera" the contents turn
+with the camera).
+
  [CollisionProbeCheck](Cube.TestBridge.Checks.CollisionProbeCheck.md)
 
 Research probe for #28 (where to get collision data): measures, in the running game, the three candidate
@@ -54,7 +60,8 @@ A budget failure is a failed test, not a note (CLAUDE.md).
 
 Checks the window drew exactly what Core produced (PROJECT.md, "Automated testing": the primitives drawn
 match Core's output): rebuilds the last frame independently from the same cube space and projection,
-compares it primitive by primitive, and checks one ImGui call was issued per primitive.
+compares it primitive by primitive (and each polygon's corners, #93), and checks one ImGui call was issued per
+primitive.
 
  [FakePlayersCheck](Cube.TestBridge.Checks.FakePlayersCheck.md)
 
@@ -166,11 +173,11 @@ the same thing (PROJECT.md, "Efficiency and memory": the phase 2 budgets hold wi
 
 What one walk found inside one cube size.
 
- [PlayerHeightCheck.Sample](Cube.TestBridge.Checks.PlayerHeightCheck.Sample.md)
+ [CollisionProbeCheck.Sample](Cube.TestBridge.Checks.CollisionProbeCheck.Sample.md)
 
 One frame's measurements.
 
- [CollisionProbeCheck.Sample](Cube.TestBridge.Checks.CollisionProbeCheck.Sample.md)
+ [PlayerHeightCheck.Sample](Cube.TestBridge.Checks.PlayerHeightCheck.Sample.md)
 
 One frame's measurements.
 

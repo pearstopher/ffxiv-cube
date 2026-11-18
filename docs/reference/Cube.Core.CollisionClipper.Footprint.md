@@ -77,6 +77,18 @@ public Vector2 C3 { get; }
 
  [Vector2](https://learn.microsoft.com/dotnet/api/system.numerics.vector2)
 
+### <a id="Cube_Core_CollisionClipper_Footprint_IsAxisAligned"></a> IsAxisAligned
+
+Whether the footprint's sides run along the world axes (the yaw is a multiple of 90°).
+
+```csharp
+public bool IsAxisAligned { get; }
+```
+
+#### Property Value
+
+ [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
 ### <a id="Cube_Core_CollisionClipper_Footprint_Max"></a> Max
 
 Highest world X and Z of the footprint.

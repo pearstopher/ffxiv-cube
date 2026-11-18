@@ -19,7 +19,7 @@ A plain struct kept in [DrawList](Cube.Core.DrawList.md#Cube_Core_DrawList)'s re
 
 ### <a id="Cube_Core_DrawPrimitive_A"></a> A
 
-First point (pixels).
+First point (pixels); a polygon's first corner, for messages.
 
 ```csharp
 public Vector2 A
@@ -65,6 +65,20 @@ public uint Colour
 
  [uint](https://learn.microsoft.com/dotnet/api/system.uint32)
 
+### <a id="Cube_Core_DrawPrimitive_Corners"></a> Corners
+
+A polygon's corner count ([Polygon](Cube.Core.PrimitiveKind.md#Cube_Core_PrimitiveKind_Polygon)); 0 for other kinds. A byte, so with
+[FirstPoint](Cube.Core.DrawPrimitive.md#Cube_Core_DrawPrimitive_FirstPoint) it fits in the padding after [Kind](Cube.Core.DrawPrimitive.md#Cube_Core_DrawPrimitive_Kind): the struct stays the size it was and
+sorting moves no extra bytes.
+
+```csharp
+public byte Corners
+```
+
+#### Field Value
+
+ [byte](https://learn.microsoft.com/dotnet/api/system.byte)
+
 ### <a id="Cube_Core_DrawPrimitive_D"></a> D
 
 Fourth point of a quad (pixels).
@@ -89,9 +103,22 @@ public float Depth
 
  [float](https://learn.microsoft.com/dotnet/api/system.single)
 
+### <a id="Cube_Core_DrawPrimitive_FirstPoint"></a> FirstPoint
+
+Where a polygon's corners start in the draw list's point buffer ([Points](Cube.Core.DrawList.md#Cube_Core_DrawList_Points)); 16 bits, so the
+buffer holds at most [MaxPointCapacity](Cube.Core.DrawList.md#Cube_Core_DrawList_MaxPointCapacity) corners.
+
+```csharp
+public ushort FirstPoint
+```
+
+#### Field Value
+
+ [ushort](https://learn.microsoft.com/dotnet/api/system.uint16)
+
 ### <a id="Cube_Core_DrawPrimitive_Kind"></a> Kind
 
-Line, quad or label.
+Line, quad, label or polygon.
 
 ```csharp
 public PrimitiveKind Kind

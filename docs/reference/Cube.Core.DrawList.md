@@ -25,12 +25,12 @@ in [Dropped](Cube.Core.DrawList.md#Cube_Core_DrawList_Dropped) rather than growi
 
 ## Constructors
 
-### <a id="Cube_Core_DrawList__ctor_System_Int32_"></a> DrawList\(int\)
+### <a id="Cube_Core_DrawList__ctor_System_Int32_System_Int32_"></a> DrawList\(int, int\)
 
 Creates an empty list.
 
 ```csharp
-public DrawList(int capacity)
+public DrawList(int capacity, int pointCapacity = 0)
 ```
 
 #### Parameters
@@ -39,7 +39,25 @@ public DrawList(int capacity)
 
 The most primitives a frame can hold.
 
+`pointCapacity` [int](https://learn.microsoft.com/dotnet/api/system.int32)
+
+The most polygon corners a frame can hold, up to [MaxPointCapacity](Cube.Core.DrawList.md#Cube_Core_DrawList_MaxPointCapacity); 0 (the default) gives room for
+one [MaxCorners](Cube.Core.ClippedBox.md#Cube_Core_ClippedBox_MaxCorners)-corner polygon per eight primitives.
+
 ## Fields
+
+### <a id="Cube_Core_DrawList_MaxPointCapacity"></a> MaxPointCapacity
+
+The largest point buffer: a polygon's start is stored in 16 bits ([FirstPoint](Cube.Core.DrawPrimitive.md#Cube_Core_DrawPrimitive_FirstPoint)) to
+keep primitives small.
+
+```csharp
+public const int MaxPointCapacity = 65536
+```
+
+#### Field Value
+
+ [int](https://learn.microsoft.com/dotnet/api/system.int32)
 
 ### <a id="Cube_Core_DrawList_items"></a> items
 
@@ -64,6 +82,31 @@ private readonly long[] keys
 #### Field Value
 
  [long](https://learn.microsoft.com/dotnet/api/system.int64)\[\]
+
+### <a id="Cube_Core_DrawList_pointCount"></a> pointCount
+
+How many of [points](Cube.Core.DrawList.md#Cube_Core_DrawList_points) are used this frame.
+
+```csharp
+private int pointCount
+```
+
+#### Field Value
+
+ [int](https://learn.microsoft.com/dotnet/api/system.int32)
+
+### <a id="Cube_Core_DrawList_points"></a> points
+
+The reused corner buffer for polygons ([Polygon](Cube.Core.PrimitiveKind.md#Cube_Core_PrimitiveKind_Polygon)). Corners stay where they were added
+while the primitives are sorted, since each polygon refers to its own range.
+
+```csharp
+private readonly Vector2[] points
+```
+
+#### Field Value
+
+ [Vector2](https://learn.microsoft.com/dotnet/api/system.numerics.vector2)\[\]
 
 ## Properties
 
@@ -114,6 +157,18 @@ public ReadOnlySpan<DrawPrimitive> Items { get; }
 #### Property Value
 
  [ReadOnlySpan](https://learn.microsoft.com/dotnet/api/system.readonlyspan\-1)<[DrawPrimitive](Cube.Core.DrawPrimitive.md)\>
+
+### <a id="Cube_Core_DrawList_PointCapacity"></a> PointCapacity
+
+How many polygon corners the list can hold.
+
+```csharp
+public int PointCapacity { get; }
+```
+
+#### Property Value
+
+ [int](https://learn.microsoft.com/dotnet/api/system.int32)
 
 ## Methods
 
@@ -183,6 +238,33 @@ Distance from the viewer.
 
 Packed colour.
 
+### <a id="Cube_Core_DrawList_AddPolygon_System_ReadOnlySpan_System_Numerics_Vector2__System_Single_System_UInt32_System_Int32_"></a> AddPolygon\(ReadOnlySpan<Vector2\>, float, uint, int\)
+
+Adds a filled convex polygon ([Polygon](Cube.Core.PrimitiveKind.md#Cube_Core_PrimitiveKind_Polygon)); its corners are copied into the list's
+point buffer. Dropped like any other primitive when either buffer is full.
+
+```csharp
+public void AddPolygon(ReadOnlySpan<Vector2> corners, float depth, uint colour, int tag = 0)
+```
+
+#### Parameters
+
+`corners` [ReadOnlySpan](https://learn.microsoft.com/dotnet/api/system.readonlyspan\-1)<[Vector2](https://learn.microsoft.com/dotnet/api/system.numerics.vector2)\>
+
+3 to [MaxCorners](Cube.Core.ClippedBox.md#Cube_Core_ClippedBox_MaxCorners) corners in order around the outline (pixels).
+
+`depth` [float](https://learn.microsoft.com/dotnet/api/system.single)
+
+Distance from the viewer.
+
+`colour` [uint](https://learn.microsoft.com/dotnet/api/system.uint32)
+
+Packed colour.
+
+`tag` [int](https://learn.microsoft.com/dotnet/api/system.int32)
+
+Owner ([Tag](Cube.Core.DrawPrimitive.md#Cube_Core_DrawPrimitive_Tag)).
+
 ### <a id="Cube_Core_DrawList_AddQuad_System_Numerics_Vector2_System_Numerics_Vector2_System_Numerics_Vector2_System_Numerics_Vector2_System_Single_System_UInt32_System_Int32_"></a> AddQuad\(Vector2, Vector2, Vector2, Vector2, float, uint, int\)
 
 Adds a filled quad; points go round the outline in order.
@@ -251,6 +333,24 @@ The other.
 #### Returns
 
  [int](https://learn.microsoft.com/dotnet/api/system.int32)
+
+### <a id="Cube_Core_DrawList_Points_Cube_Core_DrawPrimitive__"></a> Points\(in DrawPrimitive\)
+
+A polygon's corners, in order around it (pixels); empty for other kinds.
+
+```csharp
+public ReadOnlySpan<Vector2> Points(in DrawPrimitive primitive)
+```
+
+#### Parameters
+
+`primitive` [DrawPrimitive](Cube.Core.DrawPrimitive.md)
+
+A primitive from [Items](Cube.Core.DrawList.md#Cube_Core_DrawList_Items).
+
+#### Returns
+
+ [ReadOnlySpan](https://learn.microsoft.com/dotnet/api/system.readonlyspan\-1)<[Vector2](https://learn.microsoft.com/dotnet/api/system.numerics.vector2)\>
 
 ### <a id="Cube_Core_DrawList_SortBackToFront"></a> SortBackToFront\(\)
 

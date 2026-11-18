@@ -15,4 +15,11 @@ public enum PrimitiveKind : byte
     /// a plain struct array and names are never copied (PROJECT.md, "Labels"; "Efficiency and memory").
     /// </summary>
     Label,
+
+    /// <summary>
+    /// A filled convex polygon of 3 to <see cref="ClippedBox.MaxCorners"/> corners, stored in the draw list's point
+    /// buffer (<see cref="DrawList.Points"/>): the top or bottom of a collision box clipped to a turned cube (#93),
+    /// whose footprint isn't a quad. One ImGui call, so a see-through face shows no seams where quads would meet.
+    /// </summary>
+    Polygon,
 }

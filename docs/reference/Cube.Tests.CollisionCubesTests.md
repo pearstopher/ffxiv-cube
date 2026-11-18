@@ -128,6 +128,20 @@ private static DrawPrimitive[] Frame(in CubeSpace space, CollisionBox[] boxes, N
 public void Line_shaped_box_draws_nothing()
 ```
 
+### <a id="Cube_Tests_CollisionCubesTests_Plain_Cube_Core_CollisionBox___"></a> Plain\(CollisionBox\[\]\)
+
+```csharp
+private static ClippedBox[] Plain(CollisionBox[] boxes)
+```
+
+#### Parameters
+
+`boxes` [CollisionBox](Cube.Core.CollisionBox.md)\[\]
+
+#### Returns
+
+ [ClippedBox](Cube.Core.ClippedBox.md)\[\]
+
 ### <a id="Cube_Tests_CollisionCubesTests_Player_in_front_of_a_wall_is_painted_over_it"></a> Player\_in\_front\_of\_a\_wall\_is\_painted\_over\_it\(\)
 
 ```csharp

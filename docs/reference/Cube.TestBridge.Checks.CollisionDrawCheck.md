@@ -23,7 +23,7 @@ internal sealed class CollisionDrawCheck : BridgeCheck
 <p>
 With the default settings (default view, from above), once a gather has completed: the cube holds clipped boxes,
 every one inside the cube's height and footprint; every collision face belongs to one of them, at most three per
-box, in the collision colour; and the floor under the player (found with the game's own downward raycast, as in
+plain box and five per prism (#93), in the collision colour; and the floor under the player (found with the game's own downward raycast, as in
 [CollisionReaderCheck](Cube.TestBridge.Checks.CollisionReaderCheck.md#Cube_TestBridge_Checks_CollisionReaderCheck)) is painted before the player's own cube, so the player stands on it rather than
 under it. That the whole frame matches Core is [DrawListMatchesCoreCheck](Cube.TestBridge.Checks.DrawListMatchesCoreCheck.md#Cube_TestBridge_Checks_DrawListMatchesCoreCheck)'s job, and the snapshot
 ([FrameSnapshotCheck](Cube.TestBridge.Checks.FrameSnapshotCheck.md#Cube_TestBridge_Checks_FrameSnapshotCheck)) shows the boxes for the side-by-side with vnavmesh's debug view in
@@ -112,6 +112,24 @@ Ten seconds covers checks that wait a few hundred frames; override for longer on
 
 ## Methods
 
+### <a id="Cube_TestBridge_Checks_CollisionDrawCheck_Bounds_System_ReadOnlySpan_Cube_Core_ClippedBox__"></a> Bounds\(ReadOnlySpan<ClippedBox\>\)
+
+The clipped boxes' world-aligned bounds, which the floor search and the reach test work on.
+
+```csharp
+internal static CollisionBox[] Bounds(ReadOnlySpan<ClippedBox> boxes)
+```
+
+#### Parameters
+
+`boxes` [ReadOnlySpan](https://learn.microsoft.com/dotnet/api/system.readonlyspan\-1)<[ClippedBox](Cube.Core.ClippedBox.md)\>
+
+The clipped boxes.
+
+#### Returns
+
+ [CollisionBox](Cube.Core.CollisionBox.md)\[\]
+
 ### <a id="Cube_TestBridge_Checks_CollisionDrawCheck_CheckBoxesInCube_Cube_Core_CubeSpace__System_ReadOnlySpan_Cube_Core_CollisionBox__"></a> CheckBoxesInCube\(in CubeSpace, ReadOnlySpan<CollisionBox\>\)
 
 Checks every clipped box lies within the cube's height and the reach of its footprint at any yaw.
@@ -138,7 +156,9 @@ What was wrong, or null.
 
 ### <a id="Cube_TestBridge_Checks_CollisionDrawCheck_CheckFaces_Cube_CubeWindow_System_Int32_System_Int32__System_Int32__"></a> CheckFaces\(CubeWindow, int, out int, out int\)
 
-Checks every collision face belongs to a clipped box, in the collision colour, at most three per box.
+Checks every collision face belongs to a clipped box, in the collision colour, at most
+[MaxFacesPerBox](Cube.Core.CollisionCubes.md#Cube_Core_CollisionCubes_MaxFacesPerBox) per box (three for a plain box, up to five for a prism cut by a
+turned side, #93).
 
 ```csharp
 private static string? CheckFaces(CubeWindow window, int boxCount, out int faces, out int boxesWithFaces)

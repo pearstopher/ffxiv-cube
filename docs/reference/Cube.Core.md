@@ -39,7 +39,7 @@ complete set for drawing (PROJECT.md, "Collision (phase 2)" and "Efficiency and 
 
 Clips collision boxes to the cube (PROJECT.md, "Collision (phase 2)": each collider inside or crossing the cube is
 shown as a simplified box, clipped to the cube). Boxes wholly outside are left out; the rest are cut back to the
-part inside.
+part inside, as a [ClippedBox](Cube.Core.ClippedBox.md#Cube_Core_ClippedBox).
 
  [CollisionCubes](Cube.Core.CollisionCubes.md)
 
@@ -158,10 +158,21 @@ faces only (PROJECT.md: "Everything it draws is a cube"; "Cheap drawing": only t
 
 The colours of a box's three visible faces, worked out once per colour per frame ([Shades](Cube.Core.BoxProjector.md#Cube_Core_BoxProjector_Shades)).
 
+ [ClippedBox](Cube.Core.ClippedBox.md)
+
+One collision box clipped to the cube (PROJECT.md, "Collision (phase 2)": each collider is shown as a simplified
+box, clipped to the cube): an upright prism whose footprint is the part of the box's footprint inside the cube's
+turned square, cut to the cube's height.
+
  [CollisionBox](Cube.Core.CollisionBox.md)
 
 One piece of collision as a simplified, world-axis-aligned box (PROJECT.md, "Collision (phase 2)": each collider
 inside or crossing the cube is shown as a simplified box, not the game's model).
+
+ [CubeOutline](Cube.Core.CubeOutline.md)
+
+The big cube's outline on screen: the convex hull of its eight projected corners. Used to check that nothing drawn
+for the contents reaches outside the cube (PROJECT.md, "Collision (phase 2)": clipped to the cube; #93).
 
  [CubeSpace](Cube.Core.CubeSpace.md)
 
@@ -180,6 +191,10 @@ One thing to draw, already projected to window pixels: the plugin turns each int
 
 The cube's rectangular footprint in world X/Z (stored as `System.Numerics.Vector2` X and Y), with its bounds for the
 cheap reject. Computed once per clip pass.
+
+ [FootprintCorners](Cube.Core.FootprintCorners.md)
+
+Inline storage for a [ClippedBox](Cube.Core.ClippedBox.md#Cube_Core_ClippedBox)'s footprint corners, so the struct holds no array.
 
  [GameState](Cube.Core.GameState.md)
 

@@ -11,8 +11,8 @@ namespace Cube.Snapshot;
 /// </summary>
 /// <remarks>
 /// Dump format: <c>regionMin</c> and <c>regionSize</c> (the window's drawing region in screen pixels) and
-/// <c>primitives</c>, each with <c>kind</c> (<c>line</c>, <c>quad</c> or <c>label</c>), <c>points</c>
-/// (<c>[[x, y], ...]</c> in screen pixels; one anchor point for a label), <c>colour</c> (<c>0xAABBGGRR</c> as a
+/// <c>primitives</c>, each with <c>kind</c> (<c>line</c>, <c>quad</c>, <c>polygon</c> or <c>label</c>), <c>points</c>
+/// (<c>[[x, y], ...]</c> in screen pixels; a polygon's 3 to 8 corners; one anchor point for a label), <c>colour</c> (<c>0xAABBGGRR</c> as a
 /// number), for lines <c>thickness</c>, and for labels <c>chars</c> and <c>fontSize</c>.
 /// </remarks>
 public static class SnapshotRenderer
@@ -39,7 +39,7 @@ public static class SnapshotRenderer
         var regionSize = ReadPoint(root.GetProperty("regionSize"));
 
         var canvas = NewCanvas(regionSize);
-        Span<Vector2> points = stackalloc Vector2[4];
+        Span<Vector2> points = stackalloc Vector2[ClippedBox.MaxCorners];
         foreach (var primitive in root.GetProperty("primitives").EnumerateArray())
         {
             var count = 0;
@@ -58,7 +58,7 @@ public static class SnapshotRenderer
                     var thickness = primitive.TryGetProperty("thickness", out var t) ? t.GetSingle() : DefaultThickness;
                     canvas.DrawLine(points[0], points[1], colour, thickness);
                     break;
-                case "quad" when count >= 3:
+                case "quad" or "polygon" when count >= 3:
                     canvas.FillConvex(points[..count], colour);
                     break;
                 case "label" when count >= 1:
@@ -78,11 +78,12 @@ public static class SnapshotRenderer
     /// </summary>
     /// <param name="regionMin">Screen position of the region's top-left, subtracted from every point.</param>
     /// <param name="regionSize">Region size: the canvas size.</param>
-    /// <param name="items">The sorted primitives.</param>
-    public static Canvas Paint(Vector2 regionMin, Vector2 regionSize, ReadOnlySpan<DrawPrimitive> items)
+    /// <param name="list">The sorted primitives, with any polygons' corners.</param>
+    public static Canvas Paint(Vector2 regionMin, Vector2 regionSize, DrawList list)
     {
         var canvas = NewCanvas(regionSize);
-        foreach (ref readonly var p in items)
+        Span<Vector2> corners = stackalloc Vector2[ClippedBox.MaxCorners];
+        foreach (ref readonly var p in list.Items)
         {
             switch (p.Kind)
             {
@@ -91,6 +92,15 @@ public static class SnapshotRenderer
                     break;
                 case PrimitiveKind.Quad:
                     canvas.FillConvex([p.A - regionMin, p.B - regionMin, p.C - regionMin, p.D - regionMin], p.Colour);
+                    break;
+                case PrimitiveKind.Polygon:
+                    var points = list.Points(p);
+                    for (var i = 0; i < points.Length; i++)
+                    {
+                        corners[i] = points[i] - regionMin;
+                    }
+
+                    canvas.FillConvex(corners[..points.Length], p.Colour);
                     break;
                 default:
                     FillLabelBar(canvas, p.A - regionMin, DefaultLabelChars, DefaultFontSize, p.Colour);

@@ -58,11 +58,25 @@ Writes the settings to disk, after the user turns the view with the view control
 ### <a id="Cube_CubeWindow_DrawListCapacity"></a> DrawListCapacity
 
 Most primitives a frame can hold: the 12 cube edges plus three faces and a label for every player the set can
-hold (200) and every NPC (50), with room to spare (1,280), plus three faces for every collision box the cache
-can hold. Fixed, so memory never grows (PROJECT.md: bounded memory); about 380 KB.
+hold (200) and every NPC (50), with room to spare (1,280), plus the most faces every collision box the cache
+can hold could add ([MaxFacesPerBox](Cube.Core.CollisionCubes.md#Cube_Core_CollisionCubes_MaxFacesPerBox); #93). Fixed, so memory never grows and no face
+is ever dropped (PROJECT.md: bounded memory); about 720 KB with the sort keys.
 
 ```csharp
-internal const int DrawListCapacity = 7280
+internal const int DrawListCapacity = 11280
+```
+
+#### Field Value
+
+ [int](https://learn.microsoft.com/dotnet/api/system.int32)
+
+### <a id="Cube_CubeWindow_DrawListPointCapacity"></a> DrawListPointCapacity
+
+Most polygon corners a frame can hold: a full [MaxCorners](Cube.Core.ClippedBox.md#Cube_Core_ClippedBox_MaxCorners)-corner top for every
+collision box (#93), so no polygon is ever dropped; about 125 KB.
+
+```csharp
+internal const int DrawListPointCapacity = 16000
 ```
 
 #### Field Value
@@ -295,6 +309,19 @@ private float yaw
  [float](https://learn.microsoft.com/dotnet/api/system.single)
 
 ## Properties
+
+### <a id="Cube_CubeWindow_BuildTicks"></a> BuildTicks
+
+Total ticks spent building frames with Core ([BuildFrame](Cube.CubeWindow.md#Cube_CubeWindow_BuildFrame)), so the budget check can tell Core's share
+of the frame time from ImGui's. Debug builds only.
+
+```csharp
+internal long BuildTicks { get; private set; }
+```
+
+#### Property Value
+
+ [long](https://learn.microsoft.com/dotnet/api/system.int64)
 
 ### <a id="Cube_CubeWindow_ClippedCollision"></a> ClippedCollision
 
@@ -633,6 +660,18 @@ internal GameState? SimulatedState { get; set; }
 
  [GameState](Cube.Core.GameState.md)?
 
+### <a id="Cube_CubeWindow_SubmitTicks"></a> SubmitTicks
+
+Total ticks spent issuing ImGui calls ([Submit](Cube.CubeWindow.md#Cube_CubeWindow_Submit)). Debug builds only.
+
+```csharp
+internal long SubmitTicks { get; private set; }
+```
+
+#### Property Value
+
+ [long](https://learn.microsoft.com/dotnet/api/system.int64)
+
 ### <a id="Cube_CubeWindow_WidgetMin"></a> WidgetMin
 
 The view control's top-left last frame, in screen pixels. Used for the hover test in [PreDraw](Cube.CubeWindow.md#Cube_CubeWindow_PreDraw) and
@@ -672,13 +711,13 @@ internal uint WireColour { get; private set; }
 
 ## Methods
 
-### <a id="Cube_CubeWindow_BuildFrame_Cube_Core_DrawList_Cube_Core_CubeSpace__Cube_Core_ViewProjection__System_ReadOnlySpan_Cube_Core_NearbyPlayer__Cube_Core_PlayerPalette__System_Boolean_System_UInt32_System_ReadOnlySpan_Cube_Core_CollisionBox__System_UInt32_"></a> BuildFrame\(DrawList, in CubeSpace, in ViewProjection, ReadOnlySpan<NearbyPlayer\>, in PlayerPalette, bool, uint, ReadOnlySpan<CollisionBox\>, uint\)
+### <a id="Cube_CubeWindow_BuildFrame_Cube_Core_DrawList_Cube_Core_CubeSpace__Cube_Core_ViewProjection__System_ReadOnlySpan_Cube_Core_NearbyPlayer__Cube_Core_PlayerPalette__System_Boolean_System_UInt32_System_ReadOnlySpan_Cube_Core_ClippedBox__System_UInt32_"></a> BuildFrame\(DrawList, in CubeSpace, in ViewProjection, ReadOnlySpan<NearbyPlayer\>, in PlayerPalette, bool, uint, ReadOnlySpan<ClippedBox\>, uint\)
 
 Builds this frame's draw list for a given drawing region. Separate from the ImGui calls so the bridge can
 check exactly what Core produced.
 
 ```csharp
-internal static void BuildFrame(DrawList list, in CubeSpace space, in ViewProjection projection, ReadOnlySpan<NearbyPlayer> players, in PlayerPalette palette, bool labels, uint wireColour, ReadOnlySpan<CollisionBox> collision, uint collisionColour)
+internal static void BuildFrame(DrawList list, in CubeSpace space, in ViewProjection projection, ReadOnlySpan<NearbyPlayer> players, in PlayerPalette palette, bool labels, uint wireColour, ReadOnlySpan<ClippedBox> collision, uint collisionColour)
 ```
 
 #### Parameters
@@ -711,7 +750,7 @@ Whether to add name labels.
 
 The big cube's edge colour.
 
-`collision` [ReadOnlySpan](https://learn.microsoft.com/dotnet/api/system.readonlyspan\-1)<[CollisionBox](Cube.Core.CollisionBox.md)\>
+`collision` [ReadOnlySpan](https://learn.microsoft.com/dotnet/api/system.readonlyspan\-1)<[ClippedBox](Cube.Core.ClippedBox.md)\>
 
 The collision boxes clipped to the cube (PROJECT.md, "Collision (phase 2)").
 
@@ -796,12 +835,12 @@ frame is simply empty. The try costs nothing when nothing is thrown.
 private void SafeDrawContents()
 ```
 
-### <a id="Cube_CubeWindow_Submit_Dalamud_Bindings_ImGui_ImDrawListPtr_System_ReadOnlySpan_Cube_Core_DrawPrimitive__System_ReadOnlySpan_Cube_Core_NearbyPlayer__"></a> Submit\(ImDrawListPtr, ReadOnlySpan<DrawPrimitive\>, ReadOnlySpan<NearbyPlayer\>\)
+### <a id="Cube_CubeWindow_Submit_Dalamud_Bindings_ImGui_ImDrawListPtr_Cube_Core_DrawList_System_ReadOnlySpan_Cube_Core_NearbyPlayer__"></a> Submit\(ImDrawListPtr, DrawList, ReadOnlySpan<NearbyPlayer\>\)
 
 Issues one ImGui call per primitive, in order.
 
 ```csharp
-private int Submit(ImDrawListPtr target, ReadOnlySpan<DrawPrimitive> items, ReadOnlySpan<NearbyPlayer> players)
+private int Submit(ImDrawListPtr target, DrawList list, ReadOnlySpan<NearbyPlayer> players)
 ```
 
 #### Parameters
@@ -810,9 +849,9 @@ private int Submit(ImDrawListPtr target, ReadOnlySpan<DrawPrimitive> items, Read
 
 The window's ImGui draw list.
 
-`items` [ReadOnlySpan](https://learn.microsoft.com/dotnet/api/system.readonlyspan\-1)<[DrawPrimitive](Cube.Core.DrawPrimitive.md)\>
+`list` [DrawList](Cube.Core.DrawList.md)
 
-The sorted primitives.
+The sorted primitives, and the corners of any polygons.
 
 `players` [ReadOnlySpan](https://learn.microsoft.com/dotnet/api/system.readonlyspan\-1)<[NearbyPlayer](Cube.Core.NearbyPlayer.md)\>
 

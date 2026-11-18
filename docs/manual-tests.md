@@ -64,3 +64,11 @@ The bridge checks the boxes are inside the cube, in the collision colour, and th
 4. Walk out of the room or across a big room: the boxes follow within a few steps (a new gather every quarter of the cube's edge).
 5. Repeat outdoors (a city street and open field): ground, buildings and big rocks show as boxes; nothing far outside the cube is drawn.
 6. Teleport to another zone: the old zone's boxes disappear at once, and the new zone's appear shortly after loading.
+
+## Collision stays inside the cube while turning (#93)
+
+The bridge (`collision-inside-cube`) turns a simulated camera to 0°, 30°, 45° and 90° and checks every corner of every collision face is inside the cube's outline, with the real scenery and with a synthetic floor three times the cube's size. What it can't do is turn the real camera smoothly and look.
+
+1. Settings: orientation "Rotate contents with camera", collision on. Stand on open ground (a big floor or field, so the ground is bigger than the cube), `/cube`.
+2. Turn the camera slowly through a full circle. The ground and other collision stay inside the big cube's wireframe the whole way round: no corners poke past its edges, at 45° or anywhere else.
+3. The collision turns with the players, as one scene: the ground's outline follows the cube's sides rather than staying still while everything else turns.

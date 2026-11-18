@@ -1,5 +1,6 @@
 using System;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using Cube.Core;
 using Cube.Game;
 using Dalamud.Bindings.ImGui;
@@ -26,10 +27,17 @@ internal sealed class CubeWindow : Window
 {
     /// <summary>
     /// Most primitives a frame can hold: the 12 cube edges plus three faces and a label for every player the set can
-    /// hold (200) and every NPC (50), with room to spare (1,280), plus three faces for every collision box the cache
-    /// can hold. Fixed, so memory never grows (PROJECT.md: bounded memory); about 380 KB.
+    /// hold (200) and every NPC (50), with room to spare (1,280), plus the most faces every collision box the cache
+    /// can hold could add (<see cref="CollisionCubes.MaxFacesPerBox"/>; #93). Fixed, so memory never grows and no face
+    /// is ever dropped (PROJECT.md: bounded memory); about 720 KB with the sort keys.
     /// </summary>
-    internal const int DrawListCapacity = 1280 + (3 * CollisionBoxSet.DefaultCapacity);
+    internal const int DrawListCapacity = 1280 + (CollisionCubes.MaxFacesPerBox * CollisionBoxSet.DefaultCapacity);
+
+    /// <summary>
+    /// Most polygon corners a frame can hold: a full <see cref="ClippedBox.MaxCorners"/>-corner top for every
+    /// collision box (#93), so no polygon is ever dropped; about 125 KB.
+    /// </summary>
+    internal const int DrawListPointCapacity = ClippedBox.MaxCorners * CollisionBoxSet.DefaultCapacity;
 
     /// <summary>Colour of the big cube's edges: light grey.</summary>
     private static readonly Vector3 WireRgb = new(0.85f, 0.85f, 0.85f);
@@ -128,7 +136,7 @@ internal sealed class CubeWindow : Window
     internal const int PlayerCapacity = PlayerReader.CharacterSlots;
 
     /// <summary>This frame's primitives, in drawing order. Read by the test bridge.</summary>
-    internal DrawList DrawList { get; } = new(DrawListCapacity);
+    internal DrawList DrawList { get; } = new(DrawListCapacity, DrawListPointCapacity);
 
     /// <summary>
     /// The players and named NPCs inside the cube this frame (PROJECT.md, "Players" and "NPCs"), NPCs capped at
@@ -224,6 +232,15 @@ internal sealed class CubeWindow : Window
     /// <summary>Ticks this frame's collision gather took, subtracted from the draw cost. Debug builds only.</summary>
     private long gatherTicks;
 
+    /// <summary>
+    /// Total ticks spent building frames with Core (<see cref="BuildFrame"/>), so the budget check can tell Core's share
+    /// of the frame time from ImGui's. Debug builds only.
+    /// </summary>
+    internal long BuildTicks { get; private set; }
+
+    /// <summary>Total ticks spent issuing ImGui calls (<see cref="Submit"/>). Debug builds only.</summary>
+    internal long SubmitTicks { get; private set; }
+
     /// <summary>Bytes this frame's collision gather allocated, subtracted from the draw cost. Debug builds only.</summary>
     private long gatherBytes;
 
@@ -244,7 +261,7 @@ internal sealed class CubeWindow : Window
     /// <param name="wireColour">The big cube's edge colour.</param>
     /// <param name="collision">The collision boxes clipped to the cube (PROJECT.md, "Collision (phase 2)").</param>
     /// <param name="collisionColour">The collision boxes' colour.</param>
-    internal static void BuildFrame(DrawList list, in CubeSpace space, in ViewProjection projection, ReadOnlySpan<NearbyPlayer> players, in PlayerPalette palette, bool labels, uint wireColour, ReadOnlySpan<CollisionBox> collision, uint collisionColour)
+    internal static void BuildFrame(DrawList list, in CubeSpace space, in ViewProjection projection, ReadOnlySpan<NearbyPlayer> players, in PlayerPalette palette, bool labels, uint wireColour, ReadOnlySpan<ClippedBox> collision, uint collisionColour)
     {
         list.Clear();
         CubeGeometry.AddWireCube(list, space, projection, wireColour);
@@ -413,12 +430,22 @@ internal sealed class CubeWindow : Window
 
         this.ClippedCollision.Update(space, this.Collision.Cache);
 
+#if DEBUG
+        var buildStart = Stopwatch.GetTimestamp();
+#endif
         BuildFrame(this.DrawList, space, projection, this.Players.Items, this.Palette, this.ShowLabels, this.WireColour, this.ClippedCollision.Items, this.CollisionColour);
         this.LastSpace = space;
         this.LastProjection = projection;
         this.LastRegionMin = regionMin;
         this.LastRegionSize = regionSize;
-        this.LastSubmitted = this.Submit(ImGui.GetWindowDrawList(), this.DrawList.Items, this.Players.Items);
+#if DEBUG
+        var submitStart = Stopwatch.GetTimestamp();
+        this.BuildTicks += submitStart - buildStart;
+#endif
+        this.LastSubmitted = this.Submit(ImGui.GetWindowDrawList(), this.DrawList, this.Players.Items);
+#if DEBUG
+        this.SubmitTicks += Stopwatch.GetTimestamp() - submitStart;
+#endif
         this.DrawViewControl(regionMin, regionSize);
     }
 
@@ -545,11 +572,12 @@ internal sealed class CubeWindow : Window
     /// off rather than spilling over the game. The text is the cached name string, so no string is built here.
     /// </remarks>
     /// <param name="target">The window's ImGui draw list.</param>
-    /// <param name="items">The sorted primitives.</param>
+    /// <param name="list">The sorted primitives, and the corners of any polygons.</param>
     /// <param name="players">This frame's players, for label text.</param>
     /// <returns>How many calls were made.</returns>
-    private int Submit(ImDrawListPtr target, ReadOnlySpan<DrawPrimitive> items, ReadOnlySpan<NearbyPlayer> players)
+    private int Submit(ImDrawListPtr target, DrawList list, ReadOnlySpan<NearbyPlayer> players)
     {
+        var items = list.Items;
         var submitted = 0;
         this.LastFontSize = ImGui.GetFontSize();
         var halfLine = this.LastFontSize / 2f;
@@ -565,6 +593,10 @@ internal sealed class CubeWindow : Window
                     break;
                 case PrimitiveKind.Quad:
                     target.AddQuadFilled(p.A, p.B, p.C, p.D, p.Colour);
+                    break;
+                case PrimitiveKind.Polygon:
+                    var corners = list.Points(p);
+                    target.AddConvexPolyFilled(ref MemoryMarshal.GetReference(corners), corners.Length, p.Colour);
                     break;
                 default:
                     var name = players[p.Tag - 1].Name;

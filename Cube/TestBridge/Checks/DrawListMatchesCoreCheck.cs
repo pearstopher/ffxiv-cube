@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Cube.Core;
 
@@ -6,7 +7,8 @@ namespace Cube.TestBridge.Checks;
 /// <summary>
 /// Checks the window drew exactly what Core produced (PROJECT.md, "Automated testing": the primitives drawn
 /// match Core's output): rebuilds the last frame independently from the same cube space and projection,
-/// compares it primitive by primitive, and checks one ImGui call was issued per primitive.
+/// compares it primitive by primitive (and each polygon's corners, #93), and checks one ImGui call was issued per
+/// primitive.
 /// </summary>
 /// <remarks>
 /// The frame is the wireframe (12 edges) plus one solid cube per player in the window's player set (#17) and a
@@ -19,7 +21,7 @@ internal sealed class DrawListMatchesCoreCheck : BridgeCheck
     private const int FramesToWait = 30;
 
     /// <summary>An independent list to rebuild the frame into; allocated once per check run.</summary>
-    private readonly DrawList expected = new(CubeWindow.DrawListCapacity);
+    private readonly DrawList expected = new(CubeWindow.DrawListCapacity, CubeWindow.DrawListPointCapacity);
 
     /// <summary>The window's open state before the check, restored by <see cref="Cleanup"/>.</summary>
     private bool wasOpen;
@@ -72,7 +74,7 @@ internal sealed class DrawListMatchesCoreCheck : BridgeCheck
         var expectedItems = this.expected.Items;
         for (var i = 0; i < actualItems.Length; i++)
         {
-            if (!actualItems[i].Equals(expectedItems[i]))
+            if (!actualItems[i].Equals(expectedItems[i]) || !actual.Points(actualItems[i]).SequenceEqual(this.expected.Points(expectedItems[i])))
             {
                 yield return CheckStep.Fail($"Primitive {i} differs from Core's: {actualItems[i].Kind} at {actualItems[i].A} vs {expectedItems[i].Kind} at {expectedItems[i].A}.");
                 yield break;

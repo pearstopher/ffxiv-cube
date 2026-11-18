@@ -46,12 +46,12 @@ Most boxes; the cache's set capacity, so nothing is ever cut off.
 The reused buffer of clipped boxes.
 
 ```csharp
-private readonly CollisionBox[] boxes
+private readonly ClippedBox[] boxes
 ```
 
 #### Field Value
 
- [CollisionBox](Cube.Core.CollisionBox.md)\[\]
+ [ClippedBox](Cube.Core.ClippedBox.md)\[\]
 
 ### <a id="Cube_Core_ClippedCollision_centre"></a> centre
 
@@ -156,12 +156,12 @@ public int Count { get; private set; }
 The boxes inside the cube, clipped to it, in world coordinates.
 
 ```csharp
-public ReadOnlySpan<CollisionBox> Items { get; }
+public ReadOnlySpan<ClippedBox> Items { get; }
 ```
 
 #### Property Value
 
- [ReadOnlySpan](https://learn.microsoft.com/dotnet/api/system.readonlyspan\-1)<[CollisionBox](Cube.Core.CollisionBox.md)\>
+ [ReadOnlySpan](https://learn.microsoft.com/dotnet/api/system.readonlyspan\-1)<[ClippedBox](Cube.Core.ClippedBox.md)\>
 
 ## Methods
 

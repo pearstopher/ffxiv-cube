@@ -15,7 +15,7 @@ namespace Cube.TestBridge.Checks;
 /// <para>
 /// With the default settings (default view, from above), once a gather has completed: the cube holds clipped boxes,
 /// every one inside the cube's height and footprint; every collision face belongs to one of them, at most three per
-/// box, in the collision colour; and the floor under the player (found with the game's own downward raycast, as in
+/// plain box and five per prism (#93), in the collision colour; and the floor under the player (found with the game's own downward raycast, as in
 /// <see cref="CollisionReaderCheck"/>) is painted before the player's own cube, so the player stands on it rather than
 /// under it. That the whole frame matches Core is <see cref="DrawListMatchesCoreCheck"/>'s job, and the snapshot
 /// (<see cref="FrameSnapshotCheck"/>) shows the boxes for the side-by-side with vnavmesh's debug view in
@@ -64,12 +64,12 @@ internal sealed class CollisionDrawCheck : BridgeCheck
             yield return CheckStep.NextFrame;
         }
 
-        var clipped = window.ClippedCollision.Items;
+        var clipped = Bounds(window.ClippedCollision.Items);
         context.Metric("readyBoxes", cache.Ready.Count);
         context.Metric("clippedBoxes", clipped.Length);
         context.Metric("primitives", window.DrawList.Count);
         context.Metric("dropped", window.DrawList.Dropped);
-        if (clipped.IsEmpty)
+        if (clipped.Length == 0)
         {
             yield return CheckStep.Fail($"No collision boxes in the cube ({cache.Ready.Count} gathered around it). Stand on the ground and run again.");
             yield break;
@@ -124,6 +124,19 @@ internal sealed class CollisionDrawCheck : BridgeCheck
         context.Window.IsOpen = this.wasOpen;
     }
 
+    /// <summary>The clipped boxes' world-aligned bounds, which the floor search and the reach test work on.</summary>
+    /// <param name="boxes">The clipped boxes.</param>
+    internal static CollisionBox[] Bounds(ReadOnlySpan<ClippedBox> boxes)
+    {
+        var bounds = new CollisionBox[boxes.Length];
+        for (var i = 0; i < boxes.Length; i++)
+        {
+            bounds[i] = boxes[i].Bounds;
+        }
+
+        return bounds;
+    }
+
     /// <summary>Checks every clipped box lies within the cube's height and the reach of its footprint at any yaw.</summary>
     /// <param name="space">The frame's cube.</param>
     /// <param name="boxes">The clipped boxes.</param>
@@ -149,7 +162,11 @@ internal sealed class CollisionDrawCheck : BridgeCheck
         return null;
     }
 
-    /// <summary>Checks every collision face belongs to a clipped box, in the collision colour, at most three per box.</summary>
+    /// <summary>
+    /// Checks every collision face belongs to a clipped box, in the collision colour, at most
+    /// <see cref="CollisionCubes.MaxFacesPerBox"/> per box (three for a plain box, up to five for a prism cut by a
+    /// turned side, #93).
+    /// </summary>
     /// <param name="window">The cube window.</param>
     /// <param name="boxCount">How many boxes were clipped.</param>
     /// <param name="faces">How many collision faces were drawn.</param>
@@ -169,7 +186,7 @@ internal sealed class CollisionDrawCheck : BridgeCheck
             }
 
             var index = CollisionCubes.IndexOf(p.Tag);
-            if (p.Kind != PrimitiveKind.Quad || index >= boxCount)
+            if ((p.Kind != PrimitiveKind.Quad && p.Kind != PrimitiveKind.Polygon) || index >= boxCount)
             {
                 return $"A {p.Kind} is tagged for collision box {index}, but {boxCount} boxes are in the cube.";
             }
@@ -179,9 +196,10 @@ internal sealed class CollisionDrawCheck : BridgeCheck
                 return $"Collision face of box {index} is {p.Colour:X8}; expected the collision colour's alpha {alpha}.";
             }
 
-            if (++perBox[index] > 3)
+            var limit = window.ClippedCollision.Items[index].IsRectangle ? 3 : CollisionCubes.MaxFacesPerBox;
+            if (++perBox[index] > limit)
             {
-                return $"Collision box {index} has more than three faces drawn.";
+                return $"Collision box {index} has more than {limit} faces drawn.";
             }
 
             faces++;
@@ -229,7 +247,7 @@ internal sealed class CollisionDrawCheck : BridgeCheck
         var items = window.DrawList.Items;
         for (var i = 0; i < items.Length; i++)
         {
-            if (items[i].Kind != PrimitiveKind.Quad)
+            if (items[i].Kind != PrimitiveKind.Quad && items[i].Kind != PrimitiveKind.Polygon)
             {
                 continue;
             }

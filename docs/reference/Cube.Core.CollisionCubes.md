@@ -21,9 +21,11 @@ public static class CollisionCubes
 
 <p>
 <b>Input.</b> The boxes come already clipped to the cube ([ClippedCollision](Cube.Core.ClippedCollision.md#Cube_Core_ClippedCollision)), in world coordinates,
-and are drawn like player cubes ([BoxProjector](Cube.Core.BoxProjector.md#Cube_Core_BoxProjector)): world-axis-aligned, so they turn with the rest of the
-contents, shaded the same way, as their visible faces only. Each box's faces carry the tag [TagFor](Cube.Core.CollisionCubes.md#Cube_Core_CollisionCubes_TagFor)
-gives it (negative, so they never clash with the scene's 0 or a player's index + 1).
+and are drawn like player cubes ([BoxProjector](Cube.Core.BoxProjector.md#Cube_Core_BoxProjector)): in world axes, so they turn with the rest of the
+contents, shaded the same way, as their visible faces only. A box cut by a side of a turned cube is drawn as the
+prism the cut leaves ([AddPrism](Cube.Core.BoxProjector.md#Cube_Core_BoxProjector_AddPrism)), so it stays inside the cube at any yaw (#93); every
+other box is a plain box ([AddFaces](Cube.Core.BoxProjector.md#Cube_Core_BoxProjector_AddFaces)). Each box's faces carry the tag
+[TagFor](Cube.Core.CollisionCubes.md#Cube_Core_CollisionCubes_TagFor) gives it (negative, so they never clash with the scene's 0 or a player's index + 1).
 </p>
 <p>
 <b>Sorting depth.</b> A player cube is small, so its centre's depth sorts it well. A collision box can be as big as
@@ -49,6 +51,20 @@ public const float Alpha = 0.5
 
  [float](https://learn.microsoft.com/dotnet/api/system.single)
 
+### <a id="Cube_Core_CollisionCubes_MaxFacesPerBox"></a> MaxFacesPerBox
+
+Most faces one clipped box can add: its top and four sides. Each edge of a footprint cut from a turned square
+faces one of eight ways (either way along the two world axes and the cube's two), each at most once, and at
+most two of the four world-axis ways and two of the cube's face the viewer. A plain box adds at most three.
+
+```csharp
+public const int MaxFacesPerBox = 5
+```
+
+#### Field Value
+
+ [int](https://learn.microsoft.com/dotnet/api/system.int32)
+
 ### <a id="Cube_Core_CollisionCubes_Rgb"></a> Rgb
 
 The collision colour: a muted grey-blue, unlike every player and NPC colour, so the scenery reads as scenery.
@@ -63,12 +79,12 @@ public static readonly Vector3 Rgb
 
 ## Methods
 
-### <a id="Cube_Core_CollisionCubes_Add_Cube_Core_DrawList_Cube_Core_BoxProjector__System_ReadOnlySpan_Cube_Core_CollisionBox__System_UInt32_"></a> Add\(DrawList, in BoxProjector, ReadOnlySpan<CollisionBox\>, uint\)
+### <a id="Cube_Core_CollisionCubes_Add_Cube_Core_DrawList_Cube_Core_BoxProjector__System_ReadOnlySpan_Cube_Core_ClippedBox__System_UInt32_"></a> Add\(DrawList, in BoxProjector, ReadOnlySpan<ClippedBox\>, uint\)
 
 Adds every clipped box's visible faces, in the collision colour, each sorted by its farthest corner.
 
 ```csharp
-public static void Add(DrawList list, in BoxProjector projector, ReadOnlySpan<CollisionBox> boxes, uint colour)
+public static void Add(DrawList list, in BoxProjector projector, ReadOnlySpan<ClippedBox> boxes, uint colour)
 ```
 
 #### Parameters
@@ -81,7 +97,7 @@ The frame's draw list.
 
 This frame's box projector.
 
-`boxes` [ReadOnlySpan](https://learn.microsoft.com/dotnet/api/system.readonlyspan\-1)<[CollisionBox](Cube.Core.CollisionBox.md)\>
+`boxes` [ReadOnlySpan](https://learn.microsoft.com/dotnet/api/system.readonlyspan\-1)<[ClippedBox](Cube.Core.ClippedBox.md)\>
 
 This frame's boxes, already clipped to the cube (world coordinates).
 

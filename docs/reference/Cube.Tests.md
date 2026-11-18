@@ -41,6 +41,13 @@ Checks the gathered collision is clipped to the cube for drawing, and only when 
 "Collision (phase 2)": boxes clipped to the cube; "Efficiency and memory": recompute only when the inputs change,
 no per-frame allocations, collision data dropped on a zone change).
 
+ [ClippedPrismTests](Cube.Tests.ClippedPrismTests.md)
+
+Checks collision stays inside the cube at every cube yaw (#93; PROJECT.md, "Collision (phase 2)": each collider is
+shown as a simplified box, clipped to the cube; "Cube": in "Rotate contents with camera" the contents turn with
+the camera). A box cut by a side of a turned cube is kept as the prism the cut leaves, never as a world-aligned
+box that pokes out of the cube; "Efficiency and memory": clipping and drawing allocate nothing.
+
  [CollisionBoxTests](Cube.Tests.CollisionBoxTests.md)
 
 Checks the collision box model (PROJECT.md, "Collision (phase 2)": colliders inside or crossing the cube are shown
@@ -140,6 +147,12 @@ Checks which players and NPCs are kept and how they're classified and named (PRO
 inside the cube are shown; "NPCs": named, unowned NPCs inside the cube are shown, with an on/off setting; "Colours":
 self, party/alliance, everyone else, NPCs; "Efficiency and memory": name labels cached
 and only rebuilt when a name changes, no per-frame allocations, bounded memory; "Privacy": names stay in memory).
+
+ [PolygonAndOutlineTests](Cube.Tests.PolygonAndOutlineTests.md)
+
+Checks the draw list's polygons and the cube's screen outline (#93; PROJECT.md, "Cheap drawing": one ImGui call per
+face; "Efficiency and memory": fixed buffers, nothing allocated per frame, bounded memory; "Collision (phase 2)":
+collision clipped to the cube, which the outline is used to check).
 
  [ProjectionAndDrawListTests](Cube.Tests.ProjectionAndDrawListTests.md)
 
