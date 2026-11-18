@@ -141,6 +141,36 @@ public class CollisionCacheTests
     }
 
     [Fact]
+    public void New_detail_level_gathers_again_while_the_old_boxes_stay_drawn()
+    {
+        // #32: the detail setting applies immediately, without blanking the cube while it gathers.
+        var cache = Cache(budget: 10);
+        var source = new FakeSource(Scene(10), ticksPerCollider: 4);
+        var full = CollisionDetails.Stamp(Stamp, CollisionDetail.Full);
+        while (!cache.Step(ref source, Vector3.Zero, Edge, Zone, full))
+        {
+        }
+
+        cache.Step(ref source, Vector3.Zero, Edge, Zone, CollisionDetails.Stamp(Stamp, CollisionDetail.Coarse));
+
+        Assert.True(cache.IsGathering);
+        Assert.Equal(10, cache.Ready.Count);
+    }
+
+    [Fact]
+    public void Detail_change_during_a_gather_starts_it_again()
+    {
+        var cache = Cache(budget: 10);
+        var source = new FakeSource(Scene(10), ticksPerCollider: 4);
+        cache.Step(ref source, Vector3.Zero, Edge, Zone, CollisionDetails.Stamp(Stamp, CollisionDetail.Full));
+
+        cache.Step(ref source, Vector3.Zero, Edge, Zone, CollisionDetails.Stamp(Stamp, CollisionDetail.Medium));
+
+        Assert.Equal(1, cache.Restarts);
+        Assert.Equal(0, source.LastSeek);
+    }
+
+    [Fact]
     public void Moving_past_the_threshold_refreshes_around_the_new_position()
     {
         var cache = Cache();

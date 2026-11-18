@@ -391,7 +391,17 @@ internal sealed class CubeWindow : Window
         this.Fakes.Offer(this.Players, space);
 #endif
 
-        this.UpdateCollision(centre, settings.CubeEdge);
+        if (settings.ShowCollision)
+        {
+            this.UpdateCollision(centre, settings.CubeEdge, settings.CollisionDetail);
+        }
+        else
+        {
+            // Collision off (#32): the scene isn't read and the boxes are dropped, so the clip below empties the cube
+            // and turning it back on gathers afresh around wherever the player is then.
+            this.Collision.Cache.Clear();
+        }
+
         this.ClippedCollision.Update(space, this.Collision.Cache);
 
         BuildFrame(this.DrawList, space, projection, this.Players.Items, this.Palette, this.ShowLabels, this.WireColour, this.ClippedCollision.Items, this.CollisionColour);
@@ -410,12 +420,13 @@ internal sealed class CubeWindow : Window
     /// </summary>
     /// <param name="centre">The cube's centre.</param>
     /// <param name="edge">The cube's edge in yalms.</param>
-    private void UpdateCollision(Vector3 centre, float edge)
+    /// <param name="detail">The collision detail setting (#32).</param>
+    private void UpdateCollision(Vector3 centre, float edge, CollisionDetail detail)
     {
 #if DEBUG
         var startBytes = GC.GetAllocatedBytesForCurrentThread();
         var startTicks = Stopwatch.GetTimestamp();
-        var completed = this.Collision.Update(centre, edge);
+        var completed = this.Collision.Update(centre, edge, detail);
         if (completed || this.Collision.Cache.IsGathering)
         {
             this.gatherTicks = Stopwatch.GetTimestamp() - startTicks;
@@ -423,7 +434,7 @@ internal sealed class CubeWindow : Window
             this.GatherCost.Record(this.gatherTicks, this.gatherBytes);
         }
 #else
-        this.Collision.Update(centre, edge);
+        this.Collision.Update(centre, edge, detail);
 #endif
     }
 

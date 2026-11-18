@@ -73,6 +73,13 @@ private static CollisionCache Cache(long budget = 1000)
 
  [CollisionCache](Cube.Core.CollisionCache.md)
 
+### <a id="Cube_Tests_CollisionCacheTests_Detail_change_during_a_gather_starts_it_again"></a> Detail\_change\_during\_a\_gather\_starts\_it\_again\(\)
+
+```csharp
+[Fact]
+public void Detail_change_during_a_gather_starts_it_again()
+```
+
 ### <a id="Cube_Tests_CollisionCacheTests_Each_frame_resumes_at_the_next_collider_by_index"></a> Each\_frame\_resumes\_at\_the\_next\_collider\_by\_index\(\)
 
 ```csharp
@@ -113,6 +120,13 @@ public void Memory_is_bounded_by_the_cap()
 ```csharp
 [Fact]
 public void Moving_past_the_threshold_refreshes_around_the_new_position()
+```
+
+### <a id="Cube_Tests_CollisionCacheTests_New_detail_level_gathers_again_while_the_old_boxes_stay_drawn"></a> New\_detail\_level\_gathers\_again\_while\_the\_old\_boxes\_stay\_drawn\(\)
+
+```csharp
+[Fact]
+public void New_detail_level_gathers_again_while_the_old_boxes_stay_drawn()
 ```
 
 ### <a id="Cube_Tests_CollisionCacheTests_Nothing_is_read_while_the_cached_boxes_are_current"></a> Nothing\_is\_read\_while\_the\_cached\_boxes\_are\_current\(\)

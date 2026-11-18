@@ -8,7 +8,7 @@ namespace Cube;
 /// <summary>
 /// The settings window, opened with <c>/cube config</c> or Dalamud's settings button (PROJECT.md, "Features": cube
 /// size, orientation mode, labels on/off, colours and opacity; "NPCs": NPCs on/off and their colour; "View orientation
-/// control": the control's corner and a way to reset the view).
+/// control": the control's corner and a way to reset the view; #32: collision on/off and detail).
 /// </summary>
 /// <remarks>
 /// Every control edits <see cref="Configuration"/> directly, so changes show in the cube on the next frame. The file
@@ -19,6 +19,9 @@ internal sealed class SettingsWindow : Window
 {
     /// <summary>The corner choices, in <see cref="WidgetCorner"/> order.</summary>
     private static readonly string[] CornerNames = ["Bottom right", "Bottom left", "Top right", "Top left"];
+
+    /// <summary>The collision detail choices, in <see cref="CollisionDetail"/> order.</summary>
+    private static readonly string[] DetailNames = ["Full", "Medium", "Coarse"];
 
     /// <summary>The settings being edited.</summary>
     private readonly Configuration config;
@@ -115,6 +118,21 @@ internal sealed class SettingsWindow : Window
 
         ImGui.SameLine();
         this.Track(ImGui.ColorEdit3("NPCs", ref c.NpcColour, ImGuiColorEditFlags.NoInputs));
+
+        // Collision (#32): on/off, and how finely it's drawn.
+        if (ImGui.Checkbox("Show collision", ref c.ShowCollision))
+        {
+            this.ApplyAndSave();
+        }
+
+        ImGui.SameLine();
+        ImGui.SetNextItemWidth(120);
+        var detail = (int)c.CollisionDetail;
+        if (ImGui.Combo("Detail", ref detail, DetailNames, DetailNames.Length))
+        {
+            c.CollisionDetail = (CollisionDetail)detail;
+            this.ApplyAndSave();
+        }
 
         ImGui.SetNextItemWidth(200);
         this.Track(ImGui.SliderFloat("Opacity", ref c.Opacity, CubeSettings.MinOpacity, 1f, "%.2f"));

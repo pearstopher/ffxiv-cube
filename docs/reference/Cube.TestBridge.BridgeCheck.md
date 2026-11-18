@@ -22,6 +22,7 @@ internal abstract class BridgeCheck
 [CollisionDrawCheck](Cube.TestBridge.Checks.CollisionDrawCheck.md), 
 [CollisionProbeCheck](Cube.TestBridge.Checks.CollisionProbeCheck.md), 
 [CollisionReaderCheck](Cube.TestBridge.Checks.CollisionReaderCheck.md), 
+[CollisionSettingsCheck](Cube.TestBridge.Checks.CollisionSettingsCheck.md), 
 [DrawBudgetCheck](Cube.TestBridge.Checks.DrawBudgetCheck.md), 
 [DrawListMatchesCoreCheck](Cube.TestBridge.Checks.DrawListMatchesCoreCheck.md), 
 [FakePlayersCheck](Cube.TestBridge.Checks.FakePlayersCheck.md), 

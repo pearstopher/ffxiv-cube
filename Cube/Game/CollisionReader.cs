@@ -39,8 +39,11 @@ internal sealed class CollisionReader
     /// </summary>
     /// <param name="centre">The cube's centre (the player).</param>
     /// <param name="edge">The cube's edge in yalms.</param>
+    /// <param name="detail">
+    /// The detail setting (#32). Part of the stamp the cache compares, so a new level gathers again at once.
+    /// </param>
     /// <returns>True if a gather completed this frame.</returns>
-    public unsafe bool Update(Vector3 centre, float edge)
+    public unsafe bool Update(Vector3 centre, float edge, CollisionDetail detail)
     {
         var main = GameMain.Instance();
         var zone = main == null ? 0u : main->CurrentTerritoryTypeId;
@@ -52,8 +55,8 @@ internal sealed class CollisionReader
             return false;
         }
 
-        var source = new SceneSource(scene);
-        return this.Cache.Step(ref source, centre, edge, zone, Stamp(scene));
+        var source = new SceneSource(scene, CollisionDetails.MaxNodeDepth(detail));
+        return this.Cache.Step(ref source, centre, edge, zone, CollisionDetails.Stamp(Stamp(scene), detail));
     }
 
     /// <summary>The collision scene, or null if the module or scene isn't there.</summary>
@@ -83,7 +86,10 @@ internal sealed class CollisionReader
     /// <see cref="Update"/>), so the collider pointer it holds is never carried into a later frame.
     /// </summary>
     /// <param name="scene">The collision scene.</param>
-    private unsafe struct SceneSource(Scene* scene) : ICollisionSource
+    /// <param name="detailDepth">
+    /// The deepest node-tree level offered (<see cref="CollisionDetails.MaxNodeDepth"/>, from the detail setting).
+    /// </param>
+    private unsafe struct SceneSource(Scene* scene, int detailDepth) : ICollisionSource
     {
         /// <summary>
         /// Deepest mesh node tree walked. The trees are balanced binary trees of a few hundred nodes; the cap only
@@ -140,7 +146,7 @@ internal sealed class CollisionReader
             switch (collider->GetColliderType())
             {
                 case ColliderType.Mesh:
-                    OfferMesh((ColliderMesh*)collider, set);
+                    OfferMesh((ColliderMesh*)collider, set, detailDepth);
                     break;
                 case ColliderType.Box:
                     OfferUnit(((ColliderBox*)collider)->World, UnitMin, Vector3.One, set);
@@ -185,11 +191,12 @@ internal sealed class CollisionReader
 
         /// <summary>
         /// Offers a mesh collider: skipped whole if its world box misses the region (the cheap first cull), otherwise
-        /// one box per node holding triangles, through the collider's world matrix.
+        /// one box per node holding triangles, down to the detail setting's depth, through the collider's world matrix.
         /// </summary>
         /// <param name="mesh">The mesh collider.</param>
         /// <param name="set">The set being gathered.</param>
-        private static void OfferMesh(ColliderMesh* mesh, CollisionBoxSet set)
+        /// <param name="detailDepth">The deepest tree level offered.</param>
+        private static void OfferMesh(ColliderMesh* mesh, CollisionBoxSet set, int detailDepth)
         {
             var bounds = new CollisionBox(mesh->WorldBoundingBox.Min, mesh->WorldBoundingBox.Max);
             if (!set.Overlaps(bounds) || mesh->MeshIsSimple || mesh->Mesh == null)
@@ -199,18 +206,20 @@ internal sealed class CollisionReader
             }
 
             var world = mesh->World.FullMatrix();
-            OfferNode(((MeshPCB*)mesh->Mesh)->RootNode, world, set, 0);
+            OfferNode(((MeshPCB*)mesh->Mesh)->RootNode, world, set, 0, detailDepth);
         }
 
         /// <summary>
         /// Offers one mesh node's box if it holds triangles, then its children, skipping any subtree whose box misses
-        /// the region (#28: that is what keeps the walk to a few hundred nodes).
+        /// the region (#28: that is what keeps the walk to a few hundred nodes). At the detail setting's depth the
+        /// node's box stands for its whole subtree (it holds its children's boxes), so the walk stops there.
         /// </summary>
         /// <param name="node">The node, or null.</param>
         /// <param name="world">The mesh's world matrix.</param>
         /// <param name="set">The set being gathered.</param>
         /// <param name="depth">How deep in the tree; capped at <see cref="MaxDepth"/>.</param>
-        private static void OfferNode(MeshPCB.FileNode* node, in Matrix4x4 world, CollisionBoxSet set, int depth)
+        /// <param name="detailDepth">The deepest tree level offered (#32).</param>
+        private static void OfferNode(MeshPCB.FileNode* node, in Matrix4x4 world, CollisionBoxSet set, int depth, int detailDepth)
         {
             if (node == null || depth > MaxDepth)
             {
@@ -223,13 +232,19 @@ internal sealed class CollisionReader
                 return;
             }
 
+            if (depth >= detailDepth)
+            {
+                set.Offer(box);
+                return;
+            }
+
             if (node->NumPrims > 0)
             {
                 set.Offer(box);
             }
 
-            OfferNode(node->Child1, world, set, depth + 1);
-            OfferNode(node->Child2, world, set, depth + 1);
+            OfferNode(node->Child1, world, set, depth + 1, detailDepth);
+            OfferNode(node->Child2, world, set, depth + 1, detailDepth);
         }
     }
 }

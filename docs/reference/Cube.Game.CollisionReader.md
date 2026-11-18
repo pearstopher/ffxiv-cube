@@ -82,14 +82,14 @@ The collision scene.
 
  [ulong](https://learn.microsoft.com/dotnet/api/system.uint64)
 
-### <a id="Cube_Game_CollisionReader_Update_System_Numerics_Vector3_System_Single_"></a> Update\(Vector3, float\)
+### <a id="Cube_Game_CollisionReader_Update_System_Numerics_Vector3_System_Single_Cube_Core_CollisionDetail_"></a> Update\(Vector3, float, CollisionDetail\)
 
 One frame's collision work: drops the cache on a zone change, and gathers (or continues gathering) when it is
 stale. Called from the cube window's draw path only while the cube is shown, so nothing is read while hidden
 (PROJECT.md, "When hidden").
 
 ```csharp
-public bool Update(Vector3 centre, float edge)
+public bool Update(Vector3 centre, float edge, CollisionDetail detail)
 ```
 
 #### Parameters
@@ -101,6 +101,10 @@ The cube's centre (the player).
 `edge` [float](https://learn.microsoft.com/dotnet/api/system.single)
 
 The cube's edge in yalms.
+
+`detail` [CollisionDetail](Cube.Core.CollisionDetail.md)
+
+The detail setting (#32). Part of the stamp the cache compares, so a new level gathers again at once.
 
 #### Returns
 

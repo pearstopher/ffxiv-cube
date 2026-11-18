@@ -28,6 +28,11 @@ Checks the collision reader (#30; PROJECT.md, "Collision (phase 2)" and "Efficie
 game: once the first gather completes there is a box under the player's feet, and repeated gathers stay within
 their per-frame time budget, allocate nothing and stay under the box cap.
 
+ [CollisionSettingsCheck](Cube.TestBridge.Checks.CollisionSettingsCheck.md)
+
+Checks the collision settings in the running game (#32: collision on/off and detail level, saved and applied
+immediately; PROJECT.md, "Collision (phase 2)").
+
  [DrawBudgetCheck](Cube.TestBridge.Checks.DrawBudgetCheck.md)
 
 Checks the draw path stays within PROJECT.md's phase 1 budgets ("Efficiency and memory"):

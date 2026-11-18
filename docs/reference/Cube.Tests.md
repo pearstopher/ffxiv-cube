@@ -58,6 +58,12 @@ collider inside or crossing the cube is shown as a simplified box; "Draw order":
 near ones cover far ones; "Cheap drawing": only the visible faces; "Efficiency and memory": no per-frame
 allocations).
 
+ [CollisionDetailsTests](Cube.Tests.CollisionDetailsTests.md)
+
+Checks the collision detail levels (#32, collision detail setting; PROJECT.md, "Collision (phase 2)": simplified
+boxes): Full walks the whole node tree, Medium stops a few levels down, Coarse keeps one box per collider, and every
+level is its own stamp so a change gathers again at once.
+
  [CoreAssemblyTests](Cube.Tests.CoreAssemblyTests.md)
 
 Checks that Core stays free of Dalamud, game structs and Lumina, so all its logic can be unit tested
@@ -67,7 +73,7 @@ without the game (CLAUDE.md, "Reference: the previous plugin" layout rule).
 
 Checks the settings' defaults and repair rules (PROJECT.md, "Features": settings for cube size, orientation mode,
 labels on/off, colours and opacity; "NPCs": on by default, purple; "Cube": edge 10–100, default 40; "View": Camera
-mode by default; saved files from older versions still load) and the
+mode by default; #32: collision on, full detail by default; saved files from older versions still load) and the
 <code>/cube config</code> command.
 
  [CubeSpaceTests](Cube.Tests.CubeSpaceTests.md)

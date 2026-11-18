@@ -41,6 +41,11 @@ Draws the collision around the player as solid boxes in the cube, sorted togethe
 "Collision (phase 2)": each collider inside or crossing the cube is shown as a simplified box, clipped to the cube;
 "Draw order": far things first, so near ones cover far ones).
 
+ [CollisionDetails](Cube.Core.CollisionDetails.md)
+
+The rules behind each [CollisionDetail](Cube.Core.CollisionDetail.md#Cube_Core_CollisionDetail) level (#32): how deep the game reader walks a mesh's node tree,
+and how a change of level makes the collision cache gather again straight away.
+
  [Colour](Cube.Core.Colour.md)
 
 Packs and shades colours in the 32-bit layout ImGui uses (<code>0xAABBGGRR</code>), without Core depending on ImGui.
@@ -63,7 +68,8 @@ face shades every solid box uses.
  [CubeSettings](Cube.Core.CubeSettings.md)
 
 The user's settings (PROJECT.md, "Features": cube size, orientation mode, labels on/off, colours and opacity; "NPCs":
-NPCs on/off; "View orientation control": the saved view orientation and the control's corner), with their defaults
+NPCs on/off; "View orientation control": the saved view orientation and the control's corner; #32: collision on/off
+and detail), with their defaults
 and the rules for valid values. The plugin's saved configuration derives from this, so the rules are unit tested
 without Dalamud.
 
@@ -188,6 +194,12 @@ Where [CollisionCache](Cube.Core.CollisionCache.md#Cube_Core_CollisionCache) get
 (<code>Cube.Game.CollisionReader</code>); in the tests, a list of fake colliders.
 
 ### Enums
+
+ [CollisionDetail](Cube.Core.CollisionDetail.md)
+
+How finely collision is drawn (#32, the collision detail setting; PROJECT.md, "Collision (phase 2)": colliders are
+shown as simplified boxes). Each level is a depth limit on the walk down a mesh collider's node tree; primitive
+colliders (boxes, cylinders, spheres, planes) are one box at every level.
 
  [OrientationMode](Cube.Core.OrientationMode.md)
 
