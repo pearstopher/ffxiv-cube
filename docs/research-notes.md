@@ -198,3 +198,58 @@ The owner found the view manipulator above awkward, so #79 replaced it with `ImG
 - **Size.** The outer ring's radius is a fixed 6% of the rectangle's height (`screenRotateSize`), and the axis rings are about the same size at the default gizmo size (0.1 in clip space). The gizmo size and orthographic mode are global to the ImGuizmo library, which every plugin shares, so the plugin doesn't change them; it hands `SetRect` a rectangle 7 times the corner square, centred on it, instead. ImGuizmo doesn't clip to the rectangle.
 - The plugin keeps a fixed camera (+Z, looking at the centre) and hands the cube's rotation as the model matrix, with Z mirrored because ImGuizmo's world is right-handed (`ViewOrientation.ToGizmoModel`). `Matrix4x4.Decompose` removes any scale or drift when reading it back.
 - The binding has `IsOver()` and `IsUsing()`, but the `NoMove` handling from #63 already covers the window-drag problem, so they aren't needed.
+
+## Where to get collision data (#28)
+
+Checked 2026-11-17 against FFXIVClientStructs' `BGCollision` sources (`BGCollisionModule`, `SceneManager`, `Scene`, `Collider*`, `MeshPCB`) and vnavmesh's `Debug/DebugGameCollision.cs` and `SceneExtractor.cs`, then measured live with the bridge probe `probe-collision` (`CollisionProbeCheck`), which logs a `Probe #28` line on every bridge run.
+
+### What the game has loaded
+
+- `Framework.Instance()->BGCollisionModule->SceneManager->Scenes` is a list that always holds one scene. `Scene->Colliders` is every collider the client has loaded: what the game's own movement and camera raycasts test against. Collision is streamed in around the camera (`SceneManager.StreamingSphere`, radius **160** yalms in the sample), which covers the largest cube (100 yalms, so 87 yalms to a corner).
+- **Mesh colliders** (`ColliderMesh`) are most of it: placed objects and terrain tiles. Each has a world matrix (`World`), a world box (`WorldBoundingBox`) and a `MeshPCB` whose `RootNode` is a binary tree of nodes. Each node has a local box (`LocalBounds`) and up to 256 vertices and its triangles.
+- **Primitive colliders** (`ColliderBox`, `ColliderCylinder`, `ColliderSphere`, `ColliderPlane`) are unit shapes (-1..1) put in place by their `World` matrix.
+- **Streamed colliders** (`ColliderStreamed`) only add and remove terrain mesh colliders, which then appear in the same list. So the plugin never needs to read the streamed collider's own fields (vnavmesh notes those moved by 8 bytes in 7.4).
+- `VisibilityFlags & 1` marks colliders the raycasts use; `LayerMask` bit 0 is the layer FFXIVClientStructs' raycast wrapper (and so movement) queries.
+
+### Live sample (housing interior, standing still, 33 frames)
+
+| What | Value |
+| --- | --- |
+| Colliders in the scene / crossing the largest cube | 300 / 300 (271 mesh, 29 box) |
+| ...not raycast-active / not on layer 0 | 11 / 4 |
+| Collider world box, largest side | mean 5.4, max 30 yalms |
+| Mesh nodes with triangles crossing the cube | **402** (largest side mean 7.3, max 24.3), 15,038 triangles, 533 nodes visited |
+| Same at the default cube (40 yalms) | 300 colliders, 402 nodes (a house interior fits in either) |
+| **Collider walk** (all colliders, world boxes, test against cube) | **0.031 ms, 0 bytes** |
+| **Node walk** (collider walk plus each crossing mesh's node tree, skipping subtrees outside the cube) | **0.127 ms, 0 bytes** |
+| **Triangle voxel pass** (every triangle's bounds into 2-yalm cells, 50³ grid) | **2.4 ms, 0 bytes** |
+| 400 downward raycasts (`RaycastMaterialFilter`, 5-yalm grid) | 0.65 ms (about 1.6 µs a ray) |
+| Cells filled by node boxes / touched by triangles | 1,500 (1.2%) / 1,166 (0.9%) |
+| Ray hits inside a node box / a triangle cell | 20/20 / 20/20 (380 rays missed: outside the house there's nothing) |
+
+Every raycast hit lies in a node box and a triangle cell: the scene walk sees the same geometry the game's own raycast does.
+
+### The candidates
+
+1. **Collider boxes** (one per collider): cheapest, but a mesh collider can be a whole building or a terrain tile, and its box would fill the space you walk through. Too coarse alone; useful as the first cull.
+2. **Mesh node boxes** (one per tree node holding triangles): a memory read, 0.13 ms for everything in the largest cube, no allocations. In the sample they fill only about 30% more space than the triangles themselves, so they follow the walls and floors closely. **Recommended.**
+3. **Raycasts**: 1.6 µs a ray is cheap, but a ray only finds the first surface along one line. Sampling a cube with them needs thousands of rays (a 2-yalm grid in three directions is about 7,500 rays, about 12 ms) and still misses thin and overhanging things. They are good as a cross-check (as the probe uses them), not as the source.
+4. **Voxels from triangles** (the spec's fallback): the most faithful shape, but 2.4 ms for a full pass in a small interior, so it must be spread over frames and cached. Keep it in reserve for where node boxes turn out too coarse (likely large terrain nodes outdoors).
+
+### Recommendation for #29–#32
+
+- **Read the collision scene directly.** Walk `Scene->Colliders`; take mesh colliders through their node tree (node `LocalBounds` through `World` to a world box), and primitive colliders through their `World` matrix. Skip colliders without `VisibilityFlags & 1` (the game ignores them too).
+- **Cull first:** collider world box against the cube, then each node's box, skipping whole subtrees outside it. That is what keeps the walk to 533 nodes.
+- **Cache and refresh only on change** (PROJECT.md, "Efficiency and memory"): rebuild the box list when the player has moved a set fraction of the cube, the collider count or first collider pointer changes, or the zone changes; drop it on zone change. The 0.13 ms walk fits in one frame, so no frame spreading is needed for boxes; a triangle voxel pass would need it.
+- **Bounded cache:** a fixed array of boxes (24 bytes each). The sample needed 402 + 29; a cap of about 2,000 (48 KB) leaves room for busier places, with overflow counted like the player cap. Confirm with an outdoor sample (below).
+- **Draw order and clipping** are #31's: boxes are clipped to the cube (PROJECT.md, "Collision").
+
+### Still to measure
+
+- **Outdoors and in a city.** The sample is a small house interior with no terrain. The probe runs on every bridge run, so the next run outdoors logs a `Probe #28` line with terrain numbers (node count, node box size, walk time) without any code change. If terrain node boxes come out much larger than the walls (say a largest side over 10 yalms on average), switch terrain meshes to the voxel pass, spread over frames.
+- **Thread timing.** The collision module updates under its own lock (`UpdateTaskLock`, exclusive during its update task). The probe reads it on the framework thread, as vnavmesh's debug view does, and saw no errors; #30 keeps the read in the framework update, wrapped in `try`/`catch`, and its soak check should show it stays clean.
+- **vnavmesh's debug view.** vnavmesh is installed, but its view is visual. The comparison is automated here against the game's own raycast instead (above). A side-by-side look belongs with #31, once there are boxes to look at; it goes in `docs/manual-tests.md` there.
+
+### Read-only and within the rules
+
+Everything above is a memory read of the client's own collision scene on the framework thread, plus calls to read-only getters (`GetColliderType`) and the game's raycast (which takes the module's shared lock itself). Nothing is written, nothing is hooked (vnavmesh hooks the raycast in its debug view; this plugin doesn't), nothing is sent. No dependency on vnavmesh: its source was only read.

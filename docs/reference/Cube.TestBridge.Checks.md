@@ -10,6 +10,12 @@ Checks the plugin that ran the checks is the build on disk: the build time read 
 DLL's current write time. If not, the game is running a stale build and every other result is
 about old code (CLAUDE.md: the startup build line makes "my change didn't take effect" obvious).
 
+ [CollisionProbeCheck](Cube.TestBridge.Checks.CollisionProbeCheck.md)
+
+Research probe for #28 (where to get collision data): measures, in the running game, the three candidate
+ways of finding what the player would bump into inside the cube, so <code>docs/research-notes.md</code> can pick
+one on numbers rather than guesses.
+
  [DrawBudgetCheck](Cube.TestBridge.Checks.DrawBudgetCheck.md)
 
 Checks the draw path stays within PROJECT.md's phase 1 budgets ("Efficiency and memory"):
@@ -104,7 +110,26 @@ Checks the view orientation control (PROJECT.md, "View orientation control"): a 
 wireframe exactly as Core says, turning the camera never changes the view, the control is drawn in the chosen
 corner, and resetting brings back the default view. Writes a draw-list snapshot from several angles.
 
+ [CollisionProbeCheck.VoxelGrid](Cube.TestBridge.Checks.CollisionProbeCheck.VoxelGrid.md)
+
+A fixed cube of on/off cells centred on the player, allocated once: the shape a "coarse voxel grid"
+(PROJECT.md, "Collision") would take, used here to measure how much of the cube each method fills.
+
  [WindowOpenCloseCheck](Cube.TestBridge.Checks.WindowOpenCloseCheck.md)
 
 Checks the cube window draws when opened and stops drawing when closed (PROJECT.md, "Features":
 <code>/cube</code> toggles the window; "Efficiency": skip everything when the window is closed).
+
+### Structs
+
+ [CollisionProbeCheck.CubeCounts](Cube.TestBridge.Checks.CollisionProbeCheck.CubeCounts.md)
+
+What one walk found inside one cube size.
+
+ [CollisionProbeCheck.Sample](Cube.TestBridge.Checks.CollisionProbeCheck.Sample.md)
+
+One frame's measurements.
+
+ [CollisionProbeCheck.TypeCounts](Cube.TestBridge.Checks.CollisionProbeCheck.TypeCounts.md)
+
+Colliders counted by type, without a dictionary so the timed walk allocates nothing.
