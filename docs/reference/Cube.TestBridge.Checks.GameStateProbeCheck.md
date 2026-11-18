@@ -21,7 +21,9 @@ internal sealed class GameStateProbeCheck : BridgeCheck
 
 <ul><li>Player count from Dalamud's `Dalamud.Plugin.Services.IObjectTable` versus a direct, allocation-free walk of
 FFXIVClientStructs' `FFXIVClientStructs.FFXIV.Client.Game.Object.GameObjectManager` (the planned hot-path reader). They must agree.</li><li>Party and alliance counts from the `FFXIVClientStructs.FFXIV.Client.Game.Character.Character` relation flags.</li><li>The camera's yaw from <code>Camera.DirH</code> and, independently, from the scene camera's position and
-look-at point, which fixes the angle convention against the world axes.</li><li>The hide conditions (logged in, between areas, cutscene, GPose) as seen right now.</li></ul>
+look-at point, which fixes the angle convention against the world axes.</li><li>The hide conditions (logged in, between areas, cutscene, GPose) as seen right now.</li><li>For #73 (named NPCs), the whole object table watched for about five seconds: where event and
+battle NPCs sit, how many there are by kind, sub-kind and owner, how many have names, how many would be
+inside the largest cube, and whether any name changed. Totals are kept in [NpcProbe](Cube.TestBridge.Checks.NpcProbe.md#Cube_TestBridge_Checks_NpcProbe).</li></ul>
 
 Fails only if the player isn't logged in (nothing to read) or the two player counts disagree.
 Read-only: it only reads memory (PROJECT.md, "Read-only game access").
@@ -59,7 +61,9 @@ Where the probe's findings are logged, at Information so they show without Debug
 
 <ul><li>Player count from Dalamud's `Dalamud.Plugin.Services.IObjectTable` versus a direct, allocation-free walk of
 FFXIVClientStructs' `FFXIVClientStructs.FFXIV.Client.Game.Object.GameObjectManager` (the planned hot-path reader). They must agree.</li><li>Party and alliance counts from the `FFXIVClientStructs.FFXIV.Client.Game.Character.Character` relation flags.</li><li>The camera's yaw from <code>Camera.DirH</code> and, independently, from the scene camera's position and
-look-at point, which fixes the angle convention against the world axes.</li><li>The hide conditions (logged in, between areas, cutscene, GPose) as seen right now.</li></ul>
+look-at point, which fixes the angle convention against the world axes.</li><li>The hide conditions (logged in, between areas, cutscene, GPose) as seen right now.</li><li>For #73 (named NPCs), the whole object table watched for about five seconds: where event and
+battle NPCs sit, how many there are by kind, sub-kind and owner, how many have names, how many would be
+inside the largest cube, and whether any name changed. Totals are kept in [NpcProbe](Cube.TestBridge.Checks.NpcProbe.md#Cube_TestBridge_Checks_NpcProbe).</li></ul>
 
 Fails only if the player isn't logged in (nothing to read) or the two player counts disagree.
 Read-only: it only reads memory (PROJECT.md, "Read-only game access").
@@ -77,6 +81,45 @@ private const int CharacterSlots = 200
 #### Field Value
 
  [int](https://learn.microsoft.com/dotnet/api/system.int32)
+
+### <a id="Cube_TestBridge_Checks_GameStateProbeCheck_MaxHalfEdge"></a> MaxHalfEdge
+
+Half the largest cube edge ([MaxEdge](Cube.Core.CubeSpace.md#Cube_Core_CubeSpace_MaxEdge)): NPCs within this many yalms on every
+axis would be inside the biggest cube the settings allow, which is the worst case for the NPC cap.
+
+```csharp
+private const float MaxHalfEdge = 50
+```
+
+#### Field Value
+
+ [float](https://learn.microsoft.com/dotnet/api/system.single)
+
+### <a id="Cube_TestBridge_Checks_GameStateProbeCheck_NoOwner"></a> NoOwner
+
+The <code>OwnerId</code> value meaning "no owner" (the game's invalid entity id).
+
+```csharp
+private const uint NoOwner = 3758096384
+```
+
+#### Field Value
+
+ [uint](https://learn.microsoft.com/dotnet/api/system.uint32)
+
+### <a id="Cube_TestBridge_Checks_GameStateProbeCheck_NpcSampleSeconds"></a> NpcSampleSeconds
+
+How long the NPC part of the probe (#73) watches, in seconds: long enough to see NPCs spawn and
+despawn, and a name change if one happens while an NPC is in view. Time-based, not frame-based,
+because the game drops its frame rate in the background and the bridge stops a check after 10 s.
+
+```csharp
+private const double NpcSampleSeconds = 4
+```
+
+#### Field Value
+
+ [double](https://learn.microsoft.com/dotnet/api/system.double)
 
 ## Properties
 
@@ -111,6 +154,27 @@ Where the metrics go.
 #### Returns
 
  [CheckStep](Cube.TestBridge.CheckStep.md)
+
+### <a id="Cube_TestBridge_Checks_GameStateProbeCheck_ProbeNpcs_Cube_TestBridge_Checks_NpcProbe_"></a> ProbeNpcs\(NpcProbe\)
+
+One frame of the NPC research for #73: walks the whole object table and counts every NPC by slot,
+kind, sub-kind, owner and whether it has a name, and remembers each NPC's name bytes to spot renames.
+
+```csharp
+private void ProbeNpcs(NpcProbe npcs)
+```
+
+#### Parameters
+
+`npcs` [NpcProbe](Cube.TestBridge.Checks.NpcProbe.md)
+
+The running totals.
+
+#### Remarks
+
+The proposed filter for #74 is counted as "named": an <code>EventNpc</code> or <code>BattleNpc</code> with a
+non-empty name, no owner, and not a pet or chocobo companion (PROJECT.md, "NPCs": player-owned objects
+are left out). Names are compared, never logged.
 
 ### <a id="Cube_TestBridge_Checks_GameStateProbeCheck_Run_Cube_TestBridge_BridgeContext_"></a> Run\(BridgeContext\)
 

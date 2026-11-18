@@ -5,6 +5,7 @@ using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Game.ClientState.Objects.Enums;
 using Dalamud.Plugin.Services;
 using CameraManager = FFXIVClientStructs.FFXIV.Client.Game.Control.CameraManager;
+using Control = FFXIVClientStructs.FFXIV.Client.Game.Control.Control;
 using CsCharacter = FFXIVClientStructs.FFXIV.Client.Game.Character.Character;
 using CsObjectKind = FFXIVClientStructs.FFXIV.Client.Game.Object.ObjectKind;
 using GameObjectManager = FFXIVClientStructs.FFXIV.Client.Game.Object.GameObjectManager;
@@ -23,6 +24,9 @@ namespace Cube.TestBridge.Checks;
 /// <item>The camera's yaw from <c>Camera.DirH</c> and, independently, from the scene camera's position and
 /// look-at point, which fixes the angle convention against the world axes.</item>
 /// <item>The hide conditions (logged in, between areas, cutscene, GPose) as seen right now.</item>
+/// <item>For #73 (named NPCs), the whole object table watched for about five seconds: where event and
+/// battle NPCs sit, how many there are by kind, sub-kind and owner, how many have names, how many would be
+/// inside the largest cube, and whether any name changed. Totals are kept in <see cref="NpcProbe"/>.</item>
 /// </list>
 /// Fails only if the player isn't logged in (nothing to read) or the two player counts disagree.
 /// Read-only: it only reads memory (PROJECT.md, "Read-only game access").
@@ -40,10 +44,109 @@ internal sealed class GameStateProbeCheck(IObjectTable objects, IClientState cli
     /// <inheritdoc/>
     public override string Name => "probe-players-party-camera";
 
+    /// <summary>
+    /// How long the NPC part of the probe (#73) watches, in seconds: long enough to see NPCs spawn and
+    /// despawn, and a name change if one happens while an NPC is in view. Time-based, not frame-based,
+    /// because the game drops its frame rate in the background and the bridge stops a check after 10 s.
+    /// </summary>
+    private const double NpcSampleSeconds = 4;
+
+    /// <summary>
+    /// Half the largest cube edge (<see cref="Core.CubeSpace.MaxEdge"/>): NPCs within this many yalms on every
+    /// axis would be inside the biggest cube the settings allow, which is the worst case for the NPC cap.
+    /// </summary>
+    private const float MaxHalfEdge = Core.CubeSpace.MaxEdge / 2f;
+
+    /// <summary>The <c>OwnerId</c> value meaning "no owner" (the game's invalid entity id).</summary>
+    private const uint NoOwner = 0xE0000000;
+
     /// <inheritdoc/>
     public override IEnumerable<CheckStep> Run(BridgeContext context)
     {
-        yield return this.Probe(context);
+        var players = this.Probe(context);
+        if (players.State != CheckState.Passed)
+        {
+            yield return players;
+            yield break;
+        }
+
+        var npcs = new NpcProbe();
+        var started = System.Diagnostics.Stopwatch.GetTimestamp();
+        while (System.Diagnostics.Stopwatch.GetElapsedTime(started).TotalSeconds < NpcSampleSeconds)
+        {
+            this.ProbeNpcs(npcs);
+            yield return CheckStep.NextFrame;
+        }
+
+        npcs.Record(context, log);
+        yield return CheckStep.Pass($"{players.Message} NPCs (#73): up to {npcs.MaxNamedInMaxCube} named in the largest cube, {npcs.MaxNamed} named in the table.");
+    }
+
+    /// <summary>
+    /// One frame of the NPC research for #73: walks the whole object table and counts every NPC by slot,
+    /// kind, sub-kind, owner and whether it has a name, and remembers each NPC's name bytes to spot renames.
+    /// </summary>
+    /// <remarks>
+    /// The proposed filter for #74 is counted as "named": an <c>EventNpc</c> or <c>BattleNpc</c> with a
+    /// non-empty name, no owner, and not a pet or chocobo companion (PROJECT.md, "NPCs": player-owned objects
+    /// are left out). Names are compared, never logged.
+    /// </remarks>
+    /// <param name="npcs">The running totals.</param>
+    private unsafe void ProbeNpcs(NpcProbe npcs)
+    {
+        var manager = GameObjectManager.Instance();
+        var control = Control.Instance();
+        if (manager == null || control == null || control->LocalPlayer == null)
+        {
+            return;
+        }
+
+        var local = control->LocalPlayer;
+
+        var centre = (System.Numerics.Vector3)local->Position;
+        var table = manager->Objects.IndexSorted;
+        npcs.TableLength = table.Length;
+        npcs.BeginFrame();
+        for (var i = 0; i < table.Length; i++)
+        {
+            var obj = table[i].Value;
+            if (obj == null)
+            {
+                continue;
+            }
+
+            var kind = obj->ObjectKind;
+            if (kind != CsObjectKind.EventNpc && kind != CsObjectKind.BattleNpc)
+            {
+                if (kind != CsObjectKind.Pc)
+                {
+                    npcs.CountOther(kind, i);
+                }
+
+                continue;
+            }
+
+            var name = obj->Name;
+            var nameLength = name.IndexOf((byte)0);
+            if (nameLength < 0)
+            {
+                nameLength = name.Length;
+            }
+
+            var subKind = kind == CsObjectKind.BattleNpc ? obj->BattleNpcSubKind : default;
+            var owned = obj->OwnerId != NoOwner;
+            System.Numerics.Vector3 position = obj->Position;
+            var offset = position - centre;
+            var inMaxCube = MathF.Abs(offset.X) <= MaxHalfEdge && MathF.Abs(offset.Y) <= MaxHalfEdge && MathF.Abs(offset.Z) <= MaxHalfEdge;
+            npcs.CountNpc(i, kind, subKind, owned, nameLength, inMaxCube);
+
+            if (nameLength > 0)
+            {
+                npcs.TrackName(((ulong)obj->EntityId << 32) | (uint)i, name[..nameLength]);
+            }
+        }
+
+        npcs.EndFrame();
     }
 
     /// <summary>Reads everything in one frame, records it as metrics and logs a summary line.</summary>
