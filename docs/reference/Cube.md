@@ -34,7 +34,7 @@ try/catch and log; never let an exception reach the game).
 
  [Plugin](Cube.Plugin.md)
 
-Entry point. Registers the <code>/cube</code> command and the cube window, and logs which build loaded.
+Entry point. Registers the <code>/cube</code> command, the cube and settings windows, and logs which build loaded.
 
  [SettingsWindow](Cube.SettingsWindow.md)
 

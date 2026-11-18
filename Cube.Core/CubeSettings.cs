@@ -4,10 +4,9 @@ namespace Cube.Core;
 
 /// <summary>
 /// The user's settings (PROJECT.md, "Features": cube size, orientation mode, labels on/off, colours and opacity; "NPCs":
-/// NPCs on/off; "View
-/// orientation control": the saved view orientation and the control's corner),
-/// with their defaults and the rules for valid values. The plugin's saved configuration derives from this, so the
-/// rules are unit tested without Dalamud.
+/// NPCs on/off; "View orientation control": the saved view orientation and the control's corner), with their defaults
+/// and the rules for valid values. The plugin's saved configuration derives from this, so the rules are unit tested
+/// without Dalamud.
 /// </summary>
 /// <remarks>
 /// Public fields, not properties, so the settings window can bind ImGui controls to them by reference. After any
