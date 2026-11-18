@@ -4,7 +4,8 @@
 [![Latest release](https://img.shields.io/github/v/release/pearstopher/ffxiv-cube)](https://github.com/pearstopher/ffxiv-cube/releases/latest)
 
 A [Dalamud](https://github.com/goatcorp/Dalamud) plugin for FINAL FANTASY XIV that draws a window showing a
-3D cube of space around your character, with the players near you inside it as small labelled cubes.
+3D cube of space around your character, with the players near you inside it as small labelled cubes and the
+ground, walls and objects around you as simple boxes.
 
 ![The cube window: a wireframe cube with you at the centre and nearby players as small coloured cubes, each with a name label](https://raw.githubusercontent.com/pearstopher/ffxiv-cube/main/images/cube-window.png)
 
@@ -17,6 +18,11 @@ A [Dalamud](https://github.com/goatcorp/Dalamud) plugin for FINAL FANTASY XIV th
 - **Players inside the cube are shown as small cubes** with their names next to them. Players outside it aren't shown.
 - **Named NPCs are shown too,** the same way: townspeople, quest NPCs and enemies inside the cube, in purple, with
   their names. Pets and chocobo companions belong to players, so they're left out. You can turn NPCs off.
+- **The ground, walls and objects around you are shown as grey-blue boxes:** a simplified view of what you'd walk
+  on, bump into or be stopped by, cut off at the cube's edges. It's built from the collision the game has already
+  loaded, a little at a time so it never slows the game; right after you arrive somewhere the boxes fill in over a
+  moment, and they're redrawn when you change zone or the area around you loads. You can make the boxes coarser, or
+  turn them off.
 - **Colours tell you who's who:** one colour for you, one for party and alliance members, one for everyone else,
   and one for NPCs.
 - **Near things cover far things,** so you can see which players are in front.
@@ -41,6 +47,7 @@ Type `/cube config` (or use the settings button in `/xlplugins`). Changes show s
 | Show names | Name labels next to the players' and NPCs' cubes. | On |
 | You / Party / alliance / Others | The colour for each kind of player. | Blue / green / orange |
 | Show NPCs / NPCs | Whether named NPCs are shown, and their colour. At most 50 are drawn at once. | On / purple |
+| Show collision / Detail | Whether the collision boxes are shown, and how finely. **Full** draws the most boxes and follows the shapes most closely; **Medium** and **Coarse** draw fewer, bigger boxes that still cover everything Full does. At most 2000 boxes are kept. | On / Full |
 | Opacity | How see-through everything in the window is. | 1.00 |
 | Reset to defaults | Puts every setting back. | |
 
