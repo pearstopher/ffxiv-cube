@@ -8,7 +8,8 @@ namespace Cube;
 
 /// <summary>
 /// The settings window, opened with <c>/cube config</c> or Dalamud's settings button (PROJECT.md, "Features": cube
-/// size, orientation mode, labels on/off, colours and opacity).
+/// size, orientation mode, labels on/off, colours and opacity; "View orientation control": the control's corner and
+/// a way to reset the view).
 /// </summary>
 /// <remarks>
 /// Every control edits <see cref="Configuration"/> directly, so changes show in the cube on the next frame. The file
@@ -17,6 +18,9 @@ namespace Cube;
 /// </remarks>
 internal sealed class SettingsWindow : Window
 {
+    /// <summary>The corner choices, in <see cref="WidgetCorner"/> order.</summary>
+    private static readonly string[] CornerNames = ["Bottom right", "Bottom left", "Top right", "Top left"];
+
     /// <summary>The settings being edited.</summary>
     private readonly Configuration config;
 
@@ -75,6 +79,22 @@ internal sealed class SettingsWindow : Window
         {
             c.Orientation = (OrientationMode)mode;
             this.ApplyAndSave();
+        }
+
+        // The view control (PROJECT.md, "View orientation control"): which corner it sits in, and a way back to the
+        // default view after turning it.
+        ImGui.SetNextItemWidth(200);
+        var corner = (int)c.ViewWidgetCorner;
+        if (ImGui.Combo("View control corner", ref corner, CornerNames, CornerNames.Length))
+        {
+            c.ViewWidgetCorner = (WidgetCorner)corner;
+            this.ApplyAndSave();
+        }
+
+        if (ImGui.Button("Reset view"))
+        {
+            c.ResetView();
+            this.save();
         }
 
         if (ImGui.Checkbox("Show names", ref c.ShowLabels))

@@ -17,6 +17,8 @@ A [Dalamud](https://github.com/goatcorp/Dalamud) plugin for FINAL FANTASY XIV th
 - **Players inside the cube are shown as small cubes** with their names next to them. Players outside it aren't shown.
 - **Colours tell you who's who:** one colour for you, one for party and alliance members, one for everyone else.
 - **Near things cover far things,** so you can see which players are in front.
+- **Turn the view with the little x/y/z cube** in the corner of the window: drag it to look from any side, above or
+  below, or click one of its faces to look straight at that side. Your view is remembered.
 - **Nothing is drawn while you're logged out, loading, in a cutscene or in GPose.**
 
 It only reads what the game already knows and draws it in its own window. It never changes anything in the game,
@@ -31,6 +33,8 @@ Type `/cube config` (or use the settings button in `/xlplugins`). Changes show s
 | --- | --- | --- |
 | Cube size (yalms) | How far the cube reaches around you, edge to edge (10–100). | 40 |
 | Orientation | The cube itself stays still on screen; this decides what happens to what's inside it. **Rotate contents with camera:** forward in the cube is where the game camera looks, so when you turn the camera everything inside turns around you. **Keep contents fixed (north stays put):** north is always the same side of the cube and the camera changes nothing. | Rotate contents with camera |
+| View control corner | Which corner of the cube window the x/y/z view control sits in. | Bottom right |
+| Reset view | Puts the view back to the default: from behind and above, at 30°. | |
 | Show names | Name labels next to the players' cubes. | On |
 | You / Party / alliance / Others | The colour for each kind of player. | Blue / green / orange |
 | Opacity | How see-through everything in the window is. | 1.00 |

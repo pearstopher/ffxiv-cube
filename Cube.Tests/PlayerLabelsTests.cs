@@ -10,11 +10,11 @@ namespace Cube.Tests;
 /// </summary>
 public class PlayerLabelsTests
 {
-    private static readonly float Elevation = MathF.PI / 6;
+    private static readonly ViewOrientation View = ViewOrientation.Default;
 
     private static readonly CubeSpace Space = new(Vector3.Zero, 40, 0.4f);
 
-    private static readonly ViewProjection Projection = ViewProjection.Fit(Vector2.Zero, new Vector2(400, 400), Space.HalfEdge, Elevation);
+    private static readonly ViewProjection Projection = ViewProjection.Fit(Vector2.Zero, new Vector2(400, 400), Space.HalfEdge, View);
 
     private static NearbyPlayer Player(Vector3 position, PlayerRelation relation, string name = "Someone") => new(0, 1, position, relation, name);
 
@@ -59,7 +59,7 @@ public class PlayerLabelsTests
     public void Label_sits_to_the_right_of_its_cube_at_any_yaw(float yaw)
     {
         var space = new CubeSpace(Vector3.Zero, 40, yaw);
-        var projection = ViewProjection.Fit(Vector2.Zero, new Vector2(400, 400), space.HalfEdge, Elevation);
+        var projection = ViewProjection.Fit(Vector2.Zero, new Vector2(400, 400), space.HalfEdge, View);
         var list = new DrawList(16);
 
         PlayerCubes.Add(list, space, projection, [Player(new Vector3(4, 0, -6), PlayerRelation.Other)], PlayerPalette.Default);
@@ -88,7 +88,7 @@ public class PlayerLabelsTests
     {
         // North (−Z) is away from the viewer at yaw 0, so the northern player is far and the southern one near.
         var space = new CubeSpace(Vector3.Zero, 40, 0f);
-        var projection = ViewProjection.Fit(Vector2.Zero, new Vector2(400, 400), space.HalfEdge, Elevation);
+        var projection = ViewProjection.Fit(Vector2.Zero, new Vector2(400, 400), space.HalfEdge, View);
         var list = new DrawList(32);
         PlayerCubes.Add(list, space, projection, [Player(new Vector3(0, 0, -10), PlayerRelation.Other), Player(new Vector3(0, 0, 10), PlayerRelation.Other)], PlayerPalette.Default);
         list.SortBackToFront();

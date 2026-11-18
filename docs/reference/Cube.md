@@ -39,4 +39,5 @@ Entry point. Registers the <code>/cube</code> command and the cube window, and l
  [SettingsWindow](Cube.SettingsWindow.md)
 
 The settings window, opened with <code>/cube config</code> or Dalamud's settings button (PROJECT.md, "Features": cube
-size, orientation mode, labels on/off, colours and opacity).
+size, orientation mode, labels on/off, colours and opacity; "View orientation control": the control's corner and
+a way to reset the view).

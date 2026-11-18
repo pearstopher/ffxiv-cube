@@ -19,15 +19,15 @@ public class PlayerCubesTests
 
 ## Fields
 
-### <a id="Cube_Tests_PlayerCubesTests_Elevation"></a> Elevation
+### <a id="Cube_Tests_PlayerCubesTests_View"></a> View
 
 ```csharp
-private static readonly float Elevation
+private static readonly ViewOrientation View
 ```
 
 #### Field Value
 
- [float](https://learn.microsoft.com/dotnet/api/system.single)
+ [ViewOrientation](Cube.Core.ViewOrientation.md)
 
 ## Methods
 

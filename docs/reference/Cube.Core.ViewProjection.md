@@ -3,8 +3,8 @@
 Namespace: [Cube.Core](Cube.Core.md)  
 Assembly: Cube.Core.dll  
 
-Projects view coordinates (from [CubeSpace](Cube.Core.CubeSpace.md#Cube_Core_CubeSpace)) onto the window: a fixed-angle view from above
-and behind (PROJECT.md, "View": default 30° elevation).
+Projects view coordinates (from [CubeSpace](Cube.Core.CubeSpace.md#Cube_Core_CubeSpace)) onto the window, as seen from the user's chosen
+[ViewOrientation](Cube.Core.ViewOrientation.md#Cube_Core_ViewOrientation) (PROJECT.md, "View orientation control"; default from above and behind at 30°).
 
 ```csharp
 public readonly struct ViewProjection
@@ -19,25 +19,26 @@ anywhere in the cube (PROJECT.md, "Players": cube size fixed relative to the big
 sort only needs one depth per primitive.
 </p>
 <p>
-The viewer looks forward (+Z in view coordinates) and down by [Elevation](Cube.Core.ViewProjection.md#Cube_Core_ViewProjection_Elevation). On screen, a point
-further forward or higher appears higher; [Depth](Cube.Core.ViewProjection.md#Cube_Core_ViewProjection_Depth) grows with distance from the viewer.
+The viewer looks along [Forward](Cube.Core.ViewOrientation.md#Cube_Core_ViewOrientation_Forward). On screen, a point's position is its component along
+the orientation's right and up axes; [Depth](Cube.Core.ViewProjection.md#Cube_Core_ViewProjection_Depth) is its component along the forward axis, so it grows with
+distance from the viewer. The axes are copied from the orientation, so each point costs two or three dot products.
 </p>
 
 ## Constructors
 
-### <a id="Cube_Core_ViewProjection__ctor_System_Single_System_Numerics_Vector2_System_Single_"></a> ViewProjection\(float, Vector2, float\)
+### <a id="Cube_Core_ViewProjection__ctor_Cube_Core_ViewOrientation__System_Numerics_Vector2_System_Single_"></a> ViewProjection\(in ViewOrientation, Vector2, float\)
 
 Creates a projection.
 
 ```csharp
-public ViewProjection(float elevation, Vector2 origin, float pixelsPerYalm)
+public ViewProjection(in ViewOrientation orientation, Vector2 origin, float pixelsPerYalm)
 ```
 
 #### Parameters
 
-`elevation` [float](https://learn.microsoft.com/dotnet/api/system.single)
+`orientation` [ViewOrientation](Cube.Core.ViewOrientation.md)
 
-Angle of the view above the horizontal, in radians.
+How the cube is turned on screen.
 
 `origin` [Vector2](https://learn.microsoft.com/dotnet/api/system.numerics.vector2)
 
@@ -48,18 +49,6 @@ Window position (pixels) of the cube's centre.
 Scale from yalms to pixels.
 
 ## Fields
-
-### <a id="Cube_Core_ViewProjection_DefaultElevationDegrees"></a> DefaultElevationDegrees
-
-Default elevation of the view, in degrees (PROJECT.md).
-
-```csharp
-public const float DefaultElevationDegrees = 30
-```
-
-#### Field Value
-
- [float](https://learn.microsoft.com/dotnet/api/system.single)
 
 ### <a id="Cube_Core_ViewProjection_FillFraction"></a> FillFraction
 
@@ -73,43 +62,19 @@ public const float FillFraction = 0.9
 
  [float](https://learn.microsoft.com/dotnet/api/system.single)
 
-### <a id="Cube_Core_ViewProjection_cos"></a> cos
-
-Cosine of the elevation.
-
-```csharp
-private readonly float cos
-```
-
-#### Field Value
-
- [float](https://learn.microsoft.com/dotnet/api/system.single)
-
-### <a id="Cube_Core_ViewProjection_sin"></a> sin
-
-Sine of the elevation.
-
-```csharp
-private readonly float sin
-```
-
-#### Field Value
-
- [float](https://learn.microsoft.com/dotnet/api/system.single)
-
 ## Properties
 
-### <a id="Cube_Core_ViewProjection_Elevation"></a> Elevation
+### <a id="Cube_Core_ViewProjection_Orientation"></a> Orientation
 
-Angle of the view above the horizontal, in radians.
+How the cube is turned on screen.
 
 ```csharp
-public float Elevation { get; }
+public ViewOrientation Orientation { get; }
 ```
 
 #### Property Value
 
- [float](https://learn.microsoft.com/dotnet/api/system.single)
+ [ViewOrientation](Cube.Core.ViewOrientation.md)
 
 ### <a id="Cube_Core_ViewProjection_Origin"></a> Origin
 
@@ -138,7 +103,7 @@ public float PixelsPerYalm { get; }
 ### <a id="Cube_Core_ViewProjection_TowardsViewer"></a> TowardsViewer
 
 Direction from the scene towards the viewer, in view coordinates. A face is visible when its outward
-normal points this way.
+normal points this way; when the view is tilted from below, that makes bottom faces visible and top faces not.
 
 ```csharp
 public Vector3 TowardsViewer { get; }
@@ -168,15 +133,14 @@ A point in view coordinates.
 
  [float](https://learn.microsoft.com/dotnet/api/system.single)
 
-### <a id="Cube_Core_ViewProjection_Fit_System_Numerics_Vector2_System_Numerics_Vector2_System_Single_System_Single_"></a> Fit\(Vector2, Vector2, float, float\)
+### <a id="Cube_Core_ViewProjection_Fit_System_Numerics_Vector2_System_Numerics_Vector2_System_Single_Cube_Core_ViewOrientation__"></a> Fit\(Vector2, Vector2, float, in ViewOrientation\)
 
-The projection that fits a cube of the given size into a window region, centred. The scale allows for
-a corner swinging out to √2 × half the edge horizontally: the camera no longer turns the wireframe (#62),
-but the user's view control (PROJECT.md, "View orientation control") will, and the cube shouldn't change
-size when it does.
+The projection that fits a cube of the given size into a window region, centred. The scale fits the cube's
+bounding sphere (radius √3 × half the edge), so the cube never changes size on screen while the user turns it
+with the view control.
 
 ```csharp
-public static ViewProjection Fit(Vector2 regionMin, Vector2 regionSize, float halfEdge, float elevation)
+public static ViewProjection Fit(Vector2 regionMin, Vector2 regionSize, float halfEdge, in ViewOrientation orientation)
 ```
 
 #### Parameters
@@ -193,9 +157,9 @@ Size of the drawing region, in pixels.
 
 Half the cube's edge, in yalms.
 
-`elevation` [float](https://learn.microsoft.com/dotnet/api/system.single)
+`orientation` [ViewOrientation](Cube.Core.ViewOrientation.md)
 
-Elevation of the view, in radians.
+How the cube is turned on screen.
 
 #### Returns
 

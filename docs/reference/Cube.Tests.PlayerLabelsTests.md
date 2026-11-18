@@ -19,16 +19,6 @@ public class PlayerLabelsTests
 
 ## Fields
 
-### <a id="Cube_Tests_PlayerLabelsTests_Elevation"></a> Elevation
-
-```csharp
-private static readonly float Elevation
-```
-
-#### Field Value
-
- [float](https://learn.microsoft.com/dotnet/api/system.single)
-
 ### <a id="Cube_Tests_PlayerLabelsTests_Projection"></a> Projection
 
 ```csharp
@@ -48,6 +38,16 @@ private static readonly CubeSpace Space
 #### Field Value
 
  [CubeSpace](Cube.Core.CubeSpace.md)
+
+### <a id="Cube_Tests_PlayerLabelsTests_View"></a> View
+
+```csharp
+private static readonly ViewOrientation View
+```
+
+#### Field Value
+
+ [ViewOrientation](Cube.Core.ViewOrientation.md)
 
 ## Methods
 

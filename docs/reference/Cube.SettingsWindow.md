@@ -4,7 +4,8 @@ Namespace: [Cube](Cube.md)
 Assembly: Cube.dll  
 
 The settings window, opened with <code>/cube config</code> or Dalamud's settings button (PROJECT.md, "Features": cube
-size, orientation mode, labels on/off, colours and opacity).
+size, orientation mode, labels on/off, colours and opacity; "View orientation control": the control's corner and
+a way to reset the view).
 
 ```csharp
 internal sealed class SettingsWindow : Window, IWindow
@@ -48,6 +49,18 @@ The settings to edit.
 Saves them.
 
 ## Fields
+
+### <a id="Cube_SettingsWindow_CornerNames"></a> CornerNames
+
+The corner choices, in [WidgetCorner](Cube.Core.WidgetCorner.md#Cube_Core_WidgetCorner) order.
+
+```csharp
+private static readonly string[] CornerNames
+```
+
+#### Field Value
+
+ [string](https://learn.microsoft.com/dotnet/api/system.string)\[\]
 
 ### <a id="Cube_SettingsWindow_config"></a> config
 

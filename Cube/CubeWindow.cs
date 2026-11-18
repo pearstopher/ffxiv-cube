@@ -3,6 +3,7 @@ using System.Numerics;
 using Cube.Core;
 using Cube.Game;
 using Dalamud.Bindings.ImGui;
+using Dalamud.Bindings.ImGuizmo;
 using Dalamud.Interface.Windowing;
 #if DEBUG
 using System.Diagnostics;
@@ -16,7 +17,8 @@ namespace Cube;
 /// </summary>
 /// <remarks>
 /// Each frame: build the <see cref="CubeSpace"/> and fitted <see cref="ViewProjection"/>, let Core fill the reused
-/// <see cref="DrawList"/>, sort it far to near, then issue one ImGui call per primitive. Nothing here allocates
+/// <see cref="DrawList"/>, sort it far to near, issue one ImGui call per primitive, then draw the view control on
+/// top (<see cref="DrawViewControl"/>). Nothing here allocates
 /// (PROJECT.md, "Efficiency and memory"); Dalamud skips <see cref="Draw"/> entirely while the window is closed.
 /// </remarks>
 internal sealed class CubeWindow : Window
@@ -36,8 +38,32 @@ internal sealed class CubeWindow : Window
     /// <summary>Thickness of the big cube's edges, in pixels.</summary>
     private const float WireThickness = 1.5f;
 
-    /// <summary>The view's elevation in radians (PROJECT.md: 30°).</summary>
-    private static readonly float Elevation = ViewProjection.DefaultElevationDegrees * MathF.PI / 180f;
+    /// <summary>
+    /// How far ImGuizmo's camera sits from the cube's centre. Only ImGuizmo's own maths uses it (it orbits around the
+    /// point this far in front of the camera); the drawn cube is orthographic, so any positive value works.
+    /// </summary>
+    private const float GizmoDistance = 8f;
+
+    /// <summary>
+    /// A right-handed perspective projection handed to ImGuizmo, only so it sets up its context (mouse hover,
+    /// handedness) the way its view manipulator expects. The cube itself is not drawn with it.
+    /// </summary>
+    private static readonly Matrix4x4 GizmoProjection = Matrix4x4.CreatePerspectiveFieldOfView(MathF.PI / 4f, 1f, 0.1f, 100f);
+
+    /// <summary>The model matrix ImGuizmo's context needs; unused by the view manipulator.</summary>
+    private static readonly Matrix4x4 GizmoModel = Matrix4x4.Identity;
+
+    /// <summary>Writes the settings to disk; called when the user lets go of the view control.</summary>
+    private readonly Action save;
+
+    /// <summary>The view orientation from the settings, rebuilt with the colours only when the settings change.</summary>
+    private ViewOrientation view = ViewOrientation.Default;
+
+    /// <summary>
+    /// Whether the user is turning the view with the control: set when ImGuizmo changes the view, cleared (and the
+    /// settings saved) once the mouse is released and the view has settled.
+    /// </summary>
+    private bool turning;
 
     /// <summary>The cube's current alignment yaw; kept between frames so a vertical camera doesn't spin the contents.</summary>
     private float yaw;
@@ -54,11 +80,13 @@ internal sealed class CubeWindow : Window
     /// <summary>Creates the window, closed, with a sensible minimum size.</summary>
     /// <param name="settings">The user's settings, read every frame; changes apply on the next frame.</param>
     /// <param name="gameState">Reads login, loading, cutscene and GPose state.</param>
-    public CubeWindow(CubeSettings settings, GameStateReader gameState)
+    /// <param name="save">Writes the settings to disk, after the user turns the view with the view control.</param>
+    public CubeWindow(CubeSettings settings, GameStateReader gameState, Action save)
         : base("Cube###CubeMain")
     {
         this.Settings = settings;
         this.gameState = gameState;
+        this.save = save;
         this.SizeConstraints = new WindowSizeConstraints
         {
             MinimumSize = new Vector2(200, 200),
@@ -120,6 +148,15 @@ internal sealed class CubeWindow : Window
 
     /// <summary>Text height of the last frame's labels, in pixels; the snapshot sizes label placeholders with it.</summary>
     internal float LastFontSize { get; private set; }
+
+    /// <summary>
+    /// The view control's top-left last frame, in screen pixels. Used for the hover test in <see cref="PreDraw"/> and
+    /// read by the test bridge.
+    /// </summary>
+    internal Vector2 WidgetMin { get; private set; }
+
+    /// <summary>The view control's side length last frame, in pixels; 0 when it wasn't drawn (cube hidden).</summary>
+    internal float WidgetSize { get; private set; }
 
     /// <summary>Thickness of the big cube's edges, in pixels; the snapshot draws lines with it.</summary>
     internal static float LineThickness => WireThickness;
@@ -248,6 +285,7 @@ internal sealed class CubeWindow : Window
             this.DrawList.Clear();
             this.Players.Begin(this.LastSpace);
             this.LastSubmitted = 0;
+            this.WidgetSize = 0f;
             return;
         }
 
@@ -256,6 +294,7 @@ internal sealed class CubeWindow : Window
         {
             this.Palette = settings.Palette();
             this.WireColour = settings.WithOpacity(WireRgb, WireAlpha);
+            this.view = settings.View;
             this.settingsRevision = settings.Revision;
         }
 
@@ -292,7 +331,7 @@ internal sealed class CubeWindow : Window
             : new CubeSpace(centre, settings.CubeEdge, yaw);
         this.yaw = yaw;
         this.hasSpace = true;
-        var projection = ViewProjection.Fit(regionMin, regionSize, space.HalfEdge, Elevation);
+        var projection = ViewProjection.Fit(regionMin, regionSize, space.HalfEdge, this.view);
 
         this.Players.Begin(space);
         PlayerReader.Read(this.Players);
@@ -307,6 +346,77 @@ internal sealed class CubeWindow : Window
         this.LastRegionMin = regionMin;
         this.LastRegionSize = regionSize;
         this.LastSubmitted = this.Submit(ImGui.GetWindowDrawList(), this.DrawList.Items, this.Players.Items);
+        this.DrawViewControl(regionMin, regionSize);
+    }
+
+    /// <summary>
+    /// Stops ImGui moving the window while the mouse is on the view control or the user is turning the view, so a
+    /// drag on the control turns the cube instead of dragging the window around.
+    /// </summary>
+    /// <remarks>
+    /// ImGuizmo reads the mouse directly rather than claiming it as an ImGui item, so without this ImGui would treat
+    /// the drag as a drag on empty window space. An invisible button over the control can't be used instead: ImGuizmo
+    /// ignores clicks while another item is active. Uses last frame's position, which is where the mouse went down.
+    /// </remarks>
+    public override void PreDraw()
+    {
+        var overControl = this.WidgetSize > 0f
+            && ImGui.IsMouseHoveringRect(this.WidgetMin, this.WidgetMin + new Vector2(this.WidgetSize), false);
+        if (overControl || this.turning)
+        {
+            this.Flags |= ImGuiWindowFlags.NoMove;
+        }
+        else
+        {
+            this.Flags &= ~ImGuiWindowFlags.NoMove;
+        }
+    }
+
+    /// <summary>
+    /// Draws ImGuizmo's view manipulator in the chosen corner (PROJECT.md, "View orientation control") and applies
+    /// any turn the user makes with it.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// ImGuizmo is handed the current orientation as a view matrix each frame and changes the matrix when the control
+    /// is dragged, or animates it after a face is clicked. A changed matrix is read back into the settings; the
+    /// projection then picks it up through the settings revision, so it is only rebuilt when the view really changes.
+    /// The camera and the player never feed into this (PROJECT.md: only the control turns the view).
+    /// </para>
+    /// <para>
+    /// The file is saved once the turn is over (mouse released and no change this frame), not on every frame of a
+    /// drag. The 9-argument overload is used because it sets up ImGuizmo's context (mouse hover over this window,
+    /// handedness) first; the short one relies on state from an earlier <c>Manipulate</c> call that this plugin never
+    /// makes. Nothing here allocates: the matrices are structs passed by reference.
+    /// </para>
+    /// </remarks>
+    /// <param name="regionMin">Top-left of the drawing region, in pixels.</param>
+    /// <param name="regionSize">Size of the drawing region, in pixels.</param>
+    private void DrawViewControl(Vector2 regionMin, Vector2 regionSize)
+    {
+        var size = ViewWidget.Size(regionSize);
+        var position = ViewWidget.Position(regionMin, regionSize, this.Settings.ViewWidgetCorner, size);
+        this.WidgetMin = position;
+        this.WidgetSize = size;
+
+        ImGuizmo.SetDrawlist();
+        ImGuizmo.SetRect(position.X, position.Y, size, size);
+        var matrix = this.view.ToGizmoView(GizmoDistance);
+        var before = matrix;
+        var projection = GizmoProjection;
+        var model = GizmoModel;
+        ImGuizmo.ViewManipulate(ref matrix, ref projection, ImGuizmoOperation.Rotate, ImGuizmoMode.World, ref model, GizmoDistance, position, new Vector2(size, size), 0u);
+
+        if (matrix != before)
+        {
+            this.Settings.SetView(ViewOrientation.FromGizmoView(matrix));
+            this.turning = true;
+        }
+        else if (this.turning && !ImGui.IsMouseDown(ImGuiMouseButton.Left))
+        {
+            this.turning = false;
+            this.save();
+        }
     }
 
     /// <summary>Issues one ImGui call per primitive, in order.</summary>

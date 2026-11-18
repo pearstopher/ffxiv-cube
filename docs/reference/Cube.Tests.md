@@ -112,6 +112,18 @@ into a PNG) paints what the dump says, in order, and writes a valid PNG.
 
 Locates files in the repository from a test's output folder, for tests that inspect the repo or build output.
 
+ [ViewOrientationTests](Cube.Tests.ViewOrientationTests.md)
+
+Checks the user's view orientation and the projection it drives (PROJECT.md, "View orientation control": the view
+control turns how the cube is shown, yaw and tilt; default from above and behind at 30°, front face away; the
+orientation is saved and can be reset; "Efficiency and memory": no per-frame allocations).
+
+ [ViewSettingsTests](Cube.Tests.ViewSettingsTests.md)
+
+Checks the saved view orientation and the view control's placement (PROJECT.md, "View orientation control": a
+small control in a corner of the window, bottom right by default; the chosen orientation is saved; there's a way
+to reset to the default).
+
  [ViewYawTests](Cube.Tests.ViewYawTests.md)
 
 Checks the view's orientation modes (PROJECT.md, "View"): Camera mode follows the game camera's heading so

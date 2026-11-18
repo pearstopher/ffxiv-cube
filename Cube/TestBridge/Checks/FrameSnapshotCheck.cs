@@ -67,9 +67,9 @@ internal sealed class FrameSnapshotCheck(string folder) : BridgeCheck
         context.Window.IsOpen = this.wasOpen;
     }
 
-    /// <summary>Serialises the window's last frame.</summary>
+    /// <summary>Serialises the window's last frame. Also used by <see cref="ViewControlCheck"/> for its angle snapshots.</summary>
     /// <param name="window">The cube window.</param>
-    private static string Dump(CubeWindow window)
+    internal static string Dump(CubeWindow window)
     {
         using var stream = new MemoryStream();
         using (var json = new Utf8JsonWriter(stream, new JsonWriterOptions { Indented = true }))
