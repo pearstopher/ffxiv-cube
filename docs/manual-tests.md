@@ -94,3 +94,11 @@ The bridge checks both squares' placement for two corners and that idle frames c
 4. The window doesn't move while the mouse is on, or dragging in, either gizmo; dragging empty space still moves it.
 5. `/cube config`, "View control corner": try all four corners. Both gizmos move together, the resize one always inward of the rotate one.
 6. Shrink the window until it is very narrow: both gizmos shrink and never overlap.
+
+## Phantom collision boxes (#107)
+
+1. Walk to a spot where a collision box used to appear that you could walk through (for example, an invisible
+   trigger area or a flat patch of ground with a box over it). Check that no box is drawn there any more.
+2. Walk up to a real wall or a solid object and check its box is still drawn.
+3. Run `python scripts/ingame_test.py` there and check `collision-phantoms` passes. Its log lines (`Phantom #107
+   nearest ...` in `dalamud.log`) list the nearest remaining boxes the game's raycast doesn't hit, with their fields.

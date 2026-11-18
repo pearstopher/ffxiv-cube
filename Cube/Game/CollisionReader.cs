@@ -108,9 +108,6 @@ internal sealed class CollisionReader
         /// </summary>
         private const int MaxDepth = 64;
 
-        /// <summary>The bit of <see cref="Collider.VisibilityFlags"/> marking colliders the game's raycasts use (#28).</summary>
-        private const byte RaycastActive = 1;
-
         /// <summary>The collider <see cref="OfferNext"/> reads next, or null at the end of the list.</summary>
         private Collider* current;
 
@@ -136,9 +133,9 @@ internal sealed class CollisionReader
 
         /// <inheritdoc/>
         /// <remarks>
-        /// Colliders the game's raycasts ignore (<see cref="Collider.VisibilityFlags"/> bit 1 clear) are skipped: the
-        /// game ignores them too, so the player can't bump into them (#28). Streamed colliders only load and unload
-        /// terrain meshes, which are in the list themselves, so they add no box.
+        /// Colliders the player can't bump into are skipped (<see cref="CollisionFilter.Blocks"/>: raycast-inactive,
+        /// off the movement layer, or a primitive without the blocking material bit; #28, #107). Streamed colliders
+        /// only load and unload terrain meshes, which are in the list themselves, so they add no box.
         /// </remarks>
         public bool OfferNext(CollisionBoxSet set)
         {
@@ -149,12 +146,14 @@ internal sealed class CollisionReader
             }
 
             this.current = (Collider*)collider->Next;
-            if ((collider->VisibilityFlags & RaycastActive) == 0)
+            var type = collider->GetColliderType();
+            var isPrimitive = type != ColliderType.Mesh && type != ColliderType.Streamed;
+            if (!CollisionFilter.Blocks(new ColliderFields(collider->VisibilityFlags, collider->LayerMask, collider->ObjectMaterialValue, isPrimitive)))
             {
                 return true;
             }
 
-            switch (collider->GetColliderType())
+            switch (type)
             {
                 case ColliderType.Mesh:
                     OfferMesh((ColliderMesh*)collider, set, detailDepth);
