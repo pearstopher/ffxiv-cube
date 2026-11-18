@@ -8,9 +8,11 @@ namespace Cube.Core;
 /// only the visible faces of a cube).
 /// </summary>
 /// <remarks>
-/// All cubes are axis-aligned to the world, like the big cube, so they turn with the view. Corners and face
-/// normals are rotated into view coordinates with <see cref="CubeSpace.RotateOffset"/> and projected with
-/// <see cref="ViewProjection"/>. Everything is computed into locals: no allocation.
+/// The big cube's wireframe is drawn from fixed cube-local corners, so it never turns on screen whatever the camera
+/// does (PROJECT.md: "Cube on screen never turns by itself"). Solid cubes are world-axis-aligned contents, so their
+/// face normals are rotated into cube-local coordinates with <see cref="CubeSpace.RotateOffset"/> and they turn with
+/// the rest of the contents. Everything is projected with <see cref="ViewProjection"/> and computed into locals: no
+/// allocation.
 /// </remarks>
 public static class CubeGeometry
 {
@@ -37,9 +39,13 @@ public static class CubeGeometry
     private static Vector3 CornerSign(int index) =>
         new((index & 1) != 0 ? 1 : -1, (index & 2) != 0 ? 1 : -1, (index & 4) != 0 ? 1 : -1);
 
-    /// <summary>Adds the big cube's 12 edges as lines, each at the depth of its midpoint.</summary>
+    /// <summary>
+    /// Adds the big cube's 12 edges as lines, each at the depth of its midpoint. The corners are fixed cube-local
+    /// points (± half the edge), independent of <see cref="CubeSpace.Yaw"/>, so turning the camera leaves these
+    /// primitives unchanged.
+    /// </summary>
     /// <param name="list">The frame's draw list.</param>
-    /// <param name="space">The cube.</param>
+    /// <param name="space">The cube, for its size.</param>
     /// <param name="projection">The view's projection.</param>
     /// <param name="colour">Edge colour.</param>
     public static void AddWireCube(DrawList list, in CubeSpace space, in ViewProjection projection, uint colour)
@@ -54,20 +60,21 @@ public static class CubeGeometry
                     continue;
                 }
 
-                var a = space.RotateOffset(CornerSign(corner) * space.HalfEdge);
-                var b = space.RotateOffset(CornerSign(corner | bit) * space.HalfEdge);
+                var a = CornerSign(corner) * space.HalfEdge;
+                var b = CornerSign(corner | bit) * space.HalfEdge;
                 list.AddLine(projection.ToScreen(a), projection.ToScreen(b), projection.Depth((a + b) / 2f), colour);
             }
         }
     }
 
     /// <summary>
-    /// Adds a solid, world-axis-aligned cube as its visible faces (at most three). All faces share the cube
+    /// Adds a solid, world-axis-aligned cube as its visible faces (at most three). It is part of the contents, so it
+    /// turns with them when the cube's alignment changes. All faces share the cube
     /// centre's depth: a convex cube's visible faces never overlap each other, and one depth per cube keeps
     /// its faces together in the painter's sort.
     /// </summary>
     /// <param name="list">The frame's draw list.</param>
-    /// <param name="space">The big cube, for the view rotation.</param>
+    /// <param name="space">The big cube, for its alignment.</param>
     /// <param name="projection">The view's projection.</param>
     /// <param name="viewCentre">The small cube's centre in view coordinates.</param>
     /// <param name="halfSize">Half the small cube's edge, in yalms.</param>

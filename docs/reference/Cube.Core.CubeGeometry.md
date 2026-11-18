@@ -19,9 +19,11 @@ public static class CubeGeometry
 
 ## Remarks
 
-All cubes are axis-aligned to the world, like the big cube, so they turn with the view. Corners and face
-normals are rotated into view coordinates with [RotateOffset](Cube.Core.CubeSpace.md#Cube_Core_CubeSpace_RotateOffset) and projected with
-[ViewProjection](Cube.Core.ViewProjection.md#Cube_Core_ViewProjection). Everything is computed into locals: no allocation.
+The big cube's wireframe is drawn from fixed cube-local corners, so it never turns on screen whatever the camera
+does (PROJECT.md: "Cube on screen never turns by itself"). Solid cubes are world-axis-aligned contents, so their
+face normals are rotated into cube-local coordinates with [RotateOffset](Cube.Core.CubeSpace.md#Cube_Core_CubeSpace_RotateOffset) and they turn with
+the rest of the contents. Everything is projected with [ViewProjection](Cube.Core.ViewProjection.md#Cube_Core_ViewProjection) and computed into locals: no
+allocation.
 
 ## Fields
 
@@ -140,7 +142,8 @@ Owner of the face.
 
 ### <a id="Cube_Core_CubeGeometry_AddSolidCube_Cube_Core_DrawList_Cube_Core_CubeSpace__Cube_Core_ViewProjection__System_Numerics_Vector3_System_Single_System_UInt32_System_Int32_"></a> AddSolidCube\(DrawList, in CubeSpace, in ViewProjection, Vector3, float, uint, int\)
 
-Adds a solid, world-axis-aligned cube as its visible faces (at most three). All faces share the cube
+Adds a solid, world-axis-aligned cube as its visible faces (at most three). It is part of the contents, so it
+turns with them when the cube's alignment changes. All faces share the cube
 centre's depth: a convex cube's visible faces never overlap each other, and one depth per cube keeps
 its faces together in the painter's sort.
 
@@ -156,7 +159,7 @@ The frame's draw list.
 
 `space` [CubeSpace](Cube.Core.CubeSpace.md)
 
-The big cube, for the view rotation.
+The big cube, for its alignment.
 
 `projection` [ViewProjection](Cube.Core.ViewProjection.md)
 
@@ -180,7 +183,9 @@ Owner of the faces ([Tag](Cube.Core.DrawPrimitive.md#Cube_Core_DrawPrimitive_Tag
 
 ### <a id="Cube_Core_CubeGeometry_AddWireCube_Cube_Core_DrawList_Cube_Core_CubeSpace__Cube_Core_ViewProjection__System_UInt32_"></a> AddWireCube\(DrawList, in CubeSpace, in ViewProjection, uint\)
 
-Adds the big cube's 12 edges as lines, each at the depth of its midpoint.
+Adds the big cube's 12 edges as lines, each at the depth of its midpoint. The corners are fixed cube-local
+points (± half the edge), independent of [Yaw](Cube.Core.CubeSpace.md#Cube_Core_CubeSpace_Yaw), so turning the camera leaves these
+primitives unchanged.
 
 ```csharp
 public static void AddWireCube(DrawList list, in CubeSpace space, in ViewProjection projection, uint colour)
@@ -194,7 +199,7 @@ The frame's draw list.
 
 `space` [CubeSpace](Cube.Core.CubeSpace.md)
 
-The cube.
+The cube, for its size.
 
 `projection` [ViewProjection](Cube.Core.ViewProjection.md)
 

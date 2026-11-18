@@ -3,10 +3,11 @@
 Namespace: [Cube.Tests](Cube.Tests.md)  
 Assembly: Cube.Tests.dll  
 
-Checks the cube of space (PROJECT.md, "Exact behaviour rules": Cube, View, Players): axis-aligned, centred on
-the player, edge 10–100 yalms (default 40); players outside are not shown at all; containment is inclusive on
-faces; the view turns by yaw (north up: east right, north forward). Also the zero-allocation rule
-("Efficiency and memory").
+Checks the cube of space (PROJECT.md, "Exact behaviour rules": Cube, Players): centred on the player, edge 10–100
+yalms (default 40), aligned by its yaw (Camera mode: front face where the camera looks; North up: east right,
+north forward); containment uses the aligned cube, so things enter and leave at the sides as the camera turns, and
+is inclusive on faces; players outside are not shown at all. Also the zero-allocation rule ("Efficiency and
+memory").
 
 ```csharp
 public class CubeSpaceTests
@@ -69,13 +70,6 @@ public void Corner_is_inside(float dx, float dy, float dz)
 
 `dz` [float](https://learn.microsoft.com/dotnet/api/system.single)
 
-### <a id="Cube_Tests_CubeSpaceTests_Cube_is_axis_aligned_so_yaw_does_not_change_containment"></a> Cube\_is\_axis\_aligned\_so\_yaw\_does\_not\_change\_containment\(\)
-
-```csharp
-[Fact]
-public void Cube_is_axis_aligned_so_yaw_does_not_change_containment()
-```
-
 ### <a id="Cube_Tests_CubeSpaceTests_Default_edge_is_40_yalms"></a> Default\_edge\_is\_40\_yalms\(\)
 
 ```csharp
@@ -101,6 +95,20 @@ public void Edge_is_clamped_to_10_to_100_yalms(float requested, float expected)
 `requested` [float](https://learn.microsoft.com/dotnet/api/system.single)
 
 `expected` [float](https://learn.microsoft.com/dotnet/api/system.single)
+
+### <a id="Cube_Tests_CubeSpaceTests_FromView_puts_a_cube_local_point_back_in_the_world_System_Single_"></a> FromView\_puts\_a\_cube\_local\_point\_back\_in\_the\_world\(float\)
+
+```csharp
+[Theory]
+[InlineData(new object[] { 0 })]
+[InlineData(new object[] { 0.7 })]
+[InlineData(new object[] { -2.2 })]
+public void FromView_puts_a_cube_local_point_back_in_the_world(float yaw)
+```
+
+#### Parameters
+
+`yaw` [float](https://learn.microsoft.com/dotnet/api/system.single)
 
 ### <a id="Cube_Tests_CubeSpaceTests_Looking_east_puts_east_forward_and_south_on_the_right"></a> Looking\_east\_puts\_east\_forward\_and\_south\_on\_the\_right\(\)
 
@@ -157,6 +165,21 @@ public void Player_far_above_or_below_is_outside_even_when_horizontally_close(fl
 public void Player_position_is_the_centre()
 ```
 
+### <a id="Cube_Tests_CubeSpaceTests_Point_ahead_of_the_camera_is_in_front_for_any_yaw_System_Single_"></a> Point\_ahead\_of\_the\_camera\_is\_in\_front\_for\_any\_yaw\(float\)
+
+```csharp
+[Theory]
+[InlineData(new object[] { 0 })]
+[InlineData(new object[] { 0.7 })]
+[InlineData(new object[] { 2.5 })]
+[InlineData(new object[] { -1.9 })]
+public void Point_ahead_of_the_camera_is_in_front_for_any_yaw(float yaw)
+```
+
+#### Parameters
+
+`yaw` [float](https://learn.microsoft.com/dotnet/api/system.single)
+
 ### <a id="Cube_Tests_CubeSpaceTests_Point_exactly_on_a_face_is_inside_System_Single_System_Single_System_Single_"></a> Point\_exactly\_on\_a\_face\_is\_inside\(float, float, float\)
 
 ```csharp
@@ -195,6 +218,20 @@ public void Point_just_outside_a_face_is_outside(float dx, float dy, float dz)
 `dy` [float](https://learn.microsoft.com/dotnet/api/system.single)
 
 `dz` [float](https://learn.microsoft.com/dotnet/api/system.single)
+
+### <a id="Cube_Tests_CubeSpaceTests_Point_near_a_corner_leaves_the_cube_as_the_camera_turns"></a> Point\_near\_a\_corner\_leaves\_the\_cube\_as\_the\_camera\_turns\(\)
+
+```csharp
+[Fact]
+public void Point_near_a_corner_leaves_the_cube_as_the_camera_turns()
+```
+
+### <a id="Cube_Tests_CubeSpaceTests_Point_outside_a_corner_enters_the_cube_as_the_camera_turns"></a> Point\_outside\_a\_corner\_enters\_the\_cube\_as\_the\_camera\_turns\(\)
+
+```csharp
+[Fact]
+public void Point_outside_a_corner_enters_the_cube_as_the_camera_turns()
+```
 
 ### <a id="Cube_Tests_CubeSpaceTests_Point_outside_is_rejected_before_it_is_transformed"></a> Point\_outside\_is\_rejected\_before\_it\_is\_transformed\(\)
 

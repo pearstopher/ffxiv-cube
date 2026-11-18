@@ -161,7 +161,7 @@ private int settingsRevision
 
 ### <a id="Cube_CubeWindow_yaw"></a> yaw
 
-The view's current yaw; kept between frames so a vertical camera doesn't spin the view.
+The cube's current alignment yaw; kept between frames so a vertical camera doesn't spin the contents.
 
 ```csharp
 private float yaw
@@ -431,6 +431,19 @@ internal bool ShowLabels { get; private set; }
 #### Property Value
 
  [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+### <a id="Cube_CubeWindow_SimulatedCameraForward"></a> SimulatedCameraForward
+
+A camera direction the bridge sets to turn the "camera" without touching the game (#62); null reads the real
+camera. Debug builds only.
+
+```csharp
+internal Vector3? SimulatedCameraForward { get; set; }
+```
+
+#### Property Value
+
+ [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)?
 
 ### <a id="Cube_CubeWindow_SimulatedState"></a> SimulatedState
 

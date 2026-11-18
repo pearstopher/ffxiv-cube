@@ -6,7 +6,8 @@ namespace Cube.Tests;
 /// <summary>
 /// Checks projection and the draw list (PROJECT.md, "View": fixed-angle view from above and behind, default 30°;
 /// "Draw order": far things first so near cubes cover far ones; "Cheap drawing": only visible faces, the big cube a
-/// wireframe; "Efficiency and memory": reused buffers, no per-frame allocations).
+/// wireframe; "Cube on screen never turns by itself": the camera turns the contents, never the wireframe;
+/// "Efficiency and memory": reused buffers, no per-frame allocations).
 /// </summary>
 public class ProjectionAndDrawListTests
 {
@@ -104,6 +105,34 @@ public class ProjectionAndDrawListTests
         {
             Assert.Equal(PrimitiveKind.Line, primitive.Kind);
         }
+    }
+
+    [Fact]
+    public void Wireframe_is_identical_for_any_camera_yaw()
+    {
+        // PROJECT.md: "Cube on screen never turns by itself": only the contents turn with the camera.
+        var projection = Projection();
+        var reference = new DrawList(16);
+        CubeGeometry.AddWireCube(reference, Space(0), projection, 0xFFFFFFFF);
+
+        foreach (var yaw in new[] { 0.3f, MathF.PI / 4, 2f, -2.7f })
+        {
+            var turned = new DrawList(16);
+            CubeGeometry.AddWireCube(turned, Space(yaw), projection, 0xFFFFFFFF);
+            Assert.Equal(reference.Items.ToArray(), turned.Items.ToArray());
+        }
+    }
+
+    [Fact]
+    public void Contents_turn_with_the_camera_while_the_wireframe_stays()
+    {
+        var projection = Projection();
+        var east = new Vector3(10, 0, 0);
+
+        var atNorth = projection.ToScreen(Space(0).ToView(east));
+        var atEast = projection.ToScreen(Space(MathF.PI / 2).ToView(east));
+
+        Assert.True(Vector2.Distance(atNorth, atEast) > 10, $"{atNorth} vs {atEast}");
     }
 
     [Fact]

@@ -14,7 +14,9 @@ namespace Cube.TestBridge;
 /// Fakes are offered to the same <see cref="PlayerSet"/> as real players, after them, so they go through exactly the
 /// same culling, classification and naming. They use object slots from <see cref="FirstSlot"/> up (above the 200 real
 /// character slots) and entity ids from <see cref="FirstEntityId"/> up, so checks can tell them apart. Positions are
-/// fractions of the cube's half-edge from the local player, so the same set works at any cube size.
+/// fractions of the cube's half-edge in cube-local coordinates (see <see cref="CubeSpace.FromView"/>), so the same set
+/// works at any cube size and stays put in the cube however the camera turns. A fake added with
+/// <see cref="AddAtWorld"/> is instead fixed in the world, like a real player, so it rotates with the contents.
 /// </remarks>
 internal sealed class FakePlayers
 {
@@ -85,7 +87,17 @@ internal sealed class FakePlayers
     /// <param name="offset">Position as fractions of the half-edge from the cube centre (1 = on a face).</param>
     /// <param name="relation">Party or other (fakes are never Self).</param>
     public void Add(string name, Vector3 offset, PlayerRelation relation) =>
-        this.fakes.Add(new Fake(Encoding.UTF8.GetBytes(name), offset, relation == PlayerRelation.Party));
+        this.fakes.Add(new Fake(Encoding.UTF8.GetBytes(name), offset, relation == PlayerRelation.Party, false));
+
+    /// <summary>
+    /// Adds one fake at a fixed world position, like a real player standing still, so it rotates with the cube's
+    /// contents when the camera turns (#62).
+    /// </summary>
+    /// <param name="name">Its label.</param>
+    /// <param name="world">Its world position.</param>
+    /// <param name="relation">Party or other (fakes are never Self).</param>
+    public void AddAtWorld(string name, Vector3 world, PlayerRelation relation) =>
+        this.fakes.Add(new Fake(Encoding.UTF8.GetBytes(name), world, relation == PlayerRelation.Party, true));
 
     /// <summary>Removes all fakes.</summary>
     public void Clear() => this.fakes.Clear();
@@ -98,14 +110,15 @@ internal sealed class FakePlayers
         for (var i = 0; i < this.fakes.Count; i++)
         {
             var fake = this.fakes[i];
-            var position = space.Centre + (fake.Offset * space.HalfEdge);
+            var position = fake.IsWorld ? fake.Offset : space.FromView(fake.Offset * space.HalfEdge);
             set.Offer(FirstSlot + i, FirstEntityId + (uint)i, position, false, fake.IsParty, false, fake.Name);
         }
     }
 
     /// <summary>One fake player.</summary>
     /// <param name="Name">UTF-8 name bytes, encoded once.</param>
-    /// <param name="Offset">Position as fractions of the half-edge.</param>
+    /// <param name="Offset">Position as fractions of the half-edge in cube-local coordinates, or a world position if <paramref name="IsWorld"/>.</param>
     /// <param name="IsParty">Whether it is flagged as a party member.</param>
-    private readonly record struct Fake(byte[] Name, Vector3 Offset, bool IsParty);
+    /// <param name="IsWorld">Whether <paramref name="Offset"/> is a fixed world position.</param>
+    private readonly record struct Fake(byte[] Name, Vector3 Offset, bool IsParty, bool IsWorld);
 }

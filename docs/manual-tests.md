@@ -8,6 +8,6 @@ The bridge checks every setting changes the frame and that saving writes the fil
 
 1. Type `/cube config`: the settings window opens. `/cube` still shows and hides the cube.
 2. Drag the cube size slider: the cube changes while dragging.
-3. Change a colour, untick "Show names", switch to "North up", lower the opacity: each shows in the cube at once.
+3. Change a colour, untick "Show names", switch to "Keep contents fixed (north stays put)", lower the opacity: each shows in the cube at once.
 4. Reload the plugin in `/xlplugins`: the changed settings are still there.
-5. Click "Reset to defaults": everything goes back (40 yalms, Camera, names on, blue/green/orange, full opacity).
+5. Click "Reset to defaults": everything goes back (40 yalms, Rotate contents with camera, names on, blue/green/orange, full opacity).

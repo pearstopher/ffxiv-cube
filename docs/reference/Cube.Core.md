@@ -77,9 +77,9 @@ finds; this class culls, classifies and names them.
 
  [ViewYaw](Cube.Core.ViewYaw.md)
 
-Chooses the yaw of the view around the cube (PROJECT.md, "View"): in <b>Camera</b> mode it follows the
-game camera so "forward on screen" matches the game view; in <b>North up</b> mode it is fixed with
-north at the back.
+Chooses the cube's alignment yaw (PROJECT.md, "Cube"): in <b>Camera</b> mode it follows the game camera's
+horizontal direction so "forward in the cube" matches the game view; in <b>North up</b> mode it is fixed with
+north at the front. The yaw turns the contents, never the wireframe (see [CubeSpace](Cube.Core.CubeSpace.md#Cube_Core_CubeSpace)).
 
  [VisibilityRules](Cube.Core.VisibilityRules.md)
 
@@ -90,9 +90,9 @@ window is just empty then, never an error).
 
  [CubeSpace](Cube.Core.CubeSpace.md)
 
-The cube of space around the local player (PROJECT.md, "Exact behaviour rules", Cube): axis-aligned to
-the world, centred on the player, with an edge of 10–100 yalms (default 40). Answers "is this point
-inside?" and turns world positions into cube-local view coordinates.
+The cube of space around the local player (PROJECT.md, "Exact behaviour rules", Cube): centred on the player,
+with an edge of 10–100 yalms (default 40), turned about the vertical axis by its alignment [Yaw](Cube.Core.CubeSpace.md#Cube_Core_CubeSpace_Yaw).
+Answers "is this point inside?" and turns world positions into cube-local view coordinates.
 
  [DrawPrimitive](Cube.Core.DrawPrimitive.md)
 
@@ -123,7 +123,8 @@ and behind (PROJECT.md, "View": default 30° elevation).
 
  [OrientationMode](Cube.Core.OrientationMode.md)
 
-How the view around the cube is turned (PROJECT.md, "View": orientation mode setting).
+How the cube is aligned, and so what happens to its contents (PROJECT.md, "Cube": the orientation setting). The
+cube's frame stays still on screen in both modes.
 
  [PlayerRelation](Cube.Core.PlayerRelation.md)
 
