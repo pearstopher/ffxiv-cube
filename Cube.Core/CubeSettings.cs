@@ -62,12 +62,24 @@ public class CubeSettings
     public float Opacity = 1f;
 
     /// <summary>
-    /// The view control's heading, in degrees (PROJECT.md, "View orientation control": the chosen orientation is
-    /// saved). Degrees, so a hand-edited file is readable. Use <see cref="View"/> to read it.
+    /// The settings file format that stores the view as <see cref="ViewRotation"/>. Files older than this stored the
+    /// old control's heading and tilt instead, which <see cref="Upgrade"/> converts.
+    /// </summary>
+    public const int RotationViewVersion = 2;
+
+    /// <summary>
+    /// The view control's rotation (PROJECT.md, "View orientation control": the chosen orientation is saved, any
+    /// orientation including roll). Use <see cref="View"/> to read it.
+    /// </summary>
+    public Quaternion ViewRotation = ViewOrientation.Default.Rotation;
+
+    /// <summary>
+    /// The old yaw-and-tilt control's heading, in degrees (#63). Only read from files saved before
+    /// <see cref="RotationViewVersion"/>, so their view carries over (PROJECT.md); never written again.
     /// </summary>
     public float ViewYawDegrees;
 
-    /// <summary>The view control's tilt above the horizontal, in degrees (default 30°, ±90° at most).</summary>
+    /// <summary>The old control's tilt, in degrees; read like <see cref="ViewYawDegrees"/>. Defaults to 30° (the default view).</summary>
     public float ViewPitchDegrees = ViewOrientation.DefaultPitchDegrees;
 
     /// <summary>Which corner of the cube window the view control is drawn in (PROJECT.md: bottom right by default).</summary>
@@ -75,7 +87,7 @@ public class CubeSettings
 
     /// <summary>The saved view orientation.</summary>
     [System.Runtime.Serialization.IgnoreDataMember]
-    public ViewOrientation View => ViewOrientation.FromDegrees(this.ViewYawDegrees, this.ViewPitchDegrees);
+    public ViewOrientation View => new(this.ViewRotation);
 
     /// <summary>
     /// Goes up by one on every <see cref="Changed"/>; readers compare it with the revision they last built from.
@@ -102,14 +114,8 @@ public class CubeSettings
         this.OtherColour = ValidColour(this.OtherColour, DefaultOtherColour);
         this.NpcColour = ValidColour(this.NpcColour, DefaultNpcColour);
         this.Opacity = float.IsNaN(this.Opacity) ? 1f : Math.Clamp(this.Opacity, MinOpacity, 1f);
-        if (!float.IsFinite(this.ViewYawDegrees) || !float.IsFinite(this.ViewPitchDegrees))
-        {
-            this.ViewYawDegrees = 0f;
-            this.ViewPitchDegrees = ViewOrientation.DefaultPitchDegrees;
-        }
-
-        this.ViewYawDegrees = MathF.IEEERemainder(this.ViewYawDegrees, 360f);
-        this.ViewPitchDegrees = Math.Clamp(this.ViewPitchDegrees, -ViewOrientation.MaxPitchDegrees, ViewOrientation.MaxPitchDegrees);
+        // ViewOrientation normalises the rotation and replaces an unusable one with the default.
+        this.ViewRotation = this.View.Rotation;
         if (!Enum.IsDefined(this.ViewWidgetCorner))
         {
             this.ViewWidgetCorner = WidgetCorner.BottomRight;
@@ -122,18 +128,46 @@ public class CubeSettings
     /// <param name="view">The orientation the user chose.</param>
     public void SetView(in ViewOrientation view)
     {
-        this.ViewYawDegrees = view.YawDegrees;
-        this.ViewPitchDegrees = view.PitchDegrees;
+        this.ViewRotation = view.Rotation;
         this.Changed();
     }
 
     /// <summary>Puts the view back to the default (PROJECT.md: "There's a way to reset to the default").</summary>
     public void ResetView()
     {
-        this.ViewYawDegrees = 0f;
-        this.ViewPitchDegrees = ViewOrientation.DefaultPitchDegrees;
+        this.ViewRotation = ViewOrientation.Default.Rotation;
         this.Changed();
     }
+
+    /// <summary>
+    /// Brings settings loaded from an older file format up to date, then repairs them with <see cref="Changed"/>.
+    /// Files before <see cref="RotationViewVersion"/> stored the view as a heading and tilt; they become the same
+    /// orientation (PROJECT.md: orientations saved by the old control carry over). A file from before the view
+    /// control existed has neither, so the old fields' defaults give the default view.
+    /// </summary>
+    /// <param name="fileVersion">The format version the settings were saved with.</param>
+    public void Upgrade(int fileVersion)
+    {
+        if (fileVersion < RotationViewVersion)
+        {
+            var yaw = float.IsFinite(this.ViewYawDegrees) ? this.ViewYawDegrees : 0f;
+            var pitch = float.IsFinite(this.ViewPitchDegrees) ? this.ViewPitchDegrees : ViewOrientation.DefaultPitchDegrees;
+            this.ViewRotation = ViewOrientation.FromDegrees(yaw, pitch).Rotation;
+        }
+
+        this.Changed();
+    }
+
+    /// <summary>
+    /// Tells the JSON serialiser Dalamud uses (Newtonsoft, by naming convention) never to write the old heading, so
+    /// saved files only hold <see cref="ViewRotation"/>.
+    /// </summary>
+    /// <returns>Always false.</returns>
+    public bool ShouldSerializeViewYawDegrees() => false;
+
+    /// <summary>Never writes the old tilt; see <see cref="ShouldSerializeViewYawDegrees"/>.</summary>
+    /// <returns>Always false.</returns>
+    public bool ShouldSerializeViewPitchDegrees() => false;
 
     /// <summary>Copies every setting from another instance, then marks them changed. Used to undo test changes.</summary>
     /// <param name="other">The settings to copy.</param>
@@ -148,8 +182,7 @@ public class CubeSettings
         this.ShowNpcs = other.ShowNpcs;
         this.NpcColour = other.NpcColour;
         this.Opacity = other.Opacity;
-        this.ViewYawDegrees = other.ViewYawDegrees;
-        this.ViewPitchDegrees = other.ViewPitchDegrees;
+        this.ViewRotation = other.ViewRotation;
         this.ViewWidgetCorner = other.ViewWidgetCorner;
         this.Changed();
     }

@@ -126,9 +126,8 @@ each). Built from the user's [CubeSettings](Cube.Core.CubeSettings.md#Cube_Core_
 
  [ViewOrientation](Cube.Core.ViewOrientation.md)
 
-How the user has turned the cube on screen with the view control (PROJECT.md, "View orientation control"): a
-heading (yaw) and a tilt (pitch) of the viewer around the cube. Default: from above and behind, 30° elevation,
-front face away from the viewer.
+How the user has turned the cube on screen with the view control (PROJECT.md, "View orientation control"): a full
+rotation, roll included. Default: from above and behind, 30° elevation, front face away from the viewer.
 
  [ViewProjection](Cube.Core.ViewProjection.md)
 

@@ -37,7 +37,7 @@ Add `--snapshot` to also render the frame the bridge dumped (`drawlist.json`, fr
 dotnet run --project Cube.Snapshot -- --demo snapshots/demo.png 0.5
 ```
 
-(the number is the contents' yaw in radians). Two more numbers set the view control's yaw and tilt in degrees, e.g. `--demo snapshots/below.png 0.5 -30 -35`. The `view-control-turns-the-cube` check also dumps `drawlist-view-default.json`, `-turned`, `-below` and `-top` in the bridge folder; render one with `dotnet run --project Cube.Snapshot -- <drawlist json> <png>`.
+(the number is the contents' yaw in radians). Two more numbers set the view's heading and tilt in degrees, e.g. `--demo snapshots/below.png 0.5 -30 -35`. The `view-control-turns-the-cube` check also dumps `drawlist-view-default.json`, `-turned`, `-below`, `-top` and `-rolled` in the bridge folder; render one with `dotnet run --project Cube.Snapshot -- <drawlist json> <png>`.
 
 Add `--soak` to run the soak after the normal checks pass: the bridge draws 100 fake players for ten minutes and fails if the draw path allocates anything or goes over the frame-time budget (`soak-ten-minutes-at-the-cap`). It takes about 11 minutes, so it's not part of the normal run. Run it after changes to the draw path.
 

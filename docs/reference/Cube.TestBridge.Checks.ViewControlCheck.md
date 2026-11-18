@@ -64,15 +64,16 @@ The snapshots (<code>drawlist-view-*.json</code>) contain geometry only, like [F
 
 ### <a id="Cube_TestBridge_Checks_ViewControlCheck_Angles"></a> Angles
 
-The angles snapshotted (yaw°, pitch°, name): default, turned and tilted, from below, straight down.
+The orientations snapshotted: default, turned and tilted, from below, straight down, and rolled 30° (the rotate
+gizmo's rings allow roll, #79).
 
 ```csharp
-private static readonly (float Yaw, float Pitch, string Name)[] Angles
+private static readonly (ViewOrientation View, string Name)[] Angles
 ```
 
 #### Field Value
 
- \([float](https://learn.microsoft.com/dotnet/api/system.single) [Yaw](https://learn.microsoft.com/dotnet/api/system.valuetuple\-system.single,system.single,system.string\-.yaw), [float](https://learn.microsoft.com/dotnet/api/system.single) [Pitch](https://learn.microsoft.com/dotnet/api/system.valuetuple\-system.single,system.single,system.string\-.pitch), [string](https://learn.microsoft.com/dotnet/api/system.string) [Name](https://learn.microsoft.com/dotnet/api/system.valuetuple\-system.single,system.single,system.string\-.name)\)\[\]
+ \([ViewOrientation](Cube.Core.ViewOrientation.md) [View](https://learn.microsoft.com/dotnet/api/system.valuetuple\-cube.core.vieworientation,system.string\-.view), [string](https://learn.microsoft.com/dotnet/api/system.string) [Name](https://learn.microsoft.com/dotnet/api/system.valuetuple\-cube.core.vieworientation,system.string\-.name)\)\[\]
 
 ### <a id="Cube_TestBridge_Checks_ViewControlCheck_LineTolerance"></a> LineTolerance
 
@@ -222,6 +223,28 @@ Another frame's lines.
 #### Returns
 
  [float](https://learn.microsoft.com/dotnet/api/system.single)
+
+### <a id="Cube_TestBridge_Checks_ViewControlCheck_Rolled_Cube_Core_ViewOrientation_System_Single_"></a> Rolled\(ViewOrientation, float\)
+
+An orientation turned further around the screen axis, as the gizmo's outer ring does.
+
+```csharp
+private static ViewOrientation Rolled(ViewOrientation view, float degrees)
+```
+
+#### Parameters
+
+`view` [ViewOrientation](Cube.Core.ViewOrientation.md)
+
+The orientation to roll.
+
+`degrees` [float](https://learn.microsoft.com/dotnet/api/system.single)
+
+How far to roll.
+
+#### Returns
+
+ [ViewOrientation](Cube.Core.ViewOrientation.md)
 
 ### <a id="Cube_TestBridge_Checks_ViewControlCheck_Run_Cube_TestBridge_BridgeContext_"></a> Run\(BridgeContext\)
 

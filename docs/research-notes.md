@@ -188,3 +188,13 @@ Checked 2026-11-17 against `Dalamud.Bindings.ImGuizmo.dll` in the dev hooks fold
 - **Mouse.** It reads the mouse directly and only starts a drag when no ImGui item is active, so an invisible button over it would block it. Without one, ImGui would treat the drag as a drag on empty window space and move the window, so the cube window sets `NoMove` while the mouse is over the widget or a turn is in progress.
 - It has no double-click handling, so "reset" is a button in the settings window.
 - Measured with the bridge: drawing the widget every frame keeps `draw-within-budget` at 0 bytes allocated per frame.
+
+## ImGuizmo's rotate gizmo (#79)
+
+The owner found the view manipulator above awkward, so #79 replaced it with `ImGuizmo.Manipulate(ref view, ref projection, ImGuizmoOperation.Rotate, ImGuizmoMode.Local, ref model)` (the 5-argument overload compiles against the binding). From ImGuizmo's source:
+
+- `Manipulate` sets up its own context (mouse over the draw list's window, matrices) every call, unlike `ViewManipulate`'s short overload.
+- It edits `model` in place while a ring is dragged. In local mode the turn is applied in the model's own frame (`delta * model`), so the x, y and z rings stay around the cube's own axes. The outer ring turns around the camera's axis, which is how roll happens.
+- **Size.** The outer ring's radius is a fixed 6% of the rectangle's height (`screenRotateSize`), and the axis rings are about the same size at the default gizmo size (0.1 in clip space). The gizmo size and orthographic mode are global to the ImGuizmo library, which every plugin shares, so the plugin doesn't change them; it hands `SetRect` a rectangle 7 times the corner square, centred on it, instead. ImGuizmo doesn't clip to the rectangle.
+- The plugin keeps a fixed camera (+Z, looking at the centre) and hands the cube's rotation as the model matrix, with Z mirrored because ImGuizmo's world is right-handed (`ViewOrientation.ToGizmoModel`). `Matrix4x4.Decompose` removes any scale or drift when reading it back.
+- The binding has `IsOver()` and `IsUsing()`, but the `NoMove` handling from #63 already covers the window-drag problem, so they aren't needed.

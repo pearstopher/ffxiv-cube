@@ -20,8 +20,8 @@ A [Dalamud](https://github.com/goatcorp/Dalamud) plugin for FINAL FANTASY XIV th
 - **Colours tell you who's who:** one colour for you, one for party and alliance members, one for everyone else,
   and one for NPCs.
 - **Near things cover far things,** so you can see which players are in front.
-- **Turn the view with the little x/y/z cube** in the corner of the window: drag it to look from any side, above or
-  below, or click one of its faces to look straight at that side. Your view is remembered.
+- **Turn the view with the rotate gizmo** in the corner of the window: drag the red, green or blue ring to turn the
+  cube around that axis, or the outer ring to spin it on the screen. Any angle works, and your view is remembered.
 - **Nothing is drawn while you're logged out, loading, in a cutscene, in GPose, or in PvP.**
 
 It only reads what the game already knows and draws it in its own window. It never changes anything in the game,

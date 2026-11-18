@@ -12,19 +12,25 @@ namespace Cube;
 [Serializable]
 internal sealed class Configuration : CubeSettings, IPluginConfiguration
 {
-    /// <summary>The current file format. Bump it and migrate in <see cref="Load"/> if a setting's meaning changes.</summary>
-    public const int CurrentVersion = 1;
+    /// <summary>
+    /// The current file format. Bump it and migrate in <see cref="CubeSettings.Upgrade"/> if a setting's meaning
+    /// changes. 2: the view is a rotation instead of a heading and tilt (#79).
+    /// </summary>
+    public const int CurrentVersion = RotationViewVersion;
 
     /// <inheritdoc/>
     public int Version { get; set; } = CurrentVersion;
 
-    /// <summary>Loads the saved settings, or the defaults if there are none, and repairs any bad values.</summary>
+    /// <summary>
+    /// Loads the saved settings, or the defaults if there are none, converts an older file format and repairs any
+    /// bad values.
+    /// </summary>
     /// <param name="pluginInterface">Dalamud's interface for this plugin.</param>
     public static Configuration Load(IDalamudPluginInterface pluginInterface)
     {
         var config = pluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
+        config.Upgrade(config.Version);
         config.Version = CurrentVersion;
-        config.Changed();
         return config;
     }
 

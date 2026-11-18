@@ -100,6 +100,19 @@ public override string Name { get; }
 
  [string](https://learn.microsoft.com/dotnet/api/system.string)
 
+### <a id="Cube_TestBridge_Checks_DrawBudgetCheck_Timeout"></a> Timeout
+
+Room for the 150 frames even when the game runs in the background at about 10 fps (its own frame limiter); the
+budget is per frame, so a slow frame rate mustn't fail the check (#79).
+
+```csharp
+public override TimeSpan Timeout { get; }
+```
+
+#### Property Value
+
+ [TimeSpan](https://learn.microsoft.com/dotnet/api/system.timespan)
+
 ## Methods
 
 ### <a id="Cube_TestBridge_Checks_DrawBudgetCheck_AtCaps_Cube_Core_PlayerSet_"></a> AtCaps\(PlayerSet\)
