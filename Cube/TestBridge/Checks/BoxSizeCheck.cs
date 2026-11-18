@@ -15,8 +15,9 @@ namespace Cube.TestBridge.Checks;
 /// <para>
 /// The view is set straight on and level (heading 0, tilt 0) and the cube north up, so the wireframe's height and width
 /// on screen are exactly the box's height and width at one scale: a 20-wide, 80-tall box must measure four times as
-/// tall as wide. A fake fixed 18 yalms east of the player is inside the default cube (half-width 20), outside after one
-/// "Zoom in" step (half-width 16), and inside again after "Reset size".
+/// tall as wide. A fake fixed 18 yalms east of the player is inside the default cube (half-width 20), outside after
+/// setting the zoom slider (#94) to 32 through the same <see cref="ZoomSlider"/> the settings window uses (half-width
+/// 16), and inside again after "Reset size".
 /// </para>
 /// <para>
 /// Dragging the gizmo's handles needs a real mouse, so it is a manual step in <c>docs/manual-tests.md</c>; the maths
@@ -28,6 +29,9 @@ internal sealed class BoxSizeCheck : BridgeCheck
 {
     /// <summary>How far the measured height-to-width ratio may be from the box's, for rounding.</summary>
     private const float RatioTolerance = 0.01f;
+
+    /// <summary>The zoom slider value set (largest extent): the default cube becomes 32 × 32 × 32, half-width 16.</summary>
+    private const float ZoomedLargest = 32f;
 
     /// <summary>Frames watched with nothing touched, to check the gizmo leaves the settings alone when idle.</summary>
     private const int IdleFrames = 10;
@@ -110,13 +114,28 @@ internal sealed class BoxSizeCheck : BridgeCheck
         }
 
         var insideBefore = OrientationCheck.HasFake(window, 0);
-        settings.Zoom(1f / BoxExtents.ZoomStep);
+
+        // The zoom slider's path (#94): it reads 40 for the default cube; setting it to 32 must give a 32 cube.
+        var zoom = default(ZoomSlider);
+        zoom.Update(settings.CubeSize);
+        var startValue = zoom.Value;
+        settings.SetSize(zoom.Drag(settings.CubeSize, ZoomedLargest));
+        zoom.EndDrag();
         foreach (var step in WaitForDraws(window))
         {
             yield return step;
         }
 
         var zoomedSize = window.LastSpace.Size;
+        zoom.Update(settings.CubeSize);
+        if (startValue != BoxExtents.Default
+            || Vector3.Distance(zoomedSize, new Vector3(ZoomedLargest)) > 1e-3f
+            || MathF.Abs(zoom.Value - ZoomedLargest) > 1e-3f)
+        {
+            yield return CheckStep.Fail($"The zoom slider read {startValue} for the default cube (want 40), and setting it to {ZoomedLargest} drew {zoomedSize} and read back {zoom.Value}.");
+            yield break;
+        }
+
         var insideZoomed = OrientationCheck.HasFake(window, 0);
 
         settings.ResetSize();
@@ -139,7 +158,7 @@ internal sealed class BoxSizeCheck : BridgeCheck
         {
             yield return CheckStep.Pass(string.Create(
                 CultureInfo.InvariantCulture,
-                $"Box {TallBox} drew {boxRatio:0.000} times as tall as wide (cube {cubeRatio:0.000}); idle frames left the settings alone; zooming in to {zoomedSize} pushed a fake out, reset brought it back."));
+                $"Box {TallBox} drew {boxRatio:0.000} times as tall as wide (cube {cubeRatio:0.000}); idle frames left the settings alone; zoom slider {startValue} -> {ZoomedLargest} drew {zoomedSize} and pushed a fake out, reset brought it back."));
         }
     }
 

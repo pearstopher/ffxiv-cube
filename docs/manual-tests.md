@@ -7,7 +7,7 @@ Only what the in-game test bridge can't check (`docs/in-game-testing.md`). Optio
 The bridge checks every setting changes the frame and that saving writes the file, but it can't click the controls.
 
 1. Type `/cube config`: the settings window opens. `/cube` still shows and hides the cube.
-2. Drag the Width, Height and Depth sliders (#90): the cube stretches into a box along that axis while dragging. "Zoom in" makes all three smaller together (contents look bigger), "Zoom out" bigger; "Reset size" gives 40 × 40 × 40.
+2. Drag the Width, Height and Depth sliders (#90): the cube stretches into a box along that axis while dragging. Drag the Zoom slider (#94): all three shrink or grow together keeping the shape (contents look bigger as it goes down), and the Width/Height/Depth sliders follow it; it stops where the smallest side reaches 10 or the largest 100. Drag it far down and back to where it started: the box is exactly the size it was. Move the Height slider: the Zoom slider follows when height is the longest side. "Reset size" gives 40 × 40 × 40 and the Zoom slider reads 40.
 3. Change a colour, untick "Show names", switch to "Keep contents fixed (north stays put)", lower the opacity: each shows in the cube at once.
 4. Near townspeople: untick "Show NPCs": the purple NPC cubes disappear, players stay. Tick it again and change the "NPCs" colour: they come back in the new colour.
 5. Near walls (#32): set collision "Detail" to "Coarse": the grey-blue collision boxes become fewer, bigger blocks at once; "Medium" is in between; "Full" is back to the close fit. Untick "Show collision": the collision boxes disappear; tick it again: they come back.

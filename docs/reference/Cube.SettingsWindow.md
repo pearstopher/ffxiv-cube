@@ -4,7 +4,7 @@ Namespace: [Cube](Cube.md)
 Assembly: Cube.dll  
 
 The settings window, opened with <code>/cube config</code> or Dalamud's settings button (PROJECT.md, "Features": cube
-width, height and depth with zoom and reset size (#90), player height in cube (#91), orientation mode, labels on/off, colours and opacity; "NPCs": NPCs on/off and their colour; "View orientation
+width, height and depth with a zoom slider (#94) and reset size (#90), player height in cube (#91), orientation mode, labels on/off, colours and opacity; "NPCs": NPCs on/off and their colour; "View orientation
 control": the control's corner and a way to reset the view; #32: collision on/off and detail).
 
 ```csharp
@@ -97,6 +97,18 @@ private readonly Action save
 #### Field Value
 
  [Action](https://learn.microsoft.com/dotnet/api/system.action)
+
+### <a id="Cube_SettingsWindow_zoom"></a> zoom
+
+The zoom slider's cached value, range and drag start (#94).
+
+```csharp
+private ZoomSlider zoom
+```
+
+#### Field Value
+
+ [ZoomSlider](Cube.Core.ZoomSlider.md)
 
 ## Properties
 

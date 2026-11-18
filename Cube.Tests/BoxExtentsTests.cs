@@ -30,7 +30,7 @@ public class BoxExtentsTests
     [Fact]
     public void Zoom_in_means_less_space()
     {
-        var zoomed = BoxExtents.Zoom(new Vector3(40), 1f / BoxExtents.ZoomStep);
+        var zoomed = BoxExtents.Zoom(new Vector3(40), 0.8f);
 
         Assert.True(zoomed.X < 40 && zoomed.Y < 40 && zoomed.Z < 40);
         Assert.Equal(zoomed.X, zoomed.Y);
@@ -67,6 +67,15 @@ public class BoxExtentsTests
     public void Largest_picks_the_biggest_axis()
     {
         Assert.Equal(90f, BoxExtents.Largest(new Vector3(10, 30, 90)));
+    }
+
+    [Fact]
+    public void Zoom_at_the_one_to_ten_limit_does_not_throw()
+    {
+        var size = new Vector3(10, 100, 37.3f);
+
+        Assert.Equal(size, BoxExtents.Zoom(size, 1.3f));
+        Assert.Equal(size, BoxExtents.Zoom(size, 0.7f));
     }
 
     [Fact]

@@ -73,6 +73,13 @@ public void Unusable_zoom_factor_leaves_the_size_alone(float factor)
 
 `factor` [float](https://learn.microsoft.com/dotnet/api/system.single)
 
+### <a id="Cube_Tests_BoxExtentsTests_Zoom_at_the_one_to_ten_limit_does_not_throw"></a> Zoom\_at\_the\_one\_to\_ten\_limit\_does\_not\_throw\(\)
+
+```csharp
+[Fact]
+public void Zoom_at_the_one_to_ten_limit_does_not_throw()
+```
+
 ### <a id="Cube_Tests_BoxExtentsTests_Zoom_in_means_less_space"></a> Zoom\_in\_means\_less\_space\(\)
 
 ```csharp

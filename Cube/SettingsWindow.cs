@@ -7,7 +7,7 @@ namespace Cube;
 
 /// <summary>
 /// The settings window, opened with <c>/cube config</c> or Dalamud's settings button (PROJECT.md, "Features": cube
-/// width, height and depth with zoom and reset size (#90), player height in cube (#91), orientation mode, labels on/off, colours and opacity; "NPCs": NPCs on/off and their colour; "View orientation
+/// width, height and depth with a zoom slider (#94) and reset size (#90), player height in cube (#91), orientation mode, labels on/off, colours and opacity; "NPCs": NPCs on/off and their colour; "View orientation
 /// control": the control's corner and a way to reset the view; #32: collision on/off and detail).
 /// </summary>
 /// <remarks>
@@ -28,6 +28,9 @@ internal sealed class SettingsWindow : Window
 
     /// <summary>Writes the settings to disk.</summary>
     private readonly Action save;
+
+    /// <summary>The zoom slider's cached value, range and drag start (#94).</summary>
+    private ZoomSlider zoom;
 
     /// <summary>Creates the window, closed.</summary>
     /// <param name="config">The settings to edit.</param>
@@ -68,28 +71,33 @@ internal sealed class SettingsWindow : Window
     {
         var c = this.config;
 
-        // The cube's size (PROJECT.md, "Cube", #90): one slider per extent, and zoom buttons that scale all three
-        // together keeping their ratios. Zooming in means less space, so the contents look bigger.
+        // The cube's size (PROJECT.md, "Cube", #90): one slider per extent, and a zoom slider (#94) that scales all
+        // three together keeping their ratios. Lower zoom means less space, so the contents look bigger.
         ImGui.SetNextItemWidth(200);
         this.Track(ImGui.SliderFloat("Width (yalms)", ref c.CubeSize.X, BoxExtents.Min, BoxExtents.Max, "%.0f"));
         ImGui.SetNextItemWidth(200);
         this.Track(ImGui.SliderFloat("Height (yalms)", ref c.CubeSize.Y, BoxExtents.Min, BoxExtents.Max, "%.0f"));
         ImGui.SetNextItemWidth(200);
         this.Track(ImGui.SliderFloat("Depth (yalms)", ref c.CubeSize.Z, BoxExtents.Min, BoxExtents.Max, "%.0f"));
-        if (ImGui.Button("Zoom in"))
+
+        // The zoom slider shows the largest extent and is worked out from the extents, so the sliders above and the
+        // gizmo move it; it stores nothing itself.
+        this.zoom.Update(c.CubeSize);
+        var zoomValue = this.zoom.Value;
+        ImGui.SetNextItemWidth(200);
+        var zoomChanged = ImGui.SliderFloat("Zoom (largest side, yalms)", ref zoomValue, this.zoom.Low, this.zoom.High, "%.0f");
+        if (zoomChanged)
         {
-            c.Zoom(1f / BoxExtents.ZoomStep);
-            this.save();
+            c.CubeSize = this.zoom.Drag(c.CubeSize, zoomValue);
         }
 
-        ImGui.SameLine();
-        if (ImGui.Button("Zoom out"))
+        if (!ImGui.IsItemActive())
         {
-            c.Zoom(BoxExtents.ZoomStep);
-            this.save();
+            this.zoom.EndDrag();
         }
 
-        ImGui.SameLine();
+        this.Track(zoomChanged);
+
         if (ImGui.Button("Reset size"))
         {
             c.ResetSize();

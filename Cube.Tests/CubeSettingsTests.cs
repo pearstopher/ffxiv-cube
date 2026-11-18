@@ -175,18 +175,6 @@ public class CubeSettingsTests
     }
 
     [Fact]
-    public void Zoom_scales_every_extent_and_keeps_the_ratios()
-    {
-        var settings = new CubeSettings { CubeSize = new Vector3(20, 40, 30) };
-        var before = settings.Revision;
-
-        settings.Zoom(1.5f);
-
-        Assert.Equal(new Vector3(30, 60, 45), settings.CubeSize);
-        Assert.True(settings.Revision > before);
-    }
-
-    [Fact]
     public void Reset_size_gives_40_by_40_by_40()
     {
         var settings = new CubeSettings { CubeSize = new Vector3(20, 90, 30) };

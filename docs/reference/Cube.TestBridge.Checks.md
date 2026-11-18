@@ -173,11 +173,11 @@ the same thing (PROJECT.md, "Efficiency and memory": the phase 2 budgets hold wi
 
 What one walk found inside one cube size.
 
- [CollisionProbeCheck.Sample](Cube.TestBridge.Checks.CollisionProbeCheck.Sample.md)
+ [PlayerHeightCheck.Sample](Cube.TestBridge.Checks.PlayerHeightCheck.Sample.md)
 
 One frame's measurements.
 
- [PlayerHeightCheck.Sample](Cube.TestBridge.Checks.PlayerHeightCheck.Sample.md)
+ [CollisionProbeCheck.Sample](Cube.TestBridge.Checks.CollisionProbeCheck.Sample.md)
 
 One frame's measurements.
 

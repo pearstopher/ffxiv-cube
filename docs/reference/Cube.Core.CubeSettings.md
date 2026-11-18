@@ -72,7 +72,8 @@ public float CubeEdge
 ### <a id="Cube_Core_CubeSettings_CubeSize"></a> CubeSize
 
 The cube's width (X), height (Y) and depth (Z) in yalms (PROJECT.md, "Cube": each 10–100, default 40; #90).
-Change it with [SetSize](Cube.Core.CubeSettings.md#Cube_Core_CubeSettings_SetSize) or [Zoom](Cube.Core.CubeSettings.md#Cube_Core_CubeSettings_Zoom), or bind a slider to a component and call
+Change it with [SetSize](Cube.Core.CubeSettings.md#Cube_Core_CubeSettings_SetSize) (zoom: [Zoom](Cube.Core.BoxExtents.md#Cube_Core_BoxExtents_Zoom) or [ZoomSlider](Cube.Core.ZoomSlider.md#Cube_Core_ZoomSlider)), or bind a
+slider to a component and call
 [Changed](Cube.Core.CubeSettings.md#Cube_Core_CubeSettings_Changed).
 
 ```csharp
@@ -582,18 +583,3 @@ The colour's own opacity before the setting is applied.
 #### Returns
 
  [uint](https://learn.microsoft.com/dotnet/api/system.uint32)
-
-### <a id="Cube_Core_CubeSettings_Zoom_System_Single_"></a> Zoom\(float\)
-
-Zooms the cube (PROJECT.md, "Zoom": all three extents scale together, keeping their ratios, clamped so none
-leaves 10–100) and marks the settings changed.
-
-```csharp
-public void Zoom(float factor)
-```
-
-#### Parameters
-
-`factor` [float](https://learn.microsoft.com/dotnet/api/system.single)
-
-How much to scale every extent by; below 1 zooms in (less space, contents look bigger).
