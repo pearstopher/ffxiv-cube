@@ -209,6 +209,25 @@ public class ProjectionAndDrawListTests
     }
 
     [Fact]
+    public void Sort_key_orders_exactly_like_depth_then_insertion_order()
+    {
+        float[] depths = [-1e6f, -12.5f, -1f, -1e-7f, -0f, 0f, 1e-7f, 0.5f, 1f, 12.5f, 3e5f, float.MaxValue, float.MinValue];
+        var primitives = new List<DrawPrimitive>();
+        for (var i = 0; i < depths.Length * 2; i++)
+        {
+            primitives.Add(new DrawPrimitive { Depth = depths[i % depths.Length], Sequence = i });
+        }
+
+        foreach (var x in primitives)
+        {
+            foreach (var y in primitives)
+            {
+                Assert.Equal(Math.Sign(DrawList.CompareBackToFront(x, y)), Math.Sign(DrawList.SortKey(x).CompareTo(DrawList.SortKey(y))));
+            }
+        }
+    }
+
+    [Fact]
     public void Full_list_drops_extra_primitives_instead_of_growing()
     {
         var list = new DrawList(2);

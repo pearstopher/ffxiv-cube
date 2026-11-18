@@ -226,7 +226,7 @@ internal sealed class SettingsCheck : BridgeCheck
         var players = window.Players.Items;
         foreach (var p in window.DrawList.Items)
         {
-            if (p.Kind != PrimitiveKind.Quad || p.Tag == 0 || players[p.Tag - 1].Relation != relation)
+            if (p.Kind != PrimitiveKind.Quad || p.Tag <= 0 || players[p.Tag - 1].Relation != relation)
             {
                 continue;
             }

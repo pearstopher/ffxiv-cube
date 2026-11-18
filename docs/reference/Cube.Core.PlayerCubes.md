@@ -128,6 +128,11 @@ Colours per relation.
 
 Whether to add name labels (PROJECT.md, "Features": labels on/off setting).
 
+#### Remarks
+
+One [BoxProjector](Cube.Core.BoxProjector.md#Cube_Core_BoxProjector) and one set of face shades per relation are worked out per call, so each player
+costs one projection of their position (PROJECT.md, "Efficiency and memory").
+
 ### <a id="Cube_Core_PlayerCubes_HalfSize_Cube_Core_CubeSpace__Cube_Core_ViewProjection__"></a> HalfSize\(in CubeSpace, in ViewProjection\)
 
 Half the edge of a player cube, in yalms, for this frame's cube and scale.

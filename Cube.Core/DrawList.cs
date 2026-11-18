@@ -14,14 +14,11 @@ namespace Cube.Core;
 /// </remarks>
 public sealed class DrawList
 {
-    /// <summary>
-    /// Sorts far first, then by insertion order. A cached delegate: sorting with an <see cref="IComparer{T}"/>
-    /// would wrap it in a new delegate on every call, which allocates each frame.
-    /// </summary>
-    private static readonly Comparison<DrawPrimitive> BackToFront = CompareBackToFront;
-
     /// <summary>The reused buffer.</summary>
     private readonly DrawPrimitive[] items;
+
+    /// <summary>The reused sort keys, one per primitive (<see cref="SortKey"/>).</summary>
+    private readonly long[] keys;
 
     /// <summary>Creates an empty list.</summary>
     /// <param name="capacity">The most primitives a frame can hold.</param>
@@ -29,6 +26,7 @@ public sealed class DrawList
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(capacity, 1);
         this.items = new DrawPrimitive[capacity];
+        this.keys = new long[capacity];
     }
 
     /// <summary>How many primitives the list can hold.</summary>
@@ -65,7 +63,7 @@ public sealed class DrawList
     /// <param name="d">Fourth corner.</param>
     /// <param name="depth">Distance from the viewer.</param>
     /// <param name="colour">Packed colour.</param>
-    /// <param name="tag">Owner: 0 for the scene, player index + 1 for a player's cube (<see cref="DrawPrimitive.Tag"/>).</param>
+    /// <param name="tag">Owner: 0 for the scene, player index + 1 for a player's cube, negative for a collision box (<see cref="DrawPrimitive.Tag"/>).</param>
     public void AddQuad(Vector2 a, Vector2 b, Vector2 c, Vector2 d, float depth, uint colour, int tag = 0) =>
         this.Add(new DrawPrimitive { Kind = PrimitiveKind.Quad, A = a, B = b, C = c, D = d, Depth = depth, Colour = colour, Tag = tag });
 
@@ -78,7 +76,35 @@ public sealed class DrawList
         this.Add(new DrawPrimitive { Kind = PrimitiveKind.Label, A = anchor, Depth = depth, Colour = colour, Tag = tag });
 
     /// <summary>Sorts so the farthest primitive comes first; ties keep the order they were added in.</summary>
-    public void SortBackToFront() => this.items.AsSpan(0, this.Count).Sort(BackToFront);
+    /// <remarks>
+    /// Sorts on one 64-bit key per primitive (<see cref="SortKey"/>), carrying the primitives along, rather than
+    /// comparing primitives through a delegate: with collision boxes a frame holds a few thousand primitives, and
+    /// comparing plain numbers is several times cheaper. The order is exactly <see cref="CompareBackToFront"/>'s.
+    /// </remarks>
+    public void SortBackToFront()
+    {
+        var items = this.items.AsSpan(0, this.Count);
+        var keys = this.keys.AsSpan(0, this.Count);
+        for (var i = 0; i < items.Length; i++)
+        {
+            keys[i] = SortKey(items[i]);
+        }
+
+        keys.Sort(items);
+    }
+
+    /// <summary>
+    /// A number that orders primitives far first, then by <see cref="DrawPrimitive.Sequence"/>: the depth's bits made
+    /// to sort like the float and inverted (so larger depths come first) in the high half, the sequence in the low.
+    /// </summary>
+    /// <param name="primitive">The primitive.</param>
+    public static long SortKey(in DrawPrimitive primitive)
+    {
+        // +0 and -0 compare equal as floats; adding 0 turns -0 into +0 so they get the same key too.
+        var bits = BitConverter.SingleToInt32Bits(primitive.Depth + 0f);
+        var ordered = bits >= 0 ? bits : bits ^ int.MaxValue;
+        return ((long)~ordered << 32) | (uint)primitive.Sequence;
+    }
 
     /// <summary>Appends a primitive, or counts it as dropped when full.</summary>
     /// <param name="primitive">The primitive; its sequence number is set here.</param>
@@ -94,10 +120,13 @@ public sealed class DrawList
         this.items[this.Count++] = primitive;
     }
 
-    /// <summary>Orders by depth descending, then by sequence ascending, so the sort is stable.</summary>
+    /// <summary>
+    /// The drawing order spelled out: depth descending, then sequence ascending, so the sort is stable.
+    /// <see cref="SortKey"/> encodes the same order as one number; the unit tests check the two agree.
+    /// </summary>
     /// <param name="x">One primitive.</param>
     /// <param name="y">The other.</param>
-    private static int CompareBackToFront(DrawPrimitive x, DrawPrimitive y)
+    public static int CompareBackToFront(in DrawPrimitive x, in DrawPrimitive y)
     {
         var byDepth = y.Depth.CompareTo(x.Depth);
         return byDepth != 0 ? byDepth : x.Sequence.CompareTo(y.Sequence);

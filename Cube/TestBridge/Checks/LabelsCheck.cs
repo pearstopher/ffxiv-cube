@@ -70,7 +70,7 @@ internal sealed class LabelsCheck : BridgeCheck
         for (var i = 0; i < items.Length; i++)
         {
             var p = items[i];
-            if (p.Tag == 0)
+            if (p.Tag <= 0)
             {
                 continue;
             }

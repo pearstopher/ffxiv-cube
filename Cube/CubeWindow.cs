@@ -25,9 +25,10 @@ internal sealed class CubeWindow : Window
 {
     /// <summary>
     /// Most primitives a frame can hold: the 12 cube edges plus three faces and a label for every player the set can
-    /// hold (200) and every NPC (50), with room to spare. Fixed, so memory never grows (PROJECT.md: bounded memory).
+    /// hold (200) and every NPC (50), with room to spare (1,280), plus three faces for every collision box the cache
+    /// can hold. Fixed, so memory never grows (PROJECT.md: bounded memory); about 380 KB.
     /// </summary>
-    internal const int DrawListCapacity = 1280;
+    internal const int DrawListCapacity = 1280 + (3 * CollisionBoxSet.DefaultCapacity);
 
     /// <summary>Colour of the big cube's edges: light grey.</summary>
     private static readonly Vector3 WireRgb = new(0.85f, 0.85f, 0.85f);
@@ -130,9 +131,14 @@ internal sealed class CubeWindow : Window
 
     /// <summary>
     /// The collision around the cube (PROJECT.md, "Collision (phase 2)"), gathered over frames while the cube is shown.
-    /// Read by the test bridge; drawn from #31.
+    /// Read by the test bridge.
     /// </summary>
     internal CollisionReader Collision { get; } = new();
+
+    /// <summary>
+    /// The gathered collision boxes clipped to the last frame's cube, as drawn (#31). Read by the test bridge.
+    /// </summary>
+    internal ClippedCollision ClippedCollision { get; } = new();
 
     /// <summary>Whether the last frame found a local player to centre the cube on.</summary>
     internal bool LastHadLocalPlayer { get; private set; }
@@ -229,10 +235,13 @@ internal sealed class CubeWindow : Window
     /// <param name="palette">Player colours.</param>
     /// <param name="labels">Whether to add name labels.</param>
     /// <param name="wireColour">The big cube's edge colour.</param>
-    internal static void BuildFrame(DrawList list, in CubeSpace space, in ViewProjection projection, ReadOnlySpan<NearbyPlayer> players, in PlayerPalette palette, bool labels, uint wireColour)
+    /// <param name="collision">The collision boxes clipped to the cube (PROJECT.md, "Collision (phase 2)").</param>
+    /// <param name="collisionColour">The collision boxes' colour.</param>
+    internal static void BuildFrame(DrawList list, in CubeSpace space, in ViewProjection projection, ReadOnlySpan<NearbyPlayer> players, in PlayerPalette palette, bool labels, uint wireColour, ReadOnlySpan<CollisionBox> collision, uint collisionColour)
     {
         list.Clear();
         CubeGeometry.AddWireCube(list, space, projection, wireColour);
+        CollisionCubes.Add(list, new BoxProjector(space, projection), collision, collisionColour);
         PlayerCubes.Add(list, space, projection, players, palette, labels);
         list.SortBackToFront();
     }
@@ -245,6 +254,9 @@ internal sealed class CubeWindow : Window
 
     /// <summary>The last frame's edge colour, rebuilt with <see cref="Palette"/>.</summary>
     internal uint WireColour { get; private set; }
+
+    /// <summary>The last frame's collision colour (<see cref="CollisionCubes.Rgb"/> at the opacity setting), rebuilt with <see cref="Palette"/>.</summary>
+    internal uint CollisionColour { get; private set; }
 
     /// <summary>The last frame's label setting.</summary>
     internal bool ShowLabels { get; private set; }
@@ -332,6 +344,7 @@ internal sealed class CubeWindow : Window
         {
             this.Palette = settings.Palette();
             this.WireColour = settings.WithOpacity(WireRgb, WireAlpha);
+            this.CollisionColour = settings.WithOpacity(CollisionCubes.Rgb, CollisionCubes.Alpha);
             this.view = settings.View;
             this.settingsRevision = settings.Revision;
         }
@@ -379,8 +392,9 @@ internal sealed class CubeWindow : Window
 #endif
 
         this.UpdateCollision(centre, settings.CubeEdge);
+        this.ClippedCollision.Update(space, this.Collision.Cache);
 
-        BuildFrame(this.DrawList, space, projection, this.Players.Items, this.Palette, this.ShowLabels, this.WireColour);
+        BuildFrame(this.DrawList, space, projection, this.Players.Items, this.Palette, this.ShowLabels, this.WireColour, this.ClippedCollision.Items, this.CollisionColour);
         this.LastSpace = space;
         this.LastProjection = projection;
         this.LastRegionMin = regionMin;

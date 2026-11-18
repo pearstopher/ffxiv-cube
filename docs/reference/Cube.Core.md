@@ -13,6 +13,11 @@ Writes a file so that readers only ever see the old or the complete new content,
 Formats the build details the plugin logs when it loads, so a stale build
 (wrong configuration, or not rebuilt) is obvious in <code>/xllog</code>.
 
+ [ClippedCollision](Cube.Core.ClippedCollision.md)
+
+The cached collision boxes clipped to this frame's cube, ready for [CollisionCubes](Cube.Core.CollisionCubes.md#Cube_Core_CollisionCubes) (PROJECT.md,
+"Collision (phase 2)": boxes clipped to the cube). Clips again only when the cube or the gathered boxes change.
+
  [CollisionBoxSet](Cube.Core.CollisionBoxSet.md)
 
 The cached collision boxes around the cube (PROJECT.md, "Collision (phase 2)" and "Efficiency and memory"): the
@@ -30,6 +35,12 @@ Clips collision boxes to the cube (PROJECT.md, "Collision (phase 2)": each colli
 shown as a simplified box, clipped to the cube). Boxes wholly outside are left out; the rest are cut back to the
 part inside.
 
+ [CollisionCubes](Cube.Core.CollisionCubes.md)
+
+Draws the collision around the player as solid boxes in the cube, sorted together with the players (PROJECT.md,
+"Collision (phase 2)": each collider inside or crossing the cube is shown as a simplified box, clipped to the cube;
+"Draw order": far things first, so near ones cover far ones).
+
  [Colour](Cube.Core.Colour.md)
 
 Packs and shades colours in the 32-bit layout ImGui uses (<code>0xAABBGGRR</code>), without Core depending on ImGui.
@@ -45,9 +56,9 @@ must not depend on Dalamud or the game, so it can be unit tested on its own.
 
  [CubeGeometry](Cube.Core.CubeGeometry.md)
 
-Turns cubes into draw-list primitives: the big cube as a wireframe, and solid cubes (players, later
-collision boxes) as their visible faces only (PROJECT.md: "Everything it draws is a cube"; "Cheap drawing":
-only the visible faces of a cube).
+Turns cubes into draw-list primitives: the big cube as a wireframe, and a single solid cube as its visible faces
+(PROJECT.md: "Everything it draws is a cube"; "Cheap drawing": only the visible faces of a cube). Also holds the
+face shades every solid box uses.
 
  [CubeSettings](Cube.Core.CubeSettings.md)
 
@@ -112,6 +123,15 @@ Decides whether to draw (PROJECT.md, "When hidden": not logged in, loading scree
 areas; the window is just empty then, never an error).
 
 ### Structs
+
+ [BoxProjector](Cube.Core.BoxProjector.md)
+
+Projects world-axis-aligned boxes (player cubes, collision boxes) onto the window for one frame, as their visible
+faces only (PROJECT.md: "Everything it draws is a cube"; "Cheap drawing": only the visible faces of a cube).
+
+ [BoxShades](Cube.Core.BoxShades.md)
+
+The colours of a box's three visible faces, worked out once per colour per frame ([Shades](Cube.Core.BoxProjector.md#Cube_Core_BoxProjector_Shades)).
 
  [CollisionBox](Cube.Core.CollisionBox.md)
 

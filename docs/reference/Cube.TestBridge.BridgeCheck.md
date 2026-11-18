@@ -19,6 +19,7 @@ internal abstract class BridgeCheck
 #### Derived
 
 [BuildStampCheck](Cube.TestBridge.Checks.BuildStampCheck.md), 
+[CollisionDrawCheck](Cube.TestBridge.Checks.CollisionDrawCheck.md), 
 [CollisionProbeCheck](Cube.TestBridge.Checks.CollisionProbeCheck.md), 
 [CollisionReaderCheck](Cube.TestBridge.Checks.CollisionReaderCheck.md), 
 [DrawBudgetCheck](Cube.TestBridge.Checks.DrawBudgetCheck.md), 
