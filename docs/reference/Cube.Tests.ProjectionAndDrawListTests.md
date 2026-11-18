@@ -185,6 +185,13 @@ public void Solid_cube_at_an_angle_shows_three_faces()
 public void Solid_cube_facing_north_shows_top_and_the_face_towards_the_viewer()
 ```
 
+### <a id="Cube_Tests_ProjectionAndDrawListTests_Sort_key_orders_exactly_like_depth_then_insertion_order"></a> Sort\_key\_orders\_exactly\_like\_depth\_then\_insertion\_order\(\)
+
+```csharp
+[Fact]
+public void Sort_key_orders_exactly_like_depth_then_insertion_order()
+```
+
 ### <a id="Cube_Tests_ProjectionAndDrawListTests_Space_System_Single_"></a> Space\(float\)
 
 ```csharp

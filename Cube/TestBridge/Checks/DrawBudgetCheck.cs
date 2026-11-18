@@ -72,6 +72,7 @@ internal sealed class DrawBudgetCheck : BridgeCheck
         context.Metric("players", players);
         context.Metric("npcs", set.NpcCount);
         context.Metric("primitives", context.Window.DrawList.Count);
+        context.Metric("collisionBoxes", context.Window.ClippedCollision.Count);
         context.Metric("frames", sampler.Count);
         context.Metric("averageMs", average);
         context.Metric("maxMs", sampler.MaxMilliseconds);
@@ -80,7 +81,7 @@ internal sealed class DrawBudgetCheck : BridgeCheck
 
         var summary = string.Create(
             CultureInfo.InvariantCulture,
-            $"{players} players and {set.NpcCount} NPCs, {sampler.Count} frames: average {average:0.0000} ms (budget {BudgetMilliseconds} ms), {bytes} bytes allocated in {allocatingFrames} frame(s) (budget 0).");
+            $"{players} players, {set.NpcCount} NPCs and {context.Window.ClippedCollision.Count} collision boxes, {sampler.Count} frames: average {average:0.0000} ms (budget {BudgetMilliseconds} ms), {bytes} bytes allocated in {allocatingFrames} frame(s) (budget 0).");
 
         // Fewer than the caps would mean the worst case wasn't measured.
         yield return average < BudgetMilliseconds && bytes == 0 && AtCaps(set)

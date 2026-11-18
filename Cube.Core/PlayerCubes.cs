@@ -1,3 +1,5 @@
+using System.Numerics;
+
 namespace Cube.Core;
 
 /// <summary>
@@ -55,22 +57,43 @@ public static class PlayerCubes
     /// <param name="players">This frame's players inside the cube.</param>
     /// <param name="palette">Colours per relation.</param>
     /// <param name="labels">Whether to add name labels (PROJECT.md, "Features": labels on/off setting).</param>
+    /// <remarks>
+    /// One <see cref="BoxProjector"/> and one set of face shades per relation are worked out per call, so each player
+    /// costs one projection of their position (PROJECT.md, "Efficiency and memory").
+    /// </remarks>
     public static void Add(DrawList list, in CubeSpace space, in ViewProjection projection, ReadOnlySpan<NearbyPlayer> players, in PlayerPalette palette, bool labels = true)
     {
+        if (players.IsEmpty)
+        {
+            return;
+        }
+
+        var projector = new BoxProjector(space, projection);
+        var self = projector.Shades(palette.Self);
+        var party = projector.Shades(palette.Party);
+        var other = projector.Shades(palette.Other);
+        var npc = projector.Shades(palette.Npc);
         var half = HalfSize(space, projection);
+        var size = new Vector3(half);
         var labelOffset = (half * WidestReach * projection.PixelsPerYalm) + LabelGap;
         for (var i = 0; i < players.Length; i++)
         {
             ref readonly var player = ref players[i];
-            var centre = space.ToView(player.Position);
-            CubeGeometry.AddSolidCube(list, space, projection, centre, half, palette.For(player.Relation), tag: i + 1);
+            var screen = projector.Screen(player.Position);
+            var depth = projector.Depth(player.Position);
+            var shades = player.Relation switch
+            {
+                PlayerRelation.Self => self,
+                PlayerRelation.Party => party,
+                PlayerRelation.Npc => npc,
+                _ => other,
+            };
+            projector.AddFaces(list, screen, size, depth, shades, tag: i + 1);
 
             // The local player isn't labelled: PROJECT.md labels the *other* players (and NPCs).
             if (labels && player.Relation != PlayerRelation.Self)
             {
-                var anchor = projection.ToScreen(centre);
-                anchor.X += labelOffset;
-                list.AddLabel(anchor, projection.Depth(centre), LabelColour, i + 1);
+                list.AddLabel(new Vector2(screen.X + labelOffset, screen.Y), depth, LabelColour, i + 1);
             }
         }
     }

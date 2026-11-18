@@ -34,8 +34,9 @@ public struct DrawPrimitive
     public int Sequence;
 
     /// <summary>
-    /// Which thing the primitive belongs to: 0 for the scene (the big cube), otherwise the index of the player in
-    /// this frame's <see cref="PlayerSet"/> plus one. Lets the bridge check each player's cube, and labels find
+    /// Which thing the primitive belongs to: 0 for the scene (the big cube), a positive number for the index of the
+    /// player in this frame's <see cref="PlayerSet"/> plus one, and a negative number for a collision box
+    /// (<see cref="CollisionCubes.TagFor"/>). Lets the bridge check each player's cube and each box, and labels find
     /// their player.
     /// </summary>
     public int Tag;

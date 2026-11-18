@@ -10,6 +10,12 @@ Checks the plugin that ran the checks is the build on disk: the build time read 
 DLL's current write time. If not, the game is running a stale build and every other result is
 about old code (CLAUDE.md: the startup build line makes "my change didn't take effect" obvious).
 
+ [CollisionDrawCheck](Cube.TestBridge.Checks.CollisionDrawCheck.md)
+
+Checks the collision boxes are drawn in the running game (#31; PROJECT.md, "Collision (phase 2)": each collider
+inside or crossing the cube is shown as a simplified box, clipped to the cube; "Draw order": far things first, with
+the players).
+
  [CollisionProbeCheck](Cube.TestBridge.Checks.CollisionProbeCheck.md)
 
 Research probe for #28 (where to get collision data): measures, in the running game, the three candidate

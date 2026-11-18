@@ -57,10 +57,11 @@ Writes the settings to disk, after the user turns the view with the view control
 ### <a id="Cube_CubeWindow_DrawListCapacity"></a> DrawListCapacity
 
 Most primitives a frame can hold: the 12 cube edges plus three faces and a label for every player the set can
-hold (200) and every NPC (50), with room to spare. Fixed, so memory never grows (PROJECT.md: bounded memory).
+hold (200) and every NPC (50), with room to spare (1,280), plus three faces for every collision box the cache
+can hold. Fixed, so memory never grows (PROJECT.md: bounded memory); about 380 KB.
 
 ```csharp
-internal const int DrawListCapacity = 1280
+internal const int DrawListCapacity = 7280
 ```
 
 #### Field Value
@@ -281,10 +282,22 @@ private float yaw
 
 ## Properties
 
+### <a id="Cube_CubeWindow_ClippedCollision"></a> ClippedCollision
+
+The gathered collision boxes clipped to the last frame's cube, as drawn (#31). Read by the test bridge.
+
+```csharp
+internal ClippedCollision ClippedCollision { get; }
+```
+
+#### Property Value
+
+ [ClippedCollision](Cube.Core.ClippedCollision.md)
+
 ### <a id="Cube_CubeWindow_Collision"></a> Collision
 
 The collision around the cube (PROJECT.md, "Collision (phase 2)"), gathered over frames while the cube is shown.
-Read by the test bridge; drawn from #31.
+Read by the test bridge.
 
 ```csharp
 internal CollisionReader Collision { get; }
@@ -293,6 +306,18 @@ internal CollisionReader Collision { get; }
 #### Property Value
 
  [CollisionReader](Cube.Game.CollisionReader.md)
+
+### <a id="Cube_CubeWindow_CollisionColour"></a> CollisionColour
+
+The last frame's collision colour ([Rgb](Cube.Core.CollisionCubes.md#Cube_Core_CollisionCubes_Rgb) at the opacity setting), rebuilt with [Palette](Cube.CubeWindow.md#Cube_CubeWindow_Palette).
+
+```csharp
+internal uint CollisionColour { get; private set; }
+```
+
+#### Property Value
+
+ [uint](https://learn.microsoft.com/dotnet/api/system.uint32)
 
 ### <a id="Cube_CubeWindow_DrawCost"></a> DrawCost
 
@@ -633,13 +658,13 @@ internal uint WireColour { get; private set; }
 
 ## Methods
 
-### <a id="Cube_CubeWindow_BuildFrame_Cube_Core_DrawList_Cube_Core_CubeSpace__Cube_Core_ViewProjection__System_ReadOnlySpan_Cube_Core_NearbyPlayer__Cube_Core_PlayerPalette__System_Boolean_System_UInt32_"></a> BuildFrame\(DrawList, in CubeSpace, in ViewProjection, ReadOnlySpan<NearbyPlayer\>, in PlayerPalette, bool, uint\)
+### <a id="Cube_CubeWindow_BuildFrame_Cube_Core_DrawList_Cube_Core_CubeSpace__Cube_Core_ViewProjection__System_ReadOnlySpan_Cube_Core_NearbyPlayer__Cube_Core_PlayerPalette__System_Boolean_System_UInt32_System_ReadOnlySpan_Cube_Core_CollisionBox__System_UInt32_"></a> BuildFrame\(DrawList, in CubeSpace, in ViewProjection, ReadOnlySpan<NearbyPlayer\>, in PlayerPalette, bool, uint, ReadOnlySpan<CollisionBox\>, uint\)
 
 Builds this frame's draw list for a given drawing region. Separate from the ImGui calls so the bridge can
 check exactly what Core produced.
 
 ```csharp
-internal static void BuildFrame(DrawList list, in CubeSpace space, in ViewProjection projection, ReadOnlySpan<NearbyPlayer> players, in PlayerPalette palette, bool labels, uint wireColour)
+internal static void BuildFrame(DrawList list, in CubeSpace space, in ViewProjection projection, ReadOnlySpan<NearbyPlayer> players, in PlayerPalette palette, bool labels, uint wireColour, ReadOnlySpan<CollisionBox> collision, uint collisionColour)
 ```
 
 #### Parameters
@@ -671,6 +696,14 @@ Whether to add name labels.
 `wireColour` [uint](https://learn.microsoft.com/dotnet/api/system.uint32)
 
 The big cube's edge colour.
+
+`collision` [ReadOnlySpan](https://learn.microsoft.com/dotnet/api/system.readonlyspan\-1)<[CollisionBox](Cube.Core.CollisionBox.md)\>
+
+The collision boxes clipped to the cube (PROJECT.md, "Collision (phase 2)").
+
+`collisionColour` [uint](https://learn.microsoft.com/dotnet/api/system.uint32)
+
+The collision boxes' colour.
 
 ### <a id="Cube_CubeWindow_Draw"></a> Draw\(\)
 

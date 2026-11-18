@@ -41,19 +41,6 @@ The most primitives a frame can hold.
 
 ## Fields
 
-### <a id="Cube_Core_DrawList_BackToFront"></a> BackToFront
-
-Sorts far first, then by insertion order. A cached delegate: sorting with an `System.Collections.Generic.IComparer%601`
-would wrap it in a new delegate on every call, which allocates each frame.
-
-```csharp
-private static readonly Comparison<DrawPrimitive> BackToFront
-```
-
-#### Field Value
-
- [Comparison](https://learn.microsoft.com/dotnet/api/system.comparison\-1)<[DrawPrimitive](Cube.Core.DrawPrimitive.md)\>
-
 ### <a id="Cube_Core_DrawList_items"></a> items
 
 The reused buffer.
@@ -65,6 +52,18 @@ private readonly DrawPrimitive[] items
 #### Field Value
 
  [DrawPrimitive](Cube.Core.DrawPrimitive.md)\[\]
+
+### <a id="Cube_Core_DrawList_keys"></a> keys
+
+The reused sort keys, one per primitive ([SortKey](Cube.Core.DrawList.md#Cube_Core_DrawList_SortKey)).
+
+```csharp
+private readonly long[] keys
+```
+
+#### Field Value
+
+ [long](https://learn.microsoft.com/dotnet/api/system.int64)\[\]
 
 ## Properties
 
@@ -220,7 +219,7 @@ Packed colour.
 
 `tag` [int](https://learn.microsoft.com/dotnet/api/system.int32)
 
-Owner: 0 for the scene, player index + 1 for a player's cube ([Tag](Cube.Core.DrawPrimitive.md#Cube_Core_DrawPrimitive_Tag)).
+Owner: 0 for the scene, player index + 1 for a player's cube, negative for a collision box ([Tag](Cube.Core.DrawPrimitive.md#Cube_Core_DrawPrimitive_Tag)).
 
 ### <a id="Cube_Core_DrawList_Clear"></a> Clear\(\)
 
@@ -230,12 +229,13 @@ Empties the list for a new frame, keeping the buffer.
 public void Clear()
 ```
 
-### <a id="Cube_Core_DrawList_CompareBackToFront_Cube_Core_DrawPrimitive_Cube_Core_DrawPrimitive_"></a> CompareBackToFront\(DrawPrimitive, DrawPrimitive\)
+### <a id="Cube_Core_DrawList_CompareBackToFront_Cube_Core_DrawPrimitive__Cube_Core_DrawPrimitive__"></a> CompareBackToFront\(in DrawPrimitive, in DrawPrimitive\)
 
-Orders by depth descending, then by sequence ascending, so the sort is stable.
+The drawing order spelled out: depth descending, then sequence ascending, so the sort is stable.
+[SortKey](Cube.Core.DrawList.md#Cube_Core_DrawList_SortKey) encodes the same order as one number; the unit tests check the two agree.
 
 ```csharp
-private static int CompareBackToFront(DrawPrimitive x, DrawPrimitive y)
+public static int CompareBackToFront(in DrawPrimitive x, in DrawPrimitive y)
 ```
 
 #### Parameters
@@ -259,3 +259,28 @@ Sorts so the farthest primitive comes first; ties keep the order they were added
 ```csharp
 public void SortBackToFront()
 ```
+
+#### Remarks
+
+Sorts on one 64-bit key per primitive ([SortKey](Cube.Core.DrawList.md#Cube_Core_DrawList_SortKey)), carrying the primitives along, rather than
+comparing primitives through a delegate: with collision boxes a frame holds a few thousand primitives, and
+comparing plain numbers is several times cheaper. The order is exactly [CompareBackToFront](Cube.Core.DrawList.md#Cube_Core_DrawList_CompareBackToFront)'s.
+
+### <a id="Cube_Core_DrawList_SortKey_Cube_Core_DrawPrimitive__"></a> SortKey\(in DrawPrimitive\)
+
+A number that orders primitives far first, then by [Sequence](Cube.Core.DrawPrimitive.md#Cube_Core_DrawPrimitive_Sequence): the depth's bits made
+to sort like the float and inverted (so larger depths come first) in the high half, the sequence in the low.
+
+```csharp
+public static long SortKey(in DrawPrimitive primitive)
+```
+
+#### Parameters
+
+`primitive` [DrawPrimitive](Cube.Core.DrawPrimitive.md)
+
+The primitive.
+
+#### Returns
+
+ [long](https://learn.microsoft.com/dotnet/api/system.int64)

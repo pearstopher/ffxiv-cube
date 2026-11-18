@@ -161,7 +161,7 @@ The same context the check ran with.
 Casts the game's raycast straight down from just above the player and looks for a gathered box holding the hit.
 
 ```csharp
-private static CollisionReaderCheck.Floor FindFloor(Vector3 feet, ReadOnlySpan<CollisionBox> boxes, out Vector3 hit, out CollisionBox box)
+internal static CollisionReaderCheck.Floor FindFloor(Vector3 feet, ReadOnlySpan<CollisionBox> boxes, out Vector3 hit, out CollisionBox box)
 ```
 
 #### Parameters

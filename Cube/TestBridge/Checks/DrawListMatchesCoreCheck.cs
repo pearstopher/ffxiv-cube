@@ -10,7 +10,7 @@ namespace Cube.TestBridge.Checks;
 /// </summary>
 /// <remarks>
 /// The frame is the wireframe (12 edges) plus one solid cube per player in the window's player set (#17) and a
-/// label per other player (#18).
+/// label per other player (#18), and the collision boxes clipped to the cube (#31).
 /// Later features extend what <see cref="CubeWindow.BuildFrame"/> builds, not this comparison.
 /// </remarks>
 internal sealed class DrawListMatchesCoreCheck : BridgeCheck
@@ -49,7 +49,7 @@ internal sealed class DrawListMatchesCoreCheck : BridgeCheck
         }
 
         var actual = window.DrawList;
-        CubeWindow.BuildFrame(this.expected, window.LastSpace, window.LastProjection, window.Players.Items, window.Palette, window.ShowLabels, window.WireColour);
+        CubeWindow.BuildFrame(this.expected, window.LastSpace, window.LastProjection, window.Players.Items, window.Palette, window.ShowLabels, window.WireColour, window.ClippedCollision.Items, window.CollisionColour);
 
         context.Metric("primitives", actual.Count);
         context.Metric("submitted", window.LastSubmitted);

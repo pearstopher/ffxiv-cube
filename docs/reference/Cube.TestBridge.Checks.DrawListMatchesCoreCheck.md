@@ -21,7 +21,7 @@ internal sealed class DrawListMatchesCoreCheck : BridgeCheck
 ## Remarks
 
 The frame is the wireframe (12 edges) plus one solid cube per player in the window's player set (#17) and a
-label per other player (#18).
+label per other player (#18), and the collision boxes clipped to the cube (#31).
 Later features extend what [BuildFrame](Cube.CubeWindow.md#Cube_CubeWindow_BuildFrame) builds, not this comparison.
 
 ## Fields

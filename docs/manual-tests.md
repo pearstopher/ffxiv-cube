@@ -27,3 +27,14 @@ The bridge checks that a turned or rolled view changes the frame correctly, that
 8. Drag the window by empty space away from the gizmo: the window still moves as usual.
 9. Reload the plugin in `/xlplugins`: the view is still the one you chose, roll included.
 10. `/cube config`, "View control corner" → Top left: the widget moves to the top-left corner. "Reset view": back to the default (from behind and above, 30°).
+
+## Collision boxes compared with vnavmesh (#31)
+
+The bridge checks the boxes are inside the cube, in the collision colour, and that the floor is painted under the player (`collision-drawn`), and the snapshot shows them. Whether they match the real walls and floors needs eyes on the game, with vnavmesh's collision debug view as the reference (vnavmesh is only a comparison tool, not a dependency).
+
+1. Stand in a house or apartment interior, `/cube`: grey-blue see-through boxes show the floor under your cube and the walls around it, roughly where the room's walls are.
+2. Turn the camera: the boxes turn with the players; the big cube's wireframe stays still.
+3. Open vnavmesh's debug window and turn on its collision geometry view. The walls and floors it outlines inside the 40-yalm cube around you should each have a box in the cube in the same place (boxes may be coarser: one per collision node, not per triangle).
+4. Walk out of the room or across a big room: the boxes follow within a few steps (a new gather every quarter of the cube's edge).
+5. Repeat outdoors (a city street and open field): ground, buildings and big rocks show as boxes; nothing far outside the cube is drawn.
+6. Teleport to another zone: the old zone's boxes disappear at once, and the new zone's appear shortly after loading.

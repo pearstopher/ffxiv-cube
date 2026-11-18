@@ -146,7 +146,7 @@ internal sealed class CollisionReaderCheck : BridgeCheck
     /// <param name="boxes">The gathered boxes.</param>
     /// <param name="hit">Where the ray hit the floor.</param>
     /// <param name="box">The box holding the hit, if any.</param>
-    private static Floor FindFloor(Vector3 feet, ReadOnlySpan<CollisionBox> boxes, out Vector3 hit, out CollisionBox box)
+    internal static Floor FindFloor(Vector3 feet, ReadOnlySpan<CollisionBox> boxes, out Vector3 hit, out CollisionBox box)
     {
         box = default;
         hit = default;
@@ -172,7 +172,7 @@ internal sealed class CollisionReaderCheck : BridgeCheck
     }
 
     /// <summary>What <see cref="FindFloor"/> found.</summary>
-    private enum Floor
+    internal enum Floor
     {
         /// <summary>The floor hit is inside a gathered box.</summary>
         InABox,

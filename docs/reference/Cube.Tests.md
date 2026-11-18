@@ -30,6 +30,12 @@ so a stale or wrong-configuration build is obvious.
 
 Compares packed colours allowing one step of rounding per channel.
 
+ [ClippedCollisionTests](Cube.Tests.ClippedCollisionTests.md)
+
+Checks the gathered collision is clipped to the cube for drawing, and only when something changed (PROJECT.md,
+"Collision (phase 2)": boxes clipped to the cube; "Efficiency and memory": recompute only when the inputs change,
+no per-frame allocations, collision data dropped on a zone change).
+
  [CollisionBoxTests](Cube.Tests.CollisionBoxTests.md)
 
 Checks the collision box model (PROJECT.md, "Collision (phase 2)": colliders inside or crossing the cube are shown
@@ -44,6 +50,13 @@ Checks the collision reader's gathering rules (PROJECT.md, "Collision (phase 2)"
 over frames with a time budget and cached, areas not yet processed are simply empty, stale data is refreshed when
 the player moves; "Efficiency and memory": bounded memory, collision data dropped on a zone change, no per-frame
 allocations). The game side is replaced by a fake scene whose colliders each cost a set number of clock ticks.
+
+ [CollisionCubesTests](Cube.Tests.CollisionCubesTests.md)
+
+Checks collision boxes are drawn as solid boxes sorted with the players (PROJECT.md, "Collision (phase 2)": each
+collider inside or crossing the cube is shown as a simplified box; "Draw order": far things are drawn first, so
+near ones cover far ones; "Cheap drawing": only the visible faces; "Efficiency and memory": no per-frame
+allocations).
 
  [CoreAssemblyTests](Cube.Tests.CoreAssemblyTests.md)
 
@@ -160,3 +173,7 @@ GPose and in PvP areas; shown otherwise).
  [CollisionCacheTests.FakeSource](Cube.Tests.CollisionCacheTests.FakeSource.md)
 
 A scene of fixed boxes, one per collider, whose clock advances a set amount per collider offered.
+
+ [ClippedCollisionTests.ListSource](Cube.Tests.ClippedCollisionTests.ListSource.md)
+
+A fake collision scene: one box per collider, gathered in one frame.

@@ -6,7 +6,7 @@ Assembly: Cube.dll
 What [FindFloor](Cube.TestBridge.Checks.CollisionReaderCheck.md#Cube_TestBridge_Checks_CollisionReaderCheck_FindFloor) found.
 
 ```csharp
-private enum CollisionReaderCheck.Floor
+internal enum CollisionReaderCheck.Floor
 ```
 
 ## Fields
