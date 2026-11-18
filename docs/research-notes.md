@@ -379,3 +379,18 @@ Findings:
   trigger and event volumes. Meshes are not filtered on material.
 - Phantom count among kept primitive colliders: about 160 before the fix, 0 after (the check fails if any remain).
   Mesh node phantoms (about 1000 of 3600 nodes at this spot) are counted separately and remain.
+
+## Reading plan usage (#109)
+
+The `/work-all` runner needs the current 5-hour and weekly plan usage before it starts each issue.
+
+- **Works:** a one-turn probe, `claude -p "reply ok" --model haiku --max-turns 1 --output-format stream-json --verbose`,
+  emits a `rate_limit_event` line. Its `rate_limit_info.unifiedWindows.five_hour` and `.seven_day` each have
+  `utilization` (0 to 1), `resetsAt` (Unix seconds) and `status`. Measured 2026-11-18: 5-hour 0.21, weekly 0.82.
+  The probe costs a few tokens on the cheapest model.
+- **Not used:** the status line `rate_limits` field (only runs in interactive sessions, not `-p`), and the
+  undocumented OAuth usage endpoint (needs the stored login token).
+- `scripts/check-usage.ps1` wraps the probe. It prints `OK`, `UNKNOWN` or `STOP` and exits 1 only on `STOP`
+  (5-hour >= 70% or weekly >= 85%). Unreadable usage never blocks. `-FromFile <saved stream-json>` tests the parsing.
+- Thresholds are the issue's proposals; a measured cost per issue is not yet available (run history has token
+  counts, not plan percentages), so they are unchanged.
