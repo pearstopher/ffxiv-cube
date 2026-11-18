@@ -58,22 +58,23 @@ internal sealed class SettingsCheck : BridgeCheck
             yield break;
         }
 
-        // Cube size.
-        settings.CubeEdge = 80;
+        // Cube size (#90: width, height and depth separately).
+        var wantSize = new Vector3(80, 30, 60);
+        settings.CubeSize = wantSize;
         settings.Changed();
         foreach (var step in WaitForDraws(window))
         {
             yield return step;
         }
 
-        if (window.LastSpace.Edge != 80)
+        if (window.LastSpace.Size != wantSize)
         {
-            yield return CheckStep.Fail($"Cube size 80 drew a cube of {window.LastSpace.Edge} yalms.");
+            yield return CheckStep.Fail($"Cube size {wantSize} drew a box of {window.LastSpace.Size} yalms.");
             yield break;
         }
 
         // Labels off.
-        settings.CubeEdge = CubeSpace.DefaultEdge;
+        settings.ResetSize();
         settings.ShowLabels = false;
         settings.Changed();
         foreach (var step in WaitForDraws(window))
@@ -166,7 +167,7 @@ internal sealed class SettingsCheck : BridgeCheck
         context.Metric("labels", labelsAfter);
         context.Metric("otherFacesChecked", others);
         context.Metric("npcFacesChecked", npcFaces);
-        yield return labelsAfter == labelsBefore && window.Palette == PlayerPalette.Default && window.LastSpace.Edge == CubeSpace.DefaultEdge
+        yield return labelsAfter == labelsBefore && window.Palette == PlayerPalette.Default && window.LastSpace.Size == BoxExtents.DefaultSize
             && window.Players.NpcCount >= FakePlayers.StandardNpcsInside
             ? CheckStep.Pass($"Size, labels, colour, opacity, orientation, NPC colour and NPCs on/off each changed the next frame; defaults restored it ({labelsAfter} labels).")
             : CheckStep.Fail("Restoring the defaults didn't restore the frame.");

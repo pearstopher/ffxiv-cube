@@ -79,7 +79,7 @@ public class ProjectionAndDrawListTests
         var regionMin = new Vector2(10, 20);
         var regionSize = new Vector2(300, 200);
         var space = Space(yaw);
-        var projection = ViewProjection.Fit(regionMin, regionSize, space.HalfEdge, ViewOrientation.Default);
+        var projection = ViewProjection.Fit(regionMin, regionSize, space.Half, ViewOrientation.Default);
 
         for (var i = 0; i < 8; i++)
         {
@@ -93,10 +93,45 @@ public class ProjectionAndDrawListTests
     [Fact]
     public void Fitted_projection_is_centred_in_the_region()
     {
-        var projection = ViewProjection.Fit(new Vector2(10, 10), new Vector2(300, 300), 20, ViewOrientation.Default);
+        var projection = ViewProjection.Fit(new Vector2(10, 10), new Vector2(300, 300), new Vector3(20), ViewOrientation.Default);
 
         Assert.Equal(new Vector2(160, 160), projection.Origin);
         Assert.True(projection.PixelsPerYalm > 0);
+    }
+
+    [Fact]
+    public void Tall_box_is_drawn_tall_in_its_real_proportions()
+    {
+        // Seen straight on (no tilt), a box 20 wide and 80 tall must be four times as tall as wide on screen.
+        var box = new CubeSpace(Vector3.Zero, new Vector3(20, 80, 20), 0);
+        var flat = ViewOrientation.FromDegrees(0, 0);
+        var projection = ViewProjection.Fit(Vector2.Zero, new Vector2(400, 400), box.Half, flat);
+        var list = new DrawList(16);
+
+        CubeGeometry.AddWireCube(list, box, projection, 0xFFFFFFFF);
+
+        var min = new Vector2(float.MaxValue);
+        var max = new Vector2(float.MinValue);
+        foreach (var p in list.Items)
+        {
+            min = Vector2.Min(min, Vector2.Min(p.A, p.B));
+            max = Vector2.Max(max, Vector2.Max(p.A, p.B));
+        }
+
+        var extent = max - min;
+        Assert.Equal(4f, extent.Y / extent.X, 3);
+    }
+
+    [Fact]
+    public void Fit_follows_the_box_so_its_largest_dimension_fills_the_region()
+    {
+        var cube = ViewProjection.Fit(Vector2.Zero, new Vector2(400, 400), new Vector3(20), ViewOrientation.Default);
+        var tall = ViewProjection.Fit(Vector2.Zero, new Vector2(400, 400), new Vector3(5, 50, 5), ViewOrientation.Default);
+
+        // A 40 cube keeps its old fit (bounding sphere √3 × 20); a 100-tall box gets a smaller scale.
+        Assert.Equal(400f / (2f * 20f * MathF.Sqrt(3f)) * ViewProjection.FillFraction, cube.PixelsPerYalm, 3);
+        Assert.True(tall.PixelsPerYalm < cube.PixelsPerYalm);
+        Assert.True(tall.PixelsPerYalm * 100f > 0.85f * 400f * ViewProjection.FillFraction);
     }
 
     [Fact]
@@ -260,7 +295,7 @@ public class ProjectionAndDrawListTests
     {
         var list = new DrawList(256);
         var space = Space(0.4f);
-        var projection = ViewProjection.Fit(Vector2.Zero, new Vector2(400, 300), space.HalfEdge, ViewOrientation.Default);
+        var projection = ViewProjection.Fit(Vector2.Zero, new Vector2(400, 300), space.Half, ViewOrientation.Default);
 
         Allocations.AssertNone(() =>
         {

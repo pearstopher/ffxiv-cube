@@ -4,6 +4,12 @@
 
 ### Classes
 
+ [BoxSizeCheck](Cube.TestBridge.Checks.BoxSizeCheck.md)
+
+Checks the box size and zoom (#90; PROJECT.md, "Cube", "Zoom", "On screen", "Culling"): set extents change the
+projected wireframe's proportions, zooming changes which points are inside, resetting restores 40 × 40 × 40, and
+an idle frame changes no settings.
+
  [BuildStampCheck](Cube.TestBridge.Checks.BuildStampCheck.md)
 
 Checks the plugin that ran the checks is the build on disk: the build time read at load equals the

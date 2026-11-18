@@ -3,8 +3,9 @@
 Namespace: [Cube.Tests](Cube.Tests.md)  
 Assembly: Cube.Tests.dll  
 
-Checks the cube of space (PROJECT.md, "Exact behaviour rules": Cube, Players): centred on the player, edge 10–100
-yalms (default 40), aligned by its yaw (Camera mode: front face where the camera looks; North up: east right,
+Checks the cube of space (PROJECT.md, "Exact behaviour rules": Cube, Players, Culling): centred on the player, a box
+whose width, height and depth are each 10–100 yalms (default 40), inside meaning inside on each axis separately,
+aligned by its yaw (Camera mode: front face where the camera looks; North up: east right,
 north forward); containment uses the aligned cube, so things enter and leave at the sides as the camera turns, and
 is inclusive on faces; players outside are not shown at all. Also the zero-allocation rule ("Efficiency and
 memory").
@@ -70,11 +71,18 @@ public void Corner_is_inside(float dx, float dy, float dz)
 
 `dz` [float](https://learn.microsoft.com/dotnet/api/system.single)
 
-### <a id="Cube_Tests_CubeSpaceTests_Default_edge_is_40_yalms"></a> Default\_edge\_is\_40\_yalms\(\)
+### <a id="Cube_Tests_CubeSpaceTests_Default_size_is_40_by_40_by_40"></a> Default\_size\_is\_40\_by\_40\_by\_40\(\)
 
 ```csharp
 [Fact]
-public void Default_edge_is_40_yalms()
+public void Default_size_is_40_by_40_by_40()
+```
+
+### <a id="Cube_Tests_CubeSpaceTests_Each_extent_is_clamped_separately"></a> Each\_extent\_is\_clamped\_separately\(\)
+
+```csharp
+[Fact]
+public void Each_extent_is_clamped_separately()
 ```
 
 ### <a id="Cube_Tests_CubeSpaceTests_Edge_is_clamped_to_10_to_100_yalms_System_Single_System_Single_"></a> Edge\_is\_clamped\_to\_10\_to\_100\_yalms\(float, float\)
@@ -109,6 +117,20 @@ public void FromView_puts_a_cube_local_point_back_in_the_world(float yaw)
 #### Parameters
 
 `yaw` [float](https://learn.microsoft.com/dotnet/api/system.single)
+
+### <a id="Cube_Tests_CubeSpaceTests_Inside_on_two_axes_and_outside_on_the_third_is_outside"></a> Inside\_on\_two\_axes\_and\_outside\_on\_the\_third\_is\_outside\(\)
+
+```csharp
+[Fact]
+public void Inside_on_two_axes_and_outside_on_the_third_is_outside()
+```
+
+### <a id="Cube_Tests_CubeSpaceTests_Largest_is_the_biggest_extent"></a> Largest\_is\_the\_biggest\_extent\(\)
+
+```csharp
+[Fact]
+public void Largest_is_the_biggest_extent()
+```
 
 ### <a id="Cube_Tests_CubeSpaceTests_Looking_east_puts_east_forward_and_south_on_the_right"></a> Looking\_east\_puts\_east\_forward\_and\_south\_on\_the\_right\(\)
 
@@ -245,4 +267,11 @@ public void Point_outside_is_rejected_before_it_is_transformed()
 ```csharp
 [Fact]
 public void Recentred_cube_keeps_the_view_rotation_and_moves_with_the_player()
+```
+
+### <a id="Cube_Tests_CubeSpaceTests_Width_and_depth_follow_the_cube_axes_not_the_world"></a> Width\_and\_depth\_follow\_the\_cube\_axes\_not\_the\_world\(\)
+
+```csharp
+[Fact]
+public void Width_and_depth_follow_the_cube_axes_not_the_world()
 ```

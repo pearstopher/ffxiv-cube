@@ -7,7 +7,7 @@ Only what the in-game test bridge can't check (`docs/in-game-testing.md`). Optio
 The bridge checks every setting changes the frame and that saving writes the file, but it can't click the controls.
 
 1. Type `/cube config`: the settings window opens. `/cube` still shows and hides the cube.
-2. Drag the cube size slider: the cube changes while dragging.
+2. Drag the Width, Height and Depth sliders (#90): the cube stretches into a box along that axis while dragging. "Zoom in" makes all three smaller together (contents look bigger), "Zoom out" bigger; "Reset size" gives 40 × 40 × 40.
 3. Change a colour, untick "Show names", switch to "Keep contents fixed (north stays put)", lower the opacity: each shows in the cube at once.
 4. Near townspeople: untick "Show NPCs": the purple NPC cubes disappear, players stay. Tick it again and change the "NPCs" colour: they come back in the new colour.
 5. Near walls (#32): set collision "Detail" to "Coarse": the grey-blue collision boxes become fewer, bigger blocks at once; "Medium" is in between; "Full" is back to the close fit. Untick "Show collision": the collision boxes disappear; tick it again: they come back.
@@ -28,6 +28,21 @@ The bridge checks that a turned or rolled view changes the frame correctly, that
 8. Drag the window by empty space away from the gizmo: the window still moves as usual.
 9. Reload the plugin in `/xlplugins`: the view is still the one you chose, roll included.
 10. `/cube config`, "View control corner" → Top left: the widget moves to the top-left corner. "Reset view": back to the default (from behind and above, 30°).
+
+## Resize the cube (#90)
+
+The bridge checks that set sizes draw in the right proportions, that zooming changes what's inside, reset, and that the gizmo leaves the settings alone when idle. The maths that turns a handle drag into a resize or zoom is unit tested. It can't drag the scale handles with a real mouse.
+
+The gizmo uses one `Manipulate` call with Rotate | Scale. If the scale handles and the rings fight over the mouse (a drag on one does the other), report it: the fix is two separate calls.
+
+1. `/cube`: the corner gizmo now also has three scale handles (red, green and blue lines with a square end, inside the rings) and a centre handle.
+2. Drag the red (x) handle outwards: the cube gets wider (a box), nothing else changes. Drag it inwards: narrower. It stops at 10 and 100 yalms. The window doesn't move during the drag.
+3. Drag the green (y) handle: only the height changes. Drag the blue (z) handle: only the depth changes.
+4. Turn the view with a ring first (any angle, roll too), then drag each scale handle again: each still changes its own extent (the handle lies along that axis of the box).
+5. Drag the centre handle: the whole box grows or shrinks, keeping its shape; it stops when one side reaches 10 or 100 and keeps its shape there.
+6. Drag a ring after resizing: the box turns and keeps its size.
+7. Other players and NPCs stay the same small size while the box narrows; anything outside the box on any one axis disappears.
+8. Reload the plugin: the size is still the one you chose. `/cube config`, "Reset size": back to 40 × 40 × 40.
 
 ## Collision boxes compared with vnavmesh (#31)
 

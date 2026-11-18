@@ -11,8 +11,8 @@ namespace Cube.Core;
 /// <para>
 /// <b>Gathered once, used for many frames.</b> The walk is cheap (0.13 ms in the #28 sample) but still not something
 /// to repeat every frame, so the boxes are gathered for a <see cref="Region"/> a little larger than the cube: wide
-/// enough for any camera yaw (the cube's horizontal diagonal) plus a margin of <see cref="RefreshFraction"/> of the
-/// edge. Turning the camera never invalidates it; the player can walk that margin before <see cref="NeedsRefresh"/>
+/// enough for any camera yaw (the box's horizontal diagonal) plus a margin of <see cref="RefreshFraction"/> of its
+/// extents (sideways the larger of width and depth, vertically the height). Turning the camera never invalidates it; the player can walk that margin before <see cref="NeedsRefresh"/>
 /// asks for a new walk (PROJECT.md: "When the player moves, stale data is refreshed"; "recompute only when inputs
 /// change beyond a small threshold"). Each frame <see cref="CollisionClipper"/> clips the cached boxes to the cube.
 /// </para>
@@ -35,8 +35,9 @@ public sealed class CollisionBoxSet
     public const int DefaultCapacity = 2000;
 
     /// <summary>
-    /// How far the player may move, as a fraction of the cube's edge, before the boxes are gathered again. Also the
-    /// margin the gathered region has around the cube, so nothing at the cube's edge is missing until then.
+    /// How far the player may move, as a fraction of the cube's extent along that direction (sideways the larger of
+    /// width and depth, vertically the height), before the boxes are gathered again. Also the margin the gathered
+    /// region has around the cube, so nothing at the cube's edge is missing until then.
     /// </summary>
     public const float RefreshFraction = 0.25f;
 
@@ -44,10 +45,10 @@ public sealed class CollisionBoxSet
     public const float MergeTolerance = 0.01f;
 
     /// <summary>
-    /// The cube's horizontal half-diagonal per unit of half-edge (√2, rounded up so a corner is never missed): the
-    /// furthest a corner of the cube reaches sideways from the centre at any yaw.
+    /// Stretches the horizontal half-diagonal by a hair, so rounding never leaves a corner of the cube just outside
+    /// the gathered region.
     /// </summary>
-    private const float Diagonal = 1.41422f;
+    private const float RoundUp = 1.00001f;
 
     /// <summary>The reused buffer of kept boxes.</summary>
     private readonly CollisionBox[] boxes;
@@ -58,8 +59,8 @@ public sealed class CollisionBoxSet
     /// <summary>The cube centre the boxes were gathered around.</summary>
     private Vector3 centre;
 
-    /// <summary>The cube edge the boxes were gathered for, already clamped.</summary>
-    private float edge;
+    /// <summary>The cube size the boxes were gathered for, already clamped.</summary>
+    private Vector3 size;
 
     /// <summary>Set by <see cref="MarkStale"/>: the boxes are kept but <see cref="NeedsRefresh"/> asks for a new gather.</summary>
     private bool stale;
@@ -103,55 +104,65 @@ public sealed class CollisionBoxSet
     public ReadOnlySpan<CollisionBox> Items => this.boxes.AsSpan(0, this.Count);
 
     /// <summary>
-    /// The world region gathered for a cube, before any yaw: centre ± (half-diagonal + margin) sideways and
-    /// ± (half-edge + margin) vertically.
+    /// The world region gathered for a cube, before any yaw: centre ± (horizontal half-diagonal + margin) sideways and
+    /// ± (half the height + margin) vertically. The box can turn to any yaw, so sideways both world axes get the same
+    /// reach: the furthest a corner of its footprint gets from the centre.
     /// </summary>
     /// <param name="centre">The cube's centre (the player's position).</param>
-    /// <param name="edge">The cube's edge in yalms; clamped like <see cref="CubeSpace"/>.</param>
-    public static CollisionBox RegionFor(Vector3 centre, float edge)
+    /// <param name="size">The cube's width, height and depth in yalms; clamped like <see cref="CubeSpace"/>.</param>
+    public static CollisionBox RegionFor(Vector3 centre, Vector3 size)
     {
-        edge = CubeSpace.ClampEdge(edge);
-        var half = edge / 2f;
-        var margin = edge * RefreshFraction;
-        var reach = new Vector3((half * Diagonal) + margin, half + margin, (half * Diagonal) + margin);
+        size = BoxExtents.Clamp(size);
+        var margin = Margin(size);
+        var diagonal = MathF.Sqrt((size.X * size.X) + (size.Z * size.Z)) / 2f * RoundUp;
+        var reach = new Vector3(diagonal + margin.X, (size.Y / 2f) + margin.Y, diagonal + margin.X);
         return new CollisionBox(centre - reach, centre + reach);
     }
 
     /// <summary>
+    /// The refresh margin for a size: <see cref="RefreshFraction"/> of the larger of width and depth sideways (in
+    /// <see cref="Vector2.X"/>), and of the height vertically (in <see cref="Vector2.Y"/>). For a cube both are a
+    /// quarter of the edge, as before #90.
+    /// </summary>
+    /// <param name="size">A clamped size.</param>
+    private static Vector2 Margin(Vector3 size) =>
+        new(MathF.Max(size.X, size.Z) * RefreshFraction, size.Y * RefreshFraction);
+
+    /// <summary>
     /// Whether the boxes must be gathered again: there are none yet, the scene changed (a different
-    /// <paramref name="sceneStamp"/>), the cube's edge changed, or the player has moved more than
-    /// <see cref="RefreshFraction"/> of the edge along any axis since the last gather.
+    /// <paramref name="sceneStamp"/>), the cube's size changed, or the player has moved further than the refresh
+    /// margin since the last gather (sideways or vertically, see <see cref="RefreshFraction"/>).
     /// </summary>
     /// <param name="playerPosition">The cube's centre now.</param>
-    /// <param name="edge">The cube's edge now.</param>
+    /// <param name="size">The cube's width, height and depth now.</param>
     /// <param name="sceneStamp">
     /// Whatever identifies the loaded collision to the reader (in the plugin, the first collider's address and the
     /// collider count, as #28 suggests, with the detail level folded in by <see cref="CollisionDetails.Stamp"/>). Core
     /// only compares it; zone changes are handled separately by <see cref="CollisionCache"/>.
     /// </param>
-    public bool NeedsRefresh(Vector3 playerPosition, float edge, ulong sceneStamp)
+    public bool NeedsRefresh(Vector3 playerPosition, Vector3 size, ulong sceneStamp)
     {
-        edge = CubeSpace.ClampEdge(edge);
-        if (!this.HasData || this.stale || sceneStamp != this.stamp || edge != this.edge)
+        size = BoxExtents.Clamp(size);
+        if (!this.HasData || this.stale || sceneStamp != this.stamp || size != this.size)
         {
             return true;
         }
 
         var moved = Vector3.Abs(playerPosition - this.centre);
-        var limit = edge * RefreshFraction;
-        return moved.X > limit || moved.Y > limit || moved.Z > limit;
+        var limit = Margin(size);
+        return moved.X > limit.X || moved.Y > limit.Y || moved.Z > limit.X;
     }
 
     /// <summary>Starts a new gather: empties the set and sets the region boxes are culled against.</summary>
     /// <param name="playerPosition">The cube's centre.</param>
-    /// <param name="edge">The cube's edge in yalms.</param>
+    /// <param name="size">The cube's width, height and depth in yalms.</param>
     /// <param name="sceneStamp">The reader's scene stamp, remembered for <see cref="NeedsRefresh"/>.</param>
-    public void Begin(Vector3 playerPosition, float edge, ulong sceneStamp)
+    public void Begin(Vector3 playerPosition, Vector3 size, ulong sceneStamp)
     {
         this.centre = playerPosition;
-        this.edge = CubeSpace.ClampEdge(edge);
+        this.size = BoxExtents.Clamp(size);
         this.stamp = sceneStamp;
-        this.Region = RegionFor(playerPosition, this.edge);
+        this.Region = RegionFor(playerPosition, this.size);
         this.HasData = true;
         this.stale = false;
         this.Count = 0;

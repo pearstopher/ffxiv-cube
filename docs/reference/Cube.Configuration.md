@@ -27,10 +27,11 @@ internal sealed class Configuration : CubeSettings, IPluginConfiguration
 ### <a id="Cube_Configuration_CurrentVersion"></a> CurrentVersion
 
 The current file format. Bump it and migrate in [Upgrade](Cube.Core.CubeSettings.md#Cube_Core_CubeSettings_Upgrade) if a setting's meaning
-changes. 2: the view is a rotation instead of a heading and tilt (#79).
+changes. 2: the view is a rotation instead of a heading and tilt (#79). 3: the cube is a width, height and
+depth instead of one edge (#90).
 
 ```csharp
-public const int CurrentVersion = 2
+public const int CurrentVersion = 3
 ```
 
 #### Field Value

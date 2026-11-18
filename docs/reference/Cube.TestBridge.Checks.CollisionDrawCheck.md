@@ -32,18 +32,6 @@ under it. That the whole frame matches Core is [DrawListMatchesCoreCheck](Cube.T
 
 ## Fields
 
-### <a id="Cube_TestBridge_Checks_CollisionDrawCheck_Diagonal"></a> Diagonal
-
-The cube's horizontal half-diagonal per unit of half-edge: the furthest its footprint reaches at any yaw.
-
-```csharp
-private const float Diagonal = 1.41422
-```
-
-#### Field Value
-
- [float](https://learn.microsoft.com/dotnet/api/system.single)
-
 ### <a id="Cube_TestBridge_Checks_CollisionDrawCheck_FramesAfterGather"></a> FramesAfterGather
 
 Frames drawn after the gather before the frame is checked.

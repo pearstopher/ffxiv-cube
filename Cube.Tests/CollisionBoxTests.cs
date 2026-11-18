@@ -72,7 +72,7 @@ public class CollisionBoxTests
     public void Box_inside_the_region_is_kept()
     {
         var set = new CollisionBoxSet();
-        set.Begin(Centre, 40, 1);
+        set.Begin(Centre, new Vector3(40), 1);
 
         Assert.True(set.Offer(Around(Centre, new Vector3(2))));
 
@@ -84,7 +84,7 @@ public class CollisionBoxTests
     public void Box_beyond_the_region_is_not_kept()
     {
         var set = new CollisionBoxSet();
-        set.Begin(Centre, 40, 1);
+        set.Begin(Centre, new Vector3(40), 1);
 
         // Region reaches 20·√2 + 10 ≈ 38.3 sideways and 30 vertically.
         Assert.False(set.Offer(Around(Centre + new Vector3(45, 0, 0), new Vector3(1))));
@@ -97,7 +97,7 @@ public class CollisionBoxTests
     [Fact]
     public void Region_covers_the_cube_at_every_yaw_with_a_margin()
     {
-        var region = CollisionBoxSet.RegionFor(Centre, 40);
+        var region = CollisionBoxSet.RegionFor(Centre, new Vector3(40));
 
         for (var yaw = 0f; yaw < MathF.Tau; yaw += 0.1f)
         {
@@ -114,10 +114,40 @@ public class CollisionBoxTests
     }
 
     [Fact]
+    public void Region_covers_a_non_cube_box_at_every_yaw()
+    {
+        var size = new Vector3(30, 20, 80);
+        var region = CollisionBoxSet.RegionFor(Centre, size);
+
+        for (var yaw = 0f; yaw < MathF.Tau; yaw += 0.1f)
+        {
+            var box = new CubeSpace(Centre, size, yaw);
+            for (var corner = 0; corner < 8; corner++)
+            {
+                var view = new Vector3((corner & 1) != 0 ? 15 : -15, (corner & 2) != 0 ? 10 : -10, (corner & 4) != 0 ? 40 : -40);
+                var world = box.FromView(view);
+                Assert.True(region.Contains(new CollisionBox(world, world)), $"corner {corner} at yaw {yaw} outside region");
+            }
+        }
+
+        // Vertically only the height and its own margin: a flat box doesn't gather far above and below.
+        Assert.Equal(Centre.Y + 10 + (20 * CollisionBoxSet.RefreshFraction), region.Max.Y, Precision);
+    }
+
+    [Fact]
+    public void Changing_one_extent_asks_for_a_new_gather()
+    {
+        var set = new CollisionBoxSet();
+        set.Begin(Centre, new Vector3(40), 1);
+
+        Assert.True(set.NeedsRefresh(Centre, new Vector3(40, 60, 40), 1));
+    }
+
+    [Fact]
     public void Invalid_box_is_rejected_and_counted()
     {
         var set = new CollisionBoxSet();
-        set.Begin(Centre, 40, 1);
+        set.Begin(Centre, new Vector3(40), 1);
 
         Assert.False(set.Offer(new CollisionBox(new Vector3(float.NaN), Centre)));
 
@@ -129,7 +159,7 @@ public class CollisionBoxTests
     public void Full_set_drops_extra_boxes_instead_of_growing()
     {
         var set = new CollisionBoxSet(capacity: 3);
-        set.Begin(Centre, 40, 1);
+        set.Begin(Centre, new Vector3(40), 1);
 
         // Spaced apart so none of them merge.
         for (var i = 0; i < 5; i++)
@@ -145,7 +175,7 @@ public class CollisionBoxTests
     public void Box_inside_the_last_box_is_merged_into_it()
     {
         var set = new CollisionBoxSet();
-        set.Begin(Centre, 40, 1);
+        set.Begin(Centre, new Vector3(40), 1);
 
         set.Offer(Around(Centre, new Vector3(5)));
         set.Offer(Around(Centre, new Vector3(1)));
@@ -159,7 +189,7 @@ public class CollisionBoxTests
     public void Box_holding_the_last_box_replaces_it()
     {
         var set = new CollisionBoxSet();
-        set.Begin(Centre, 40, 1);
+        set.Begin(Centre, new Vector3(40), 1);
 
         set.Offer(Around(Centre, new Vector3(1)));
         set.Offer(Around(Centre, new Vector3(5)));
@@ -192,50 +222,50 @@ public class CollisionBoxTests
     [Fact]
     public void Fresh_set_needs_a_gather()
     {
-        Assert.True(new CollisionBoxSet().NeedsRefresh(Centre, 40, 1));
+        Assert.True(new CollisionBoxSet().NeedsRefresh(Centre, new Vector3(40), 1));
     }
 
     [Fact]
     public void Small_moves_and_turning_the_camera_do_not_need_a_new_gather()
     {
         var set = new CollisionBoxSet();
-        set.Begin(Centre, 40, 1);
+        set.Begin(Centre, new Vector3(40), 1);
 
-        Assert.False(set.NeedsRefresh(Centre + new Vector3(9, -9, 9), 40, 1));
+        Assert.False(set.NeedsRefresh(Centre + new Vector3(9, -9, 9), new Vector3(40), 1));
     }
 
     [Fact]
     public void Moving_a_quarter_of_the_cube_needs_a_new_gather()
     {
         var set = new CollisionBoxSet();
-        set.Begin(Centre, 40, 1);
+        set.Begin(Centre, new Vector3(40), 1);
 
-        Assert.True(set.NeedsRefresh(Centre + new Vector3(0, 0, 10.5f), 40, 1));
-        Assert.True(set.NeedsRefresh(Centre + new Vector3(0, -10.5f, 0), 40, 1));
+        Assert.True(set.NeedsRefresh(Centre + new Vector3(0, 0, 10.5f), new Vector3(40), 1));
+        Assert.True(set.NeedsRefresh(Centre + new Vector3(0, -10.5f, 0), new Vector3(40), 1));
     }
 
     [Fact]
     public void Scene_change_or_new_cube_size_needs_a_new_gather()
     {
         var set = new CollisionBoxSet();
-        set.Begin(Centre, 40, 1);
+        set.Begin(Centre, new Vector3(40), 1);
 
-        Assert.True(set.NeedsRefresh(Centre, 40, 2));
-        Assert.True(set.NeedsRefresh(Centre, 60, 1));
+        Assert.True(set.NeedsRefresh(Centre, new Vector3(40), 2));
+        Assert.True(set.NeedsRefresh(Centre, new Vector3(60), 1));
     }
 
     [Fact]
     public void Zone_change_drops_every_box()
     {
         var set = new CollisionBoxSet();
-        set.Begin(Centre, 40, 1);
+        set.Begin(Centre, new Vector3(40), 1);
         set.Offer(Around(Centre, new Vector3(1)));
 
         set.Clear();
 
         Assert.Equal(0, set.Count);
         Assert.False(set.HasData);
-        Assert.True(set.NeedsRefresh(Centre, 40, 1));
+        Assert.True(set.NeedsRefresh(Centre, new Vector3(40), 1));
     }
 
     [Fact]
@@ -363,7 +393,7 @@ public class CollisionBoxTests
 
         Allocations.AssertNone(() =>
         {
-            set.Begin(Centre, 40, 7);
+            set.Begin(Centre, new Vector3(40), 7);
             for (var i = 0; i < 500; i++)
             {
                 var offset = new Vector3((i % 25) - 12, (i % 7) - 3, (i / 25) - 10) * 2;
@@ -371,7 +401,7 @@ public class CollisionBoxTests
             }
 
             CollisionClipper.Clip(cube, set.Items, clipped);
-            set.NeedsRefresh(Centre, 40, 7);
+            set.NeedsRefresh(Centre, new Vector3(40), 7);
         });
     }
 }

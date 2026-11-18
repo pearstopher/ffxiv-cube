@@ -23,12 +23,12 @@ public class CollisionCacheTests
 ### <a id="Cube_Tests_CollisionCacheTests_Edge"></a> Edge
 
 ```csharp
-private const float Edge = 40
+private static readonly Vector3 Edge
 ```
 
 #### Field Value
 
- [float](https://learn.microsoft.com/dotnet/api/system.single)
+ [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
 
 ### <a id="Cube_Tests_CollisionCacheTests_Stamp"></a> Stamp
 

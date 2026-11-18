@@ -23,7 +23,7 @@ namespace Cube.Core;
 /// </remarks>
 public static class CollisionClipper
 {
-    /// <summary>Most corners a clipped footprint can have: a square cut by four lines.</summary>
+    /// <summary>Most corners a clipped footprint can have: a rectangle cut by four lines.</summary>
     private const int MaxCorners = 8;
 
     /// <summary>
@@ -75,8 +75,8 @@ public static class CollisionClipper
     private static bool TryClip(in CubeSpace cube, in Footprint footprint, in CollisionBox box, Span<Vector2> a, Span<Vector2> b, out CollisionBox clipped)
     {
         clipped = default;
-        var minY = MathF.Max(box.Min.Y, cube.Centre.Y - cube.HalfEdge);
-        var maxY = MathF.Min(box.Max.Y, cube.Centre.Y + cube.HalfEdge);
+        var minY = MathF.Max(box.Min.Y, cube.Centre.Y - cube.Half.Y);
+        var maxY = MathF.Min(box.Max.Y, cube.Centre.Y + cube.Half.Y);
         if (minY > maxY)
         {
             return false;
@@ -157,7 +157,7 @@ public static class CollisionClipper
     }
 
     /// <summary>
-    /// The cube's square footprint in world X/Z (stored as <see cref="Vector2"/> X and Y), with its bounds for the
+    /// The cube's rectangular footprint in world X/Z (stored as <see cref="Vector2"/> X and Y), with its bounds for the
     /// cheap reject. Computed once per clip pass.
     /// </summary>
     private readonly struct Footprint
@@ -166,16 +166,17 @@ public static class CollisionClipper
         /// <param name="cube">The cube.</param>
         public Footprint(in CubeSpace cube)
         {
-            var h = cube.HalfEdge;
-            this.C0 = Flat(cube.FromView(new Vector3(-h, 0, -h)));
-            this.C1 = Flat(cube.FromView(new Vector3(h, 0, -h)));
-            this.C2 = Flat(cube.FromView(new Vector3(h, 0, h)));
-            this.C3 = Flat(cube.FromView(new Vector3(-h, 0, h)));
+            var x = cube.Half.X;
+            var z = cube.Half.Z;
+            this.C0 = Flat(cube.FromView(new Vector3(-x, 0, -z)));
+            this.C1 = Flat(cube.FromView(new Vector3(x, 0, -z)));
+            this.C2 = Flat(cube.FromView(new Vector3(x, 0, z)));
+            this.C3 = Flat(cube.FromView(new Vector3(-x, 0, z)));
             this.Min = Vector2.Min(Vector2.Min(this.C0, this.C1), Vector2.Min(this.C2, this.C3));
             this.Max = Vector2.Max(Vector2.Max(this.C0, this.C1), Vector2.Max(this.C2, this.C3));
         }
 
-        /// <summary>First corner, in order around the square.</summary>
+        /// <summary>First corner, in order around the rectangle.</summary>
         public Vector2 C0 { get; }
 
         /// <summary>Second corner.</summary>

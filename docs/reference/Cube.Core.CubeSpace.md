@@ -4,8 +4,9 @@ Namespace: [Cube.Core](Cube.Core.md)
 Assembly: Cube.Core.dll  
 
 The cube of space around the local player (PROJECT.md, "Exact behaviour rules", Cube): centred on the player,
-with an edge of 10–100 yalms (default 40), turned about the vertical axis by its alignment [Yaw](Cube.Core.CubeSpace.md#Cube_Core_CubeSpace_Yaw).
-Answers "is this point inside?" and turns world positions into cube-local view coordinates.
+a box with a width, height and depth of 10–100 yalms each (default 40, see [BoxExtents](Cube.Core.BoxExtents.md#Cube_Core_BoxExtents)), turned about
+the vertical axis by its alignment [Yaw](Cube.Core.CubeSpace.md#Cube_Core_CubeSpace_Yaw). Answers "is this point inside?" and turns world positions into
+cube-local view coordinates.
 
 ```csharp
 public readonly struct CubeSpace
@@ -14,6 +15,11 @@ public readonly struct CubeSpace
 
 ## Remarks
 
+<p>
+Since #90 the "cube" may be any box; the name stays because PROJECT.md still calls it the cube. Its extents are in
+its own axes, so the width is always across the cube and the depth front to back, whatever the yaw. A point is
+inside when it is inside on each axis separately (PROJECT.md, "Culling").
+</p>
 <p>
 World axes follow the game (see <code>docs/research-notes.md</code>, #10): X east, Y up, Z south, so north is −Z.
 In Camera mode the cube is aligned to the camera's horizontal direction (its front face points where the camera
@@ -37,7 +43,7 @@ Points are culled ([TryToView](Cube.Core.CubeSpace.md#Cube_Core_CubeSpace_TryToV
 
 ### <a id="Cube_Core_CubeSpace__ctor_System_Numerics_Vector3_System_Single_System_Single_"></a> CubeSpace\(Vector3, float, float\)
 
-Creates the cube around a centre.
+Creates a cube with every extent the same: the shape before #90, still handy in tests and checks.
 
 ```csharp
 public CubeSpace(Vector3 centre, float edge, float yaw)
@@ -51,18 +57,40 @@ The local player's world position.
 
 `edge` [float](https://learn.microsoft.com/dotnet/api/system.single)
 
-Edge length in yalms; clamped to [MinEdge](Cube.Core.CubeSpace.md#Cube_Core_CubeSpace_MinEdge)–[MaxEdge](Cube.Core.CubeSpace.md#Cube_Core_CubeSpace_MaxEdge).
+Edge length in yalms; clamped to [Min](Cube.Core.BoxExtents.md#Cube_Core_BoxExtents_Min)–[Max](Cube.Core.BoxExtents.md#Cube_Core_BoxExtents_Max).
+
+`yaw` [float](https://learn.microsoft.com/dotnet/api/system.single)
+
+The cube's alignment yaw in radians (see [ViewYaw](Cube.Core.ViewYaw.md#Cube_Core_ViewYaw)).
+
+### <a id="Cube_Core_CubeSpace__ctor_System_Numerics_Vector3_System_Numerics_Vector3_System_Single_"></a> CubeSpace\(Vector3, Vector3, float\)
+
+Creates the box around a centre.
+
+```csharp
+public CubeSpace(Vector3 centre, Vector3 size, float yaw)
+```
+
+#### Parameters
+
+`centre` [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
+
+The local player's world position.
+
+`size` [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
+
+Width, height and depth in yalms; each clamped ([Clamp](Cube.Core.BoxExtents.md#Cube_Core_BoxExtents_Clamp)).
 
 `yaw` [float](https://learn.microsoft.com/dotnet/api/system.single)
 
 The cube's alignment yaw in radians (see [ViewYaw](Cube.Core.ViewYaw.md#Cube_Core_ViewYaw)): 0 faces north, increasing clockwise seen from above.
 
-### <a id="Cube_Core_CubeSpace__ctor_Cube_Core_CubeSpace__System_Numerics_Vector3_System_Single_"></a> CubeSpace\(in CubeSpace, Vector3, float\)
+### <a id="Cube_Core_CubeSpace__ctor_Cube_Core_CubeSpace__System_Numerics_Vector3_System_Numerics_Vector3_"></a> CubeSpace\(in CubeSpace, Vector3, Vector3\)
 
-Copies a cube with a new centre and edge, keeping its yaw and rotation.
+Copies a cube with a new centre and size, keeping its yaw and rotation.
 
 ```csharp
-private CubeSpace(in CubeSpace source, Vector3 centre, float edge)
+private CubeSpace(in CubeSpace source, Vector3 centre, Vector3 size)
 ```
 
 #### Parameters
@@ -75,47 +103,11 @@ The cube whose yaw (and cached sine and cosine) to keep.
 
 The new centre.
 
-`edge` [float](https://learn.microsoft.com/dotnet/api/system.single)
+`size` [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
 
-The new edge; clamped like the main constructor.
+The new size; clamped like the main constructor.
 
 ## Fields
-
-### <a id="Cube_Core_CubeSpace_DefaultEdge"></a> DefaultEdge
-
-Default cube edge in yalms (PROJECT.md).
-
-```csharp
-public const float DefaultEdge = 40
-```
-
-#### Field Value
-
- [float](https://learn.microsoft.com/dotnet/api/system.single)
-
-### <a id="Cube_Core_CubeSpace_MaxEdge"></a> MaxEdge
-
-Largest allowed cube edge in yalms (PROJECT.md: setting 10–100).
-
-```csharp
-public const float MaxEdge = 100
-```
-
-#### Field Value
-
- [float](https://learn.microsoft.com/dotnet/api/system.single)
-
-### <a id="Cube_Core_CubeSpace_MinEdge"></a> MinEdge
-
-Smallest allowed cube edge in yalms (PROJECT.md: setting 10–100).
-
-```csharp
-public const float MinEdge = 10
-```
-
-#### Field Value
-
- [float](https://learn.microsoft.com/dotnet/api/system.single)
 
 ### <a id="Cube_Core_CubeSpace_cos"></a> cos
 
@@ -155,29 +147,42 @@ public Vector3 Centre { get; }
 
  [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
 
-### <a id="Cube_Core_CubeSpace_Edge"></a> Edge
+### <a id="Cube_Core_CubeSpace_Half"></a> Half
 
-Edge length in yalms, already clamped.
+Half the size: the distance from the centre to the faces on each axis.
 
 ```csharp
-public float Edge { get; }
+public Vector3 Half { get; }
+```
+
+#### Property Value
+
+ [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
+
+### <a id="Cube_Core_CubeSpace_Largest"></a> Largest
+
+The largest of the three extents. Player and NPC markers are about 1/40 of it (PROJECT.md, "Players"), and the
+cache and clipper use it where one number has to cover the whole box.
+
+```csharp
+public float Largest { get; }
 ```
 
 #### Property Value
 
  [float](https://learn.microsoft.com/dotnet/api/system.single)
 
-### <a id="Cube_Core_CubeSpace_HalfEdge"></a> HalfEdge
+### <a id="Cube_Core_CubeSpace_Size"></a> Size
 
-Half the edge: the distance from the centre to each face.
+Width (X), height (Y) and depth (Z) in yalms, in the cube's own axes, already clamped.
 
 ```csharp
-public float HalfEdge { get; }
+public Vector3 Size { get; }
 ```
 
 #### Property Value
 
- [float](https://learn.microsoft.com/dotnet/api/system.single)
+ [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
 
 ### <a id="Cube_Core_CubeSpace_Yaw"></a> Yaw
 
@@ -194,29 +199,10 @@ public float Yaw { get; }
 
 ## Methods
 
-### <a id="Cube_Core_CubeSpace_ClampEdge_System_Single_"></a> ClampEdge\(float\)
-
-Clamps an edge length to the allowed range; a non-number becomes the default, so a corrupt
-setting can never produce an empty or infinite cube.
-
-```csharp
-public static float ClampEdge(float edge)
-```
-
-#### Parameters
-
-`edge` [float](https://learn.microsoft.com/dotnet/api/system.single)
-
-The requested edge in yalms.
-
-#### Returns
-
- [float](https://learn.microsoft.com/dotnet/api/system.single)
-
 ### <a id="Cube_Core_CubeSpace_Contains_System_Numerics_Vector3_"></a> Contains\(Vector3\)
 
-Whether a world position is inside the cube as currently aligned. Inclusive: a point exactly on a face, edge
-or corner counts as inside.
+Whether a world position is inside the cube as currently aligned: inside on each of its three axes separately
+(PROJECT.md, "Culling"). Inclusive: a point exactly on a face, edge or corner counts as inside.
 
 ```csharp
 public bool Contains(Vector3 world)
@@ -261,14 +247,14 @@ A point in cube-local coordinates.
 The rotation in [RotateOffset](Cube.Core.CubeSpace.md#Cube_Core_CubeSpace_RotateOffset) is its own inverse (it also flips Z, since forward is −Z at yaw 0),
 so the same formula maps back.
 
-### <a id="Cube_Core_CubeSpace_Recentred_System_Numerics_Vector3_System_Single_"></a> Recentred\(Vector3, float\)
+### <a id="Cube_Core_CubeSpace_Recentred_System_Numerics_Vector3_System_Numerics_Vector3_"></a> Recentred\(Vector3, Vector3\)
 
-The same alignment around a new centre and edge, without recomputing the sine and cosine. The window
+The same alignment around a new centre and size, without recomputing the sine and cosine. The window
 uses it every frame the yaw hasn't changed (PROJECT.md, "Efficiency and memory": recompute only when inputs
 change).
 
 ```csharp
-public CubeSpace Recentred(Vector3 centre, float edge)
+public CubeSpace Recentred(Vector3 centre, Vector3 size)
 ```
 
 #### Parameters
@@ -277,9 +263,9 @@ public CubeSpace Recentred(Vector3 centre, float edge)
 
 The new centre.
 
-`edge` [float](https://learn.microsoft.com/dotnet/api/system.single)
+`size` [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
 
-The new edge in yalms.
+The new width, height and depth in yalms.
 
 #### Returns
 

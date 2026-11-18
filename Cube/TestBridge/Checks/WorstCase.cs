@@ -23,7 +23,7 @@ internal static class WorstCase
         settings.ShowNpcs = true;
         settings.ShowCollision = true;
         settings.CollisionDetail = CollisionDetail.Full;
-        settings.CubeEdge = CubeSpace.MaxEdge;
+        settings.CubeSize = new System.Numerics.Vector3(BoxExtents.Max);
         settings.Changed();
         window.Fakes.UseCrowd();
     }

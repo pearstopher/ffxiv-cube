@@ -4,10 +4,16 @@ namespace Cube.Core;
 
 /// <summary>
 /// The cube of space around the local player (PROJECT.md, "Exact behaviour rules", Cube): centred on the player,
-/// with an edge of 10–100 yalms (default 40), turned about the vertical axis by its alignment <see cref="Yaw"/>.
-/// Answers "is this point inside?" and turns world positions into cube-local view coordinates.
+/// a box with a width, height and depth of 10–100 yalms each (default 40, see <see cref="BoxExtents"/>), turned about
+/// the vertical axis by its alignment <see cref="Yaw"/>. Answers "is this point inside?" and turns world positions into
+/// cube-local view coordinates.
 /// </summary>
 /// <remarks>
+/// <para>
+/// Since #90 the "cube" may be any box; the name stays because PROJECT.md still calls it the cube. Its extents are in
+/// its own axes, so the width is always across the cube and the depth front to back, whatever the yaw. A point is
+/// inside when it is inside on each axis separately (PROJECT.md, "Culling").
+/// </para>
 /// <para>
 /// World axes follow the game (see <c>docs/research-notes.md</c>, #10): X east, Y up, Z south, so north is −Z.
 /// In Camera mode the cube is aligned to the camera's horizontal direction (its front face points where the camera
@@ -29,66 +35,74 @@ namespace Cube.Core;
 /// </remarks>
 public readonly struct CubeSpace
 {
-    /// <summary>Default cube edge in yalms (PROJECT.md).</summary>
-    public const float DefaultEdge = 40f;
-
-    /// <summary>Smallest allowed cube edge in yalms (PROJECT.md: setting 10–100).</summary>
-    public const float MinEdge = 10f;
-
-    /// <summary>Largest allowed cube edge in yalms (PROJECT.md: setting 10–100).</summary>
-    public const float MaxEdge = 100f;
-
     /// <summary>Cosine of <see cref="Yaw"/>, cached so each point costs a few multiplies.</summary>
     private readonly float cos;
 
     /// <summary>Sine of <see cref="Yaw"/>.</summary>
     private readonly float sin;
 
-    /// <summary>Creates the cube around a centre.</summary>
+    /// <summary>Creates a cube with every extent the same: the shape before #90, still handy in tests and checks.</summary>
     /// <param name="centre">The local player's world position.</param>
-    /// <param name="edge">Edge length in yalms; clamped to <see cref="MinEdge"/>–<see cref="MaxEdge"/>.</param>
-    /// <param name="yaw">The cube's alignment yaw in radians (see <see cref="ViewYaw"/>): 0 faces north, increasing clockwise seen from above.</param>
+    /// <param name="edge">Edge length in yalms; clamped to <see cref="BoxExtents.Min"/>–<see cref="BoxExtents.Max"/>.</param>
+    /// <param name="yaw">The cube's alignment yaw in radians (see <see cref="ViewYaw"/>).</param>
     public CubeSpace(Vector3 centre, float edge, float yaw)
+        : this(centre, new Vector3(edge), yaw)
+    {
+    }
+
+    /// <summary>Creates the box around a centre.</summary>
+    /// <param name="centre">The local player's world position.</param>
+    /// <param name="size">Width, height and depth in yalms; each clamped (<see cref="BoxExtents.Clamp(Vector3)"/>).</param>
+    /// <param name="yaw">The cube's alignment yaw in radians (see <see cref="ViewYaw"/>): 0 faces north, increasing clockwise seen from above.</param>
+    public CubeSpace(Vector3 centre, Vector3 size, float yaw)
     {
         this.Centre = centre;
-        this.Edge = ClampEdge(edge);
-        this.HalfEdge = this.Edge / 2f;
+        this.Size = BoxExtents.Clamp(size);
+        this.Half = this.Size / 2f;
+        this.Largest = BoxExtents.Largest(this.Size);
         this.Yaw = yaw;
         this.cos = MathF.Cos(yaw);
         this.sin = MathF.Sin(yaw);
     }
 
-    /// <summary>Copies a cube with a new centre and edge, keeping its yaw and rotation.</summary>
+    /// <summary>Copies a cube with a new centre and size, keeping its yaw and rotation.</summary>
     /// <param name="source">The cube whose yaw (and cached sine and cosine) to keep.</param>
     /// <param name="centre">The new centre.</param>
-    /// <param name="edge">The new edge; clamped like the main constructor.</param>
-    private CubeSpace(in CubeSpace source, Vector3 centre, float edge)
+    /// <param name="size">The new size; clamped like the main constructor.</param>
+    private CubeSpace(in CubeSpace source, Vector3 centre, Vector3 size)
     {
         this.Centre = centre;
-        this.Edge = ClampEdge(edge);
-        this.HalfEdge = this.Edge / 2f;
+        this.Size = BoxExtents.Clamp(size);
+        this.Half = this.Size / 2f;
+        this.Largest = BoxExtents.Largest(this.Size);
         this.Yaw = source.Yaw;
         this.cos = source.cos;
         this.sin = source.sin;
     }
 
     /// <summary>
-    /// The same alignment around a new centre and edge, without recomputing the sine and cosine. The window
+    /// The same alignment around a new centre and size, without recomputing the sine and cosine. The window
     /// uses it every frame the yaw hasn't changed (PROJECT.md, "Efficiency and memory": recompute only when inputs
     /// change).
     /// </summary>
     /// <param name="centre">The new centre.</param>
-    /// <param name="edge">The new edge in yalms.</param>
-    public CubeSpace Recentred(Vector3 centre, float edge) => new(this, centre, edge);
+    /// <param name="size">The new width, height and depth in yalms.</param>
+    public CubeSpace Recentred(Vector3 centre, Vector3 size) => new(this, centre, size);
 
     /// <summary>The cube's centre in world coordinates: the local player's position.</summary>
     public Vector3 Centre { get; }
 
-    /// <summary>Edge length in yalms, already clamped.</summary>
-    public float Edge { get; }
+    /// <summary>Width (X), height (Y) and depth (Z) in yalms, in the cube's own axes, already clamped.</summary>
+    public Vector3 Size { get; }
 
-    /// <summary>Half the edge: the distance from the centre to each face.</summary>
-    public float HalfEdge { get; }
+    /// <summary>Half the size: the distance from the centre to the faces on each axis.</summary>
+    public Vector3 Half { get; }
+
+    /// <summary>
+    /// The largest of the three extents. Player and NPC markers are about 1/40 of it (PROJECT.md, "Players"), and the
+    /// cache and clipper use it where one number has to cover the whole box.
+    /// </summary>
+    public float Largest { get; }
 
     /// <summary>
     /// The cube's alignment yaw in radians: the world heading its front face points to. 0 faces north, increasing
@@ -97,15 +111,8 @@ public readonly struct CubeSpace
     public float Yaw { get; }
 
     /// <summary>
-    /// Clamps an edge length to the allowed range; a non-number becomes the default, so a corrupt
-    /// setting can never produce an empty or infinite cube.
-    /// </summary>
-    /// <param name="edge">The requested edge in yalms.</param>
-    public static float ClampEdge(float edge) => float.IsNaN(edge) ? DefaultEdge : Math.Clamp(edge, MinEdge, MaxEdge);
-
-    /// <summary>
-    /// Whether a world position is inside the cube as currently aligned. Inclusive: a point exactly on a face, edge
-    /// or corner counts as inside.
+    /// Whether a world position is inside the cube as currently aligned: inside on each of its three axes separately
+    /// (PROJECT.md, "Culling"). Inclusive: a point exactly on a face, edge or corner counts as inside.
     /// </summary>
     /// <remarks>
     /// The height test comes first and needs no rotation, so players far above or below are rejected for one
@@ -123,14 +130,14 @@ public readonly struct CubeSpace
     public bool TryToView(Vector3 world, out Vector3 view)
     {
         var offset = world - this.Centre;
-        if (MathF.Abs(offset.Y) > this.HalfEdge)
+        if (MathF.Abs(offset.Y) > this.Half.Y)
         {
             view = default;
             return false;
         }
 
         var local = this.RotateOffset(offset);
-        if (MathF.Abs(local.X) > this.HalfEdge || MathF.Abs(local.Z) > this.HalfEdge)
+        if (MathF.Abs(local.X) > this.Half.X || MathF.Abs(local.Z) > this.Half.Z)
         {
             view = default;
             return false;

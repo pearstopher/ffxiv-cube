@@ -32,12 +32,12 @@ private static readonly CollisionBox Crossing
 ### <a id="Cube_Tests_ClippedCollisionTests_Edge"></a> Edge
 
 ```csharp
-private const float Edge = 40
+private static readonly Vector3 Edge
 ```
 
 #### Field Value
 
- [float](https://learn.microsoft.com/dotnet/api/system.single)
+ [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
 
 ### <a id="Cube_Tests_ClippedCollisionTests_Inside"></a> Inside
 

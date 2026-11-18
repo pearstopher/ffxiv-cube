@@ -14,8 +14,8 @@ if (args.Length >= 2 && args[0] == "--demo")
         ? ViewOrientation.FromDegrees(float.Parse(args[3], CultureInfo.InvariantCulture), float.Parse(args[4], CultureInfo.InvariantCulture))
         : ViewOrientation.Default;
     var size = new Vector2(400, 360);
-    var space = new CubeSpace(Vector3.Zero, CubeSpace.DefaultEdge, yaw);
-    var projection = ViewProjection.Fit(Vector2.Zero, size, space.HalfEdge, view);
+    var space = new CubeSpace(Vector3.Zero, BoxExtents.DefaultSize, yaw);
+    var projection = ViewProjection.Fit(Vector2.Zero, size, space.Half, view);
     var list = new DrawList(256);
     CubeGeometry.AddWireCube(list, space, projection, Colour.Pack(0.85f, 0.85f, 0.85f, 0.8f));
     CubeGeometry.AddSolidCube(list, space, projection, Vector3.Zero, 0.5f, Colour.Pack(0.2f, 0.6f, 1f, 1f));

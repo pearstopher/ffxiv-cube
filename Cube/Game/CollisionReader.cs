@@ -46,12 +46,12 @@ internal sealed class CollisionReader
     /// (PROJECT.md, "When hidden").
     /// </summary>
     /// <param name="centre">The cube's centre (the player).</param>
-    /// <param name="edge">The cube's edge in yalms.</param>
+    /// <param name="size">The cube's width, height and depth in yalms.</param>
     /// <param name="detail">
     /// The detail setting (#32). Part of the stamp the cache compares, so a new level gathers again at once.
     /// </param>
     /// <returns>True if a gather completed this frame.</returns>
-    public unsafe bool Update(Vector3 centre, float edge, CollisionDetail detail)
+    public unsafe bool Update(Vector3 centre, Vector3 size, CollisionDetail detail)
     {
         var main = GameMain.Instance();
         var zone = main == null ? 0u : main->CurrentTerritoryTypeId;
@@ -67,7 +67,7 @@ internal sealed class CollisionReader
         }
 
         var source = new SceneSource(scene, CollisionDetails.MaxNodeDepth(detail));
-        return this.Cache.Step(ref source, centre, edge, zone, CollisionDetails.Stamp(Stamp(scene), detail));
+        return this.Cache.Step(ref source, centre, size, zone, CollisionDetails.Stamp(Stamp(scene), detail));
     }
 
     /// <summary>The collision scene, or null if the module or scene isn't there.</summary>

@@ -28,6 +28,8 @@ ground, walls and objects around you as simple boxes.
 - **Near things cover far things,** so you can see which players are in front.
 - **Turn the view with the rotate gizmo** in the corner of the window: drag the red, green or blue ring to turn the
   cube around that axis, or the outer ring to spin it on the screen. Any angle works, and your view is remembered.
+- **Resize the cube with the same gizmo:** drag the red, green or blue handle to make the cube wider, taller or
+  deeper (it becomes a box), or the centre handle to zoom in and out. The size is remembered too.
 - **Nothing is drawn while you're logged out, loading, in a cutscene, in GPose, or in PvP.**
 
 It only reads what the game already knows and draws it in its own window. It never changes anything in the game,
@@ -40,7 +42,9 @@ Type `/cube config` (or use the settings button in `/xlplugins`). Changes show s
 
 | Setting | What it does | Default |
 | --- | --- | --- |
-| Cube size (yalms) | How far the cube reaches around you, edge to edge (10–100). | 40 |
+| Width / Height / Depth (yalms) | How far the cube reaches around you on each axis, side to side, top to bottom and front to back (10–100 each). Different values make it a box. | 40 / 40 / 40 |
+| Zoom in / Zoom out | Shrinks or grows all three together, keeping the shape. Zooming in shows less space, bigger. | |
+| Reset size | Back to 40 × 40 × 40. | |
 | Orientation | The cube itself stays still on screen; this decides what happens to what's inside it. **Rotate contents with camera:** forward in the cube is where the game camera looks, so when you turn the camera everything inside turns around you. **Keep contents fixed (north stays put):** north is always the same side of the cube and the camera changes nothing. | Rotate contents with camera |
 | View control corner | Which corner of the cube window the x/y/z view control sits in. | Bottom right |
 | Reset view | Puts the view back to the default: from behind and above, at 30°. | |

@@ -144,7 +144,7 @@ The same context the check ran with.
 Whether a world-fixed fake is in the cube and drawn (it has at least one face tagged as its own).
 
 ```csharp
-private static bool HasFake(CubeWindow window, int fakeIndex)
+internal static bool HasFake(CubeWindow window, int fakeIndex)
 ```
 
 #### Parameters

@@ -98,6 +98,13 @@ public void Equal_depths_keep_the_order_they_were_added_in()
 public void Far_cubes_are_drawn_before_near_cubes()
 ```
 
+### <a id="Cube_Tests_ProjectionAndDrawListTests_Fit_follows_the_box_so_its_largest_dimension_fills_the_region"></a> Fit\_follows\_the\_box\_so\_its\_largest\_dimension\_fills\_the\_region\(\)
+
+```csharp
+[Fact]
+public void Fit_follows_the_box_so_its_largest_dimension_fills_the_region()
+```
+
 ### <a id="Cube_Tests_ProjectionAndDrawListTests_Fitted_cube_stays_inside_the_region_at_any_yaw_System_Single_"></a> Fitted\_cube\_stays\_inside\_the\_region\_at\_any\_yaw\(float\)
 
 ```csharp
@@ -205,6 +212,13 @@ private static CubeSpace Space(float yaw = 0)
 #### Returns
 
  [CubeSpace](Cube.Core.CubeSpace.md)
+
+### <a id="Cube_Tests_ProjectionAndDrawListTests_Tall_box_is_drawn_tall_in_its_real_proportions"></a> Tall\_box\_is\_drawn\_tall\_in\_its\_real\_proportions\(\)
+
+```csharp
+[Fact]
+public void Tall_box_is_drawn_tall_in_its_real_proportions()
+```
 
 ### <a id="Cube_Tests_ProjectionAndDrawListTests_Top_face_is_brightest_and_sides_are_shaded"></a> Top\_face\_is\_brightest\_and\_sides\_are\_shaded\(\)
 

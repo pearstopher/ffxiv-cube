@@ -4,7 +4,7 @@ using Cube.Core;
 namespace Cube.Tests;
 
 /// <summary>
-/// Checks players are drawn as small coloured cubes (PROJECT.md, "Players": about 1/40 of the big cube's edge, minimum
+/// Checks players are drawn as small coloured cubes (PROJECT.md, "Players": about 1/40 of the big cube's largest extent, minimum
 /// a few pixels; "Colours": one colour each for self, party/alliance, others and NPCs; "NPCs": drawn like players, in
 /// the NPC colour; "Draw order": near cubes cover far ones; "Efficiency and memory": no per-frame allocations).
 /// </summary>
@@ -34,6 +34,16 @@ public class PlayerCubesTests
     }
 
     [Fact]
+    public void Player_cube_follows_the_largest_extent_of_a_box()
+    {
+        // A box 10 wide, 80 tall, 20 deep: markers are 1/40 of 80, not of the width or depth.
+        var box = new CubeSpace(Vector3.Zero, new Vector3(10, 80, 20), 0.4f);
+        var projection = new ViewProjection(View, Vector2.Zero, pixelsPerYalm: 20);
+
+        Assert.Equal(1f, PlayerCubes.HalfSize(box, projection), 5);
+    }
+
+    [Fact]
     public void Player_cube_never_gets_smaller_than_the_minimum_on_screen()
     {
         // At 1 pixel per yalm a 1-yalm cube would be 1 pixel; the minimum keeps it 6 pixels wide.
@@ -59,7 +69,7 @@ public class PlayerCubesTests
     public void Npc_inside_the_cube_is_drawn_in_the_npc_colour_with_a_label()
     {
         var space = Space();
-        var projection = ViewProjection.Fit(Vector2.Zero, new Vector2(400, 400), space.HalfEdge, View);
+        var projection = ViewProjection.Fit(Vector2.Zero, new Vector2(400, 400), space.Half, View);
         var list = new DrawList(64);
 
         PlayerCubes.Add(list, space, projection, [Player(new Vector3(4, 0, -6), PlayerRelation.Npc)], PlayerPalette.Default);
@@ -81,7 +91,7 @@ public class PlayerCubesTests
     public void Each_player_gets_faces_in_their_colour_tagged_with_their_index()
     {
         var space = Space();
-        var projection = ViewProjection.Fit(Vector2.Zero, new Vector2(400, 400), space.HalfEdge, View);
+        var projection = ViewProjection.Fit(Vector2.Zero, new Vector2(400, 400), space.Half, View);
         var list = new DrawList(64);
         NearbyPlayer[] players = [Player(Vector3.Zero, PlayerRelation.Self), Player(new Vector3(5, 0, 5), PlayerRelation.Party)];
 
@@ -98,7 +108,7 @@ public class PlayerCubesTests
     public void Local_player_cube_is_at_the_centre_of_the_window()
     {
         var space = new CubeSpace(new Vector3(100, 5, -30), 40, 0f);
-        var projection = ViewProjection.Fit(Vector2.Zero, new Vector2(400, 400), space.HalfEdge, View);
+        var projection = ViewProjection.Fit(Vector2.Zero, new Vector2(400, 400), space.Half, View);
         var list = new DrawList(16);
 
         PlayerCubes.Add(list, space, projection, [Player(space.Centre, PlayerRelation.Self)], PlayerPalette.Default);
@@ -112,7 +122,7 @@ public class PlayerCubesTests
     public void Nearer_player_is_drawn_after_farther_player()
     {
         var space = new CubeSpace(Vector3.Zero, 40, 0f);
-        var projection = ViewProjection.Fit(Vector2.Zero, new Vector2(400, 400), space.HalfEdge, View);
+        var projection = ViewProjection.Fit(Vector2.Zero, new Vector2(400, 400), space.Half, View);
         var list = new DrawList(32);
 
         // North is forward (away from the viewer) at yaw 0.
@@ -129,7 +139,7 @@ public class PlayerCubesTests
     public void Drawing_players_does_not_allocate()
     {
         var space = Space();
-        var projection = ViewProjection.Fit(Vector2.Zero, new Vector2(400, 400), space.HalfEdge, View);
+        var projection = ViewProjection.Fit(Vector2.Zero, new Vector2(400, 400), space.Half, View);
         var list = new DrawList(512);
         var players = new NearbyPlayer[60];
         for (var i = 0; i < players.Length; i++)

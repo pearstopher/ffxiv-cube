@@ -18,6 +18,7 @@ internal abstract class BridgeCheck
 
 #### Derived
 
+[BoxSizeCheck](Cube.TestBridge.Checks.BoxSizeCheck.md), 
 [BuildStampCheck](Cube.TestBridge.Checks.BuildStampCheck.md), 
 [CollisionDrawCheck](Cube.TestBridge.Checks.CollisionDrawCheck.md), 
 [CollisionProbeCheck](Cube.TestBridge.Checks.CollisionProbeCheck.md), 

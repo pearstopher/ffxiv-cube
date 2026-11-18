@@ -32,7 +32,7 @@ UTF-8 name bytes, encoded once.
 
 `Offset` [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
 
-Position as fractions of the half-edge in cube-local coordinates, or a world position if <code class="paramref">IsWorld</code>.
+Position as fractions of the half-size on each axis in cube-local coordinates, or a world position if <code class="paramref">IsWorld</code>.
 
 `Relation` [PlayerRelation](Cube.Core.PlayerRelation.md)
 
@@ -70,7 +70,7 @@ public byte[] Name { get; init; }
 
 ### <a id="Cube_TestBridge_FakePlayers_Fake_Offset"></a> Offset
 
-Position as fractions of the half-edge in cube-local coordinates, or a world position if <code class="paramref">IsWorld</code>.
+Position as fractions of the half-size on each axis in cube-local coordinates, or a world position if <code class="paramref">IsWorld</code>.
 
 ```csharp
 public Vector3 Offset { get; init; }

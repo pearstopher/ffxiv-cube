@@ -4,7 +4,7 @@ Namespace: [Cube.Tests](Cube.Tests.md)
 Assembly: Cube.Tests.dll  
 
 Checks the settings' defaults and repair rules (PROJECT.md, "Features": settings for cube size, orientation mode,
-labels on/off, colours and opacity; "NPCs": on by default, purple; "Cube": edge 10–100, default 40; "View": Camera
+labels on/off, colours and opacity; "NPCs": on by default, purple; "Cube": width, height and depth each 10–100, default 40, zoom keeping their ratios, old single-edge files migrating (#90); "View": Camera
 mode by default; #32: collision on, full detail by default; saved files from older versions still load) and the
 <code>/cube config</code> command.
 
@@ -33,6 +33,13 @@ private static readonly JsonSerializerOptions JsonOptions
  [JsonSerializerOptions](https://learn.microsoft.com/dotnet/api/system.text.json.jsonserializeroptions)
 
 ## Methods
+
+### <a id="Cube_Tests_CubeSettingsTests_Box_size_survives_a_save_and_load"></a> Box\_size\_survives\_a\_save\_and\_load\(\)
+
+```csharp
+[Fact]
+public void Box_size_survives_a_save_and_load()
+```
 
 ### <a id="Cube_Tests_CubeSettingsTests_Chosen_colour_is_used_for_its_relation"></a> Chosen\_colour\_is\_used\_for\_its\_relation\(\)
 
@@ -118,6 +125,13 @@ public void Cube_size_is_kept_within_10_to_100(float stored, float expected)
 
 `expected` [float](https://learn.microsoft.com/dotnet/api/system.single)
 
+### <a id="Cube_Tests_CubeSettingsTests_Current_files_keep_their_box_size_and_ignore_any_old_edge"></a> Current\_files\_keep\_their\_box\_size\_and\_ignore\_any\_old\_edge\(\)
+
+```csharp
+[Fact]
+public void Current_files_keep_their_box_size_and_ignore_any_old_edge()
+```
+
 ### <a id="Cube_Tests_CubeSettingsTests_Default_colours_are_four_different_colours"></a> Default\_colours\_are\_four\_different\_colours\(\)
 
 ```csharp
@@ -146,6 +160,33 @@ public void Every_change_bumps_the_revision()
 public void Npc_settings_survive_a_save_and_load()
 ```
 
+### <a id="Cube_Tests_CubeSettingsTests_Old_edge_is_never_written_again"></a> Old\_edge\_is\_never\_written\_again\(\)
+
+```csharp
+[Fact]
+public void Old_edge_is_never_written_again()
+```
+
+### <a id="Cube_Tests_CubeSettingsTests_Old_out_of_range_edge_is_clamped_when_migrated"></a> Old\_out\_of\_range\_edge\_is\_clamped\_when\_migrated\(\)
+
+```csharp
+[Fact]
+public void Old_out_of_range_edge_is_clamped_when_migrated()
+```
+
+### <a id="Cube_Tests_CubeSettingsTests_Old_single_edge_becomes_all_three_extents_System_Int32_"></a> Old\_single\_edge\_becomes\_all\_three\_extents\(int\)
+
+```csharp
+[Theory]
+[InlineData(new object[] { 1 })]
+[InlineData(new object[] { 2 })]
+public void Old_single_edge_becomes_all_three_extents(int fileVersion)
+```
+
+#### Parameters
+
+`fileVersion` [int](https://learn.microsoft.com/dotnet/api/system.int32)
+
 ### <a id="Cube_Tests_CubeSettingsTests_Opacity_applies_to_every_player_colour"></a> Opacity\_applies\_to\_every\_player\_colour\(\)
 
 ```csharp
@@ -169,6 +210,27 @@ public void Opacity_is_kept_visible_and_at_most_full(float stored, float expecte
 
 `expected` [float](https://learn.microsoft.com/dotnet/api/system.single)
 
+### <a id="Cube_Tests_CubeSettingsTests_Reset_size_gives_40_by_40_by_40"></a> Reset\_size\_gives\_40\_by\_40\_by\_40\(\)
+
+```csharp
+[Fact]
+public void Reset_size_gives_40_by_40_by_40()
+```
+
+### <a id="Cube_Tests_CubeSettingsTests_Reset_to_defaults_gives_40_by_40_by_40"></a> Reset\_to\_defaults\_gives\_40\_by\_40\_by\_40\(\)
+
+```csharp
+[Fact]
+public void Reset_to_defaults_gives_40_by_40_by_40()
+```
+
+### <a id="Cube_Tests_CubeSettingsTests_Set_size_clamps_each_extent"></a> Set\_size\_clamps\_each\_extent\(\)
+
+```csharp
+[Fact]
+public void Set_size_clamps_each_extent()
+```
+
 ### <a id="Cube_Tests_CubeSettingsTests_Unknown_collision_detail_falls_back_to_full"></a> Unknown\_collision\_detail\_falls\_back\_to\_full\(\)
 
 ```csharp
@@ -181,4 +243,11 @@ public void Unknown_collision_detail_falls_back_to_full()
 ```csharp
 [Fact]
 public void Unknown_orientation_falls_back_to_camera()
+```
+
+### <a id="Cube_Tests_CubeSettingsTests_Zoom_scales_every_extent_and_keeps_the_ratios"></a> Zoom\_scales\_every\_extent\_and\_keeps\_the\_ratios\(\)
+
+```csharp
+[Fact]
+public void Zoom_scales_every_extent_and_keeps_the_ratios()
 ```

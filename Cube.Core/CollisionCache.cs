@@ -21,7 +21,7 @@ namespace Cube.Core;
 /// </para>
 /// <para>
 /// <b>When to gather.</b> Only when <see cref="CollisionBoxSet.NeedsRefresh"/> says the ready set is stale (player
-/// moved a quarter of the edge, edge or scene changed). A gather in progress restarts if the scene changes under it or
+/// moved a quarter of the box's extent, size or scene changed). A gather in progress restarts if the scene changes under it or
 /// the player has already walked out of its region, so a finished set always matches one scene and one place.
 /// </para>
 /// <para>
@@ -118,11 +118,11 @@ public sealed class CollisionCache
     /// <typeparam name="TSource">The collision source; a struct, so the calls aren't boxed.</typeparam>
     /// <param name="source">The source, positioned anywhere; <see cref="ICollisionSource.Seek"/> is called first.</param>
     /// <param name="position">The cube's centre (the player).</param>
-    /// <param name="edge">The cube's edge in yalms.</param>
+    /// <param name="size">The cube's width, height and depth in yalms.</param>
     /// <param name="zone">The current zone (territory) id.</param>
     /// <param name="sceneStamp">The source's scene stamp (see <see cref="CollisionBoxSet.NeedsRefresh"/>).</param>
     /// <returns>True if a gather completed this frame, so <see cref="Ready"/> changed.</returns>
-    public bool Step<TSource>(ref TSource source, Vector3 position, float edge, uint zone, ulong sceneStamp)
+    public bool Step<TSource>(ref TSource source, Vector3 position, Vector3 size, uint zone, ulong sceneStamp)
         where TSource : struct, ICollisionSource
     {
         this.LastStepColliders = 0;
@@ -140,17 +140,17 @@ public sealed class CollisionCache
 
         if (this.IsGathering)
         {
-            if (this.building.NeedsRefresh(position, edge, sceneStamp))
+            if (this.building.NeedsRefresh(position, size, sceneStamp))
             {
                 // The scene changed under the gather, or the player already left its region: what's gathered so far
                 // would be a mix, so start over here.
                 this.Restarts++;
-                this.Start(position, edge, sceneStamp);
+                this.Start(position, size, sceneStamp);
             }
         }
-        else if (this.Ready.NeedsRefresh(position, edge, sceneStamp))
+        else if (this.Ready.NeedsRefresh(position, size, sceneStamp))
         {
-            this.Start(position, edge, sceneStamp);
+            this.Start(position, size, sceneStamp);
         }
         else
         {
@@ -181,11 +181,11 @@ public sealed class CollisionCache
 
     /// <summary>Begins a new gather into <see cref="building"/> at the start of the scene's list.</summary>
     /// <param name="position">The cube's centre.</param>
-    /// <param name="edge">The cube's edge.</param>
+    /// <param name="size">The cube's width, height and depth.</param>
     /// <param name="sceneStamp">The scene stamp.</param>
-    private void Start(Vector3 position, float edge, ulong sceneStamp)
+    private void Start(Vector3 position, Vector3 size, ulong sceneStamp)
     {
-        this.building.Begin(position, edge, sceneStamp);
+        this.building.Begin(position, size, sceneStamp);
         this.nextCollider = 0;
         this.GatherFrames = 0;
         this.IsGathering = true;

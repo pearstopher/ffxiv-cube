@@ -52,10 +52,10 @@ internal sealed class GameStateProbeCheck(IObjectTable objects, IClientState cli
     private const double NpcSampleSeconds = 4;
 
     /// <summary>
-    /// Half the largest cube edge (<see cref="Core.CubeSpace.MaxEdge"/>): NPCs within this many yalms on every
+    /// Half the largest cube edge (<see cref="Core.BoxExtents.Max"/>): NPCs within this many yalms on every
     /// axis would be inside the biggest cube the settings allow, which is the worst case for the NPC cap.
     /// </summary>
-    private const float MaxHalfEdge = Core.CubeSpace.MaxEdge / 2f;
+    private const float MaxHalfEdge = Core.BoxExtents.Max / 2f;
 
     /// <summary>The <c>OwnerId</c> value meaning "no owner" (the game's invalid entity id).</summary>
     private const uint NoOwner = 0xE0000000;

@@ -20,7 +20,7 @@ public class PlayerSetTests
 
     private static PlayerSet Begin(PlayerSet set)
     {
-        set.Begin(new CubeSpace(Centre, 40, 0));
+        set.Begin(new CubeSpace(Centre, new Vector3(40), 0));
         return set;
     }
 
@@ -131,7 +131,7 @@ public class PlayerSetTests
     public void Slot_beyond_the_name_cache_is_ignored()
     {
         var set = new PlayerSet(4, new NameCache(2));
-        set.Begin(new CubeSpace(Centre, 40, 0));
+        set.Begin(new CubeSpace(Centre, new Vector3(40), 0));
 
         Assert.False(set.Offer(5, 1, Centre, false, false, false, Alice));
     }
@@ -164,7 +164,7 @@ public class PlayerSetTests
     public void With_npcs_off_no_npc_is_kept_but_players_still_are()
     {
         var set = NewSet(npcCapacity: 4);
-        set.Begin(new CubeSpace(Centre, 40, 0), npcs: false);
+        set.Begin(new CubeSpace(Centre, new Vector3(40), 0), npcs: false);
 
         Assert.False(set.ShowsNpcs);
         Assert.False(set.OfferNpc(500, 7, Centre, Alice));

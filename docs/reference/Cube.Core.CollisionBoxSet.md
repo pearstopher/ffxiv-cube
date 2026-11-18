@@ -22,8 +22,8 @@ public sealed class CollisionBoxSet
 <p>
 <b>Gathered once, used for many frames.</b> The walk is cheap (0.13 ms in the #28 sample) but still not something
 to repeat every frame, so the boxes are gathered for a [Region](Cube.Core.CollisionBoxSet.md#Cube_Core_CollisionBoxSet_Region) a little larger than the cube: wide
-enough for any camera yaw (the cube's horizontal diagonal) plus a margin of [RefreshFraction](Cube.Core.CollisionBoxSet.md#Cube_Core_CollisionBoxSet_RefreshFraction) of the
-edge. Turning the camera never invalidates it; the player can walk that margin before [NeedsRefresh](Cube.Core.CollisionBoxSet.md#Cube_Core_CollisionBoxSet_NeedsRefresh)
+enough for any camera yaw (the box's horizontal diagonal) plus a margin of [RefreshFraction](Cube.Core.CollisionBoxSet.md#Cube_Core_CollisionBoxSet_RefreshFraction) of its
+extents (sideways the larger of width and depth, vertically the height). Turning the camera never invalidates it; the player can walk that margin before [NeedsRefresh](Cube.Core.CollisionBoxSet.md#Cube_Core_CollisionBoxSet_NeedsRefresh)
 asks for a new walk (PROJECT.md: "When the player moves, stale data is refreshed"; "recompute only when inputs
 change beyond a small threshold"). Each frame [CollisionClipper](Cube.Core.CollisionClipper.md#Cube_Core_CollisionClipper) clips the cached boxes to the cube.
 </p>
@@ -70,19 +70,6 @@ public const int DefaultCapacity = 2000
 
  [int](https://learn.microsoft.com/dotnet/api/system.int32)
 
-### <a id="Cube_Core_CollisionBoxSet_Diagonal"></a> Diagonal
-
-The cube's horizontal half-diagonal per unit of half-edge (√2, rounded up so a corner is never missed): the
-furthest a corner of the cube reaches sideways from the centre at any yaw.
-
-```csharp
-private const float Diagonal = 1.41422
-```
-
-#### Field Value
-
- [float](https://learn.microsoft.com/dotnet/api/system.single)
-
 ### <a id="Cube_Core_CollisionBoxSet_MergeTolerance"></a> MergeTolerance
 
 How close two box faces must be, in yalms, to count as lined up when merging.
@@ -97,11 +84,25 @@ public const float MergeTolerance = 0.01
 
 ### <a id="Cube_Core_CollisionBoxSet_RefreshFraction"></a> RefreshFraction
 
-How far the player may move, as a fraction of the cube's edge, before the boxes are gathered again. Also the
-margin the gathered region has around the cube, so nothing at the cube's edge is missing until then.
+How far the player may move, as a fraction of the cube's extent along that direction (sideways the larger of
+width and depth, vertically the height), before the boxes are gathered again. Also the margin the gathered
+region has around the cube, so nothing at the cube's edge is missing until then.
 
 ```csharp
 public const float RefreshFraction = 0.25
+```
+
+#### Field Value
+
+ [float](https://learn.microsoft.com/dotnet/api/system.single)
+
+### <a id="Cube_Core_CollisionBoxSet_RoundUp"></a> RoundUp
+
+Stretches the horizontal half-diagonal by a hair, so rounding never leaves a corner of the cube just outside
+the gathered region.
+
+```csharp
+private const float RoundUp = 1.00001
 ```
 
 #### Field Value
@@ -132,17 +133,17 @@ private Vector3 centre
 
  [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
 
-### <a id="Cube_Core_CollisionBoxSet_edge"></a> edge
+### <a id="Cube_Core_CollisionBoxSet_size"></a> size
 
-The cube edge the boxes were gathered for, already clamped.
+The cube size the boxes were gathered for, already clamped.
 
 ```csharp
-private float edge
+private Vector3 size
 ```
 
 #### Field Value
 
- [float](https://learn.microsoft.com/dotnet/api/system.single)
+ [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
 
 ### <a id="Cube_Core_CollisionBoxSet_stale"></a> stale
 
@@ -281,12 +282,12 @@ public CollisionBox Region { get; private set; }
 
 ## Methods
 
-### <a id="Cube_Core_CollisionBoxSet_Begin_System_Numerics_Vector3_System_Single_System_UInt64_"></a> Begin\(Vector3, float, ulong\)
+### <a id="Cube_Core_CollisionBoxSet_Begin_System_Numerics_Vector3_System_Numerics_Vector3_System_UInt64_"></a> Begin\(Vector3, Vector3, ulong\)
 
 Starts a new gather: empties the set and sets the region boxes are culled against.
 
 ```csharp
-public void Begin(Vector3 playerPosition, float edge, ulong sceneStamp)
+public void Begin(Vector3 playerPosition, Vector3 size, ulong sceneStamp)
 ```
 
 #### Parameters
@@ -295,9 +296,9 @@ public void Begin(Vector3 playerPosition, float edge, ulong sceneStamp)
 
 The cube's centre.
 
-`edge` [float](https://learn.microsoft.com/dotnet/api/system.single)
+`size` [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
 
-The cube's edge in yalms.
+The cube's width, height and depth in yalms.
 
 `sceneStamp` [ulong](https://learn.microsoft.com/dotnet/api/system.uint64)
 
@@ -311,6 +312,26 @@ zone). The buffer is kept for reuse, so the next gather allocates nothing.
 ```csharp
 public void Clear()
 ```
+
+### <a id="Cube_Core_CollisionBoxSet_Margin_System_Numerics_Vector3_"></a> Margin\(Vector3\)
+
+The refresh margin for a size: [RefreshFraction](Cube.Core.CollisionBoxSet.md#Cube_Core_CollisionBoxSet_RefreshFraction) of the larger of width and depth sideways (in
+`System.Numerics.Vector2.X`), and of the height vertically (in `System.Numerics.Vector2.Y`). For a cube both are a
+quarter of the edge, as before #90.
+
+```csharp
+private static Vector2 Margin(Vector3 size)
+```
+
+#### Parameters
+
+`size` [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
+
+A clamped size.
+
+#### Returns
+
+ [Vector2](https://learn.microsoft.com/dotnet/api/system.numerics.vector2)
 
 ### <a id="Cube_Core_CollisionBoxSet_MarkStale"></a> MarkStale\(\)
 
@@ -351,14 +372,14 @@ Second interval's end.
 
  [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-### <a id="Cube_Core_CollisionBoxSet_NeedsRefresh_System_Numerics_Vector3_System_Single_System_UInt64_"></a> NeedsRefresh\(Vector3, float, ulong\)
+### <a id="Cube_Core_CollisionBoxSet_NeedsRefresh_System_Numerics_Vector3_System_Numerics_Vector3_System_UInt64_"></a> NeedsRefresh\(Vector3, Vector3, ulong\)
 
 Whether the boxes must be gathered again: there are none yet, the scene changed (a different
-<code class="paramref">sceneStamp</code>), the cube's edge changed, or the player has moved more than
-[RefreshFraction](Cube.Core.CollisionBoxSet.md#Cube_Core_CollisionBoxSet_RefreshFraction) of the edge along any axis since the last gather.
+<code class="paramref">sceneStamp</code>), the cube's size changed, or the player has moved further than the refresh
+margin since the last gather (sideways or vertically, see [RefreshFraction](Cube.Core.CollisionBoxSet.md#Cube_Core_CollisionBoxSet_RefreshFraction)).
 
 ```csharp
-public bool NeedsRefresh(Vector3 playerPosition, float edge, ulong sceneStamp)
+public bool NeedsRefresh(Vector3 playerPosition, Vector3 size, ulong sceneStamp)
 ```
 
 #### Parameters
@@ -367,9 +388,9 @@ public bool NeedsRefresh(Vector3 playerPosition, float edge, ulong sceneStamp)
 
 The cube's centre now.
 
-`edge` [float](https://learn.microsoft.com/dotnet/api/system.single)
+`size` [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
 
-The cube's edge now.
+The cube's width, height and depth now.
 
 `sceneStamp` [ulong](https://learn.microsoft.com/dotnet/api/system.uint64)
 
@@ -421,13 +442,14 @@ A world box.
 
  [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-### <a id="Cube_Core_CollisionBoxSet_RegionFor_System_Numerics_Vector3_System_Single_"></a> RegionFor\(Vector3, float\)
+### <a id="Cube_Core_CollisionBoxSet_RegionFor_System_Numerics_Vector3_System_Numerics_Vector3_"></a> RegionFor\(Vector3, Vector3\)
 
-The world region gathered for a cube, before any yaw: centre ± (half-diagonal + margin) sideways and
-± (half-edge + margin) vertically.
+The world region gathered for a cube, before any yaw: centre ± (horizontal half-diagonal + margin) sideways and
+± (half the height + margin) vertically. The box can turn to any yaw, so sideways both world axes get the same
+reach: the furthest a corner of its footprint gets from the centre.
 
 ```csharp
-public static CollisionBox RegionFor(Vector3 centre, float edge)
+public static CollisionBox RegionFor(Vector3 centre, Vector3 size)
 ```
 
 #### Parameters
@@ -436,9 +458,9 @@ public static CollisionBox RegionFor(Vector3 centre, float edge)
 
 The cube's centre (the player's position).
 
-`edge` [float](https://learn.microsoft.com/dotnet/api/system.single)
+`size` [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
 
-The cube's edge in yalms; clamped like [CubeSpace](Cube.Core.CubeSpace.md#Cube_Core_CubeSpace).
+The cube's width, height and depth in yalms; clamped like [CubeSpace](Cube.Core.CubeSpace.md#Cube_Core_CubeSpace).
 
 #### Returns
 

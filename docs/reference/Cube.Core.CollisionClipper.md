@@ -36,7 +36,7 @@ polygon buffers are on the stack (PROJECT.md, "Efficiency and memory").
 
 ### <a id="Cube_Core_CollisionClipper_MaxCorners"></a> MaxCorners
 
-Most corners a clipped footprint can have: a square cut by four lines.
+Most corners a clipped footprint can have: a rectangle cut by four lines.
 
 ```csharp
 private const int MaxCorners = 8

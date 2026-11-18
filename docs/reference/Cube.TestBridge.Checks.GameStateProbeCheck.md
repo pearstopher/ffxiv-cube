@@ -84,7 +84,7 @@ private const int CharacterSlots = 200
 
 ### <a id="Cube_TestBridge_Checks_GameStateProbeCheck_MaxHalfEdge"></a> MaxHalfEdge
 
-Half the largest cube edge ([MaxEdge](Cube.Core.CubeSpace.md#Cube_Core_CubeSpace_MaxEdge)): NPCs within this many yalms on every
+Half the largest cube edge ([Max](Cube.Core.BoxExtents.md#Cube_Core_BoxExtents_Max)): NPCs within this many yalms on every
 axis would be inside the biggest cube the settings allow, which is the worst case for the NPC cap.
 
 ```csharp
