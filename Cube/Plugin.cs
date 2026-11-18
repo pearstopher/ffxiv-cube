@@ -9,11 +9,11 @@ using Dalamud.Plugin.Services;
 namespace Cube;
 
 /// <summary>
-/// Entry point. Registers the <c>/cube</c> command and the cube window, and logs which build loaded.
+/// Entry point. Registers the <c>/cube</c> command, the cube and settings windows, and logs which build loaded.
 /// </summary>
 /// <remarks>
 /// The plugin only reads game state and draws it in its own window (PROJECT.md, "Goal"):
-/// it never changes the game, hooks nothing it doesn't need, and sends nothing.
+/// it never changes the game, hooks nothing, and sends nothing.
 /// Everything registered here is released in <see cref="Dispose"/>.
 /// </remarks>
 public sealed class Plugin : IDalamudPlugin
@@ -27,7 +27,7 @@ public sealed class Plugin : IDalamudPlugin
     [PluginService] internal static IPluginLog Log { get; private set; } = null!;
     /// <summary>Registers the <c>/cube</c> command.</summary>
     [PluginService] internal static ICommandManager CommandManager { get; private set; } = null!;
-    /// <summary>Login and GPose state: the cube is hidden when logged out or in GPose (PROJECT.md, "When hidden").</summary>
+    /// <summary>Login, GPose and PvP state: the cube is hidden when logged out, in GPose or in PvP (PROJECT.md, "When hidden").</summary>
     [PluginService] internal static IClientState ClientState { get; private set; } = null!;
     /// <summary>Condition flags: the cube is hidden during loading screens and cutscenes.</summary>
     [PluginService] internal static ICondition Condition { get; private set; } = null!;
@@ -36,7 +36,10 @@ public sealed class Plugin : IDalamudPlugin
     /// <summary>Drives the in-game test bridge's checks, one step per frame. Debug builds only.</summary>
     [PluginService] internal static IFramework Framework { get; private set; } = null!;
 
-    /// <summary>The object table, read by the bridge's probe as an independent source. Debug builds only, for now.</summary>
+    /// <summary>
+    /// The object table, read by the bridge's checks and probe as a second, independent source to compare the direct
+    /// read in <see cref="Game.PlayerReader"/> against. Debug builds only: the plugin itself never uses it (#10).
+    /// </summary>
     [PluginService] internal static IObjectTable ObjectTable { get; private set; } = null!;
 
     /// <summary>The build configuration, shown in the load line.</summary>
