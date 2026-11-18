@@ -8,5 +8,7 @@
   href: manual-tests.md
 - name: Research notes
   href: research-notes.md
+- name: Kinds of world object
+  href: world-object-types.md
 - name: Dalamud repo standards
   href: dalamud-repo-standards.md
