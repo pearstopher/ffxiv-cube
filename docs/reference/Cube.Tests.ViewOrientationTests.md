@@ -4,8 +4,9 @@ Namespace: [Cube.Tests](Cube.Tests.md)
 Assembly: Cube.Tests.dll  
 
 Checks the user's view orientation and the projection it drives (PROJECT.md, "View orientation control": the view
-control turns how the cube is shown, yaw and tilt; default from above and behind at 30°, front face away; the
-orientation is saved and can be reset; "Efficiency and memory": no per-frame allocations).
+control is a rotate gizmo that turns how the cube is shown, any orientation including roll; default from above and
+behind at 30°, front face away; orientations saved by the old yaw-and-tilt control carry over; "Efficiency and
+memory": no per-frame allocations).
 
 ```csharp
 public class ViewOrientationTests
@@ -41,11 +42,37 @@ private static readonly Vector2 Origin
 
 ## Methods
 
+### <a id="Cube_Tests_ViewOrientationTests_AssertSameAxes_Cube_Core_ViewOrientation_Cube_Core_ViewOrientation_"></a> AssertSameAxes\(ViewOrientation, ViewOrientation\)
+
+```csharp
+private static void AssertSameAxes(ViewOrientation expected, ViewOrientation actual)
+```
+
+#### Parameters
+
+`expected` [ViewOrientation](Cube.Core.ViewOrientation.md)
+
+`actual` [ViewOrientation](Cube.Core.ViewOrientation.md)
+
+### <a id="Cube_Tests_ViewOrientationTests_Default_view_is_unchanged_from_the_old_control_default"></a> Default\_view\_is\_unchanged\_from\_the\_old\_control\_default\(\)
+
+```csharp
+[Fact]
+public void Default_view_is_unchanged_from_the_old_control_default()
+```
+
 ### <a id="Cube_Tests_ViewOrientationTests_Default_view_reproduces_the_old_fixed_30_degree_projection"></a> Default\_view\_reproduces\_the\_old\_fixed\_30\_degree\_projection\(\)
 
 ```csharp
 [Fact]
 public void Default_view_reproduces_the_old_fixed_30_degree_projection()
+```
+
+### <a id="Cube_Tests_ViewOrientationTests_Dragging_the_x_ring_turns_the_cube_around_its_own_x_axis"></a> Dragging\_the\_x\_ring\_turns\_the\_cube\_around\_its\_own\_x\_axis\(\)
+
+```csharp
+[Fact]
+public void Dragging_the_x_ring_turns_the_cube_around_its_own_x_axis()
 ```
 
 ### <a id="Cube_Tests_ViewOrientationTests_Fitted_cube_stays_inside_the_region_and_keeps_its_size_at_any_orientation_System_Single_System_Single_"></a> Fitted\_cube\_stays\_inside\_the\_region\_and\_keeps\_its\_size\_at\_any\_orientation\(float, float\)
@@ -65,28 +92,35 @@ public void Fitted_cube_stays_inside_the_region_and_keeps_its_size_at_any_orient
 
 `pitch` [float](https://learn.microsoft.com/dotnet/api/system.single)
 
-### <a id="Cube_Tests_ViewOrientationTests_Gizmo_drag_to_the_side_reads_back_as_a_turned_view"></a> Gizmo\_drag\_to\_the\_side\_reads\_back\_as\_a\_turned\_view\(\)
+### <a id="Cube_Tests_ViewOrientationTests_Gizmo_drift_and_scale_are_removed"></a> Gizmo\_drift\_and\_scale\_are\_removed\(\)
 
 ```csharp
 [Fact]
-public void Gizmo_drag_to_the_side_reads_back_as_a_turned_view()
+public void Gizmo_drift_and_scale_are_removed()
 ```
 
-### <a id="Cube_Tests_ViewOrientationTests_Gizmo_view_from_straight_above_keeps_its_heading"></a> Gizmo\_view\_from\_straight\_above\_keeps\_its\_heading\(\)
+### <a id="Cube_Tests_ViewOrientationTests_Gizmo_model_of_the_default_view_is_seen_from_above_and_behind"></a> Gizmo\_model\_of\_the\_default\_view\_is\_seen\_from\_above\_and\_behind\(\)
 
 ```csharp
 [Fact]
-public void Gizmo_view_from_straight_above_keeps_its_heading()
+public void Gizmo_model_of_the_default_view_is_seen_from_above_and_behind()
 ```
 
-### <a id="Cube_Tests_ViewOrientationTests_Gizmo_view_matrix_matches_a_right_handed_look_at_from_above_and_behind"></a> Gizmo\_view\_matrix\_matches\_a\_right\_handed\_look\_at\_from\_above\_and\_behind\(\)
+### <a id="Cube_Tests_ViewOrientationTests_Looking_straight_down_puts_forward_at_the_top_of_the_screen"></a> Looking\_straight\_down\_puts\_forward\_at\_the\_top\_of\_the\_screen\(\)
 
 ```csharp
 [Fact]
-public void Gizmo_view_matrix_matches_a_right_handed_look_at_from_above_and_behind()
+public void Looking_straight_down_puts_forward_at_the_top_of_the_screen()
 ```
 
-### <a id="Cube_Tests_ViewOrientationTests_Gizmo_view_matrix_round_trips_System_Single_System_Single_"></a> Gizmo\_view\_matrix\_round\_trips\(float, float\)
+### <a id="Cube_Tests_ViewOrientationTests_Old_tilt_is_clamped_and_heading_wrapped"></a> Old\_tilt\_is\_clamped\_and\_heading\_wrapped\(\)
+
+```csharp
+[Fact]
+public void Old_tilt_is_clamped_and_heading_wrapped()
+```
+
+### <a id="Cube_Tests_ViewOrientationTests_Old_yaw_and_tilt_give_the_same_projection_as_the_old_control_System_Single_System_Single_"></a> Old\_yaw\_and\_tilt\_give\_the\_same\_projection\_as\_the\_old\_control\(float, float\)
 
 ```csharp
 [Theory]
@@ -97,7 +131,7 @@ public void Gizmo_view_matrix_matches_a_right_handed_look_at_from_above_and_behi
 [InlineData(new object[] { -179, 89 })]
 [InlineData(new object[] { 25, 90 })]
 [InlineData(new object[] { -60, -90 })]
-public void Gizmo_view_matrix_round_trips(float yaw, float pitch)
+public void Old_yaw_and_tilt_give_the_same_projection_as_the_old_control(float yaw, float pitch)
 ```
 
 #### Parameters
@@ -105,20 +139,6 @@ public void Gizmo_view_matrix_round_trips(float yaw, float pitch)
 `yaw` [float](https://learn.microsoft.com/dotnet/api/system.single)
 
 `pitch` [float](https://learn.microsoft.com/dotnet/api/system.single)
-
-### <a id="Cube_Tests_ViewOrientationTests_Looking_straight_down_puts_forward_at_the_top_of_the_screen"></a> Looking\_straight\_down\_puts\_forward\_at\_the\_top\_of\_the\_screen\(\)
-
-```csharp
-[Fact]
-public void Looking_straight_down_puts_forward_at_the_top_of_the_screen()
-```
-
-### <a id="Cube_Tests_ViewOrientationTests_Pitch_is_clamped_and_yaw_wrapped"></a> Pitch\_is\_clamped\_and\_yaw\_wrapped\(\)
-
-```csharp
-[Fact]
-public void Pitch_is_clamped_and_yaw_wrapped()
-```
 
 ### <a id="Cube_Tests_ViewOrientationTests_Projecting_and_converting_do_not_allocate"></a> Projecting\_and\_converting\_do\_not\_allocate\(\)
 
@@ -140,6 +160,50 @@ private static ViewProjection Projection(ViewOrientation view)
 #### Returns
 
  [ViewProjection](Cube.Core.ViewProjection.md)
+
+### <a id="Cube_Tests_ViewOrientationTests_Rolled_Cube_Core_ViewOrientation_System_Single_"></a> Rolled\(ViewOrientation, float\)
+
+```csharp
+private static ViewOrientation Rolled(ViewOrientation view, float degrees)
+```
+
+#### Parameters
+
+`view` [ViewOrientation](Cube.Core.ViewOrientation.md)
+
+`degrees` [float](https://learn.microsoft.com/dotnet/api/system.single)
+
+#### Returns
+
+ [ViewOrientation](Cube.Core.ViewOrientation.md)
+
+### <a id="Cube_Tests_ViewOrientationTests_Rolling_the_view_changes_the_projection"></a> Rolling\_the\_view\_changes\_the\_projection\(\)
+
+```csharp
+[Fact]
+public void Rolling_the_view_changes_the_projection()
+```
+
+### <a id="Cube_Tests_ViewOrientationTests_Rotation_round_trips_through_the_gizmo_model_matrix_System_Single_System_Single_System_Single_"></a> Rotation\_round\_trips\_through\_the\_gizmo\_model\_matrix\(float, float, float\)
+
+```csharp
+[Theory]
+[InlineData(new object[] { 0, 30, 0 })]
+[InlineData(new object[] { 45, 30, 0 })]
+[InlineData(new object[] { -120, 10, 40 })]
+[InlineData(new object[] { 170, -40, -75 })]
+[InlineData(new object[] { 25, 90, 120 })]
+[InlineData(new object[] { -60, -90, 180 })]
+public void Rotation_round_trips_through_the_gizmo_model_matrix(float yaw, float pitch, float roll)
+```
+
+#### Parameters
+
+`yaw` [float](https://learn.microsoft.com/dotnet/api/system.single)
+
+`pitch` [float](https://learn.microsoft.com/dotnet/api/system.single)
+
+`roll` [float](https://learn.microsoft.com/dotnet/api/system.single)
 
 ### <a id="Cube_Tests_ViewOrientationTests_SamplePoints"></a> SamplePoints\(\)
 
@@ -191,6 +255,20 @@ public void Turned_view_shows_three_faces_of_a_cube()
 ```csharp
 [Fact]
 public void Turning_the_view_a_quarter_turn_right_shows_the_cube_from_its_left_side()
+```
+
+### <a id="Cube_Tests_ViewOrientationTests_Unusable_gizmo_matrix_is_rejected"></a> Unusable\_gizmo\_matrix\_is\_rejected\(\)
+
+```csharp
+[Fact]
+public void Unusable_gizmo_matrix_is_rejected()
+```
+
+### <a id="Cube_Tests_ViewOrientationTests_Unusable_rotation_falls_back_to_the_default"></a> Unusable\_rotation\_falls\_back\_to\_the\_default\(\)
+
+```csharp
+[Fact]
+public void Unusable_rotation_falls_back_to_the_default()
 ```
 
 ### <a id="Cube_Tests_ViewOrientationTests_View_axes_are_orthonormal_at_any_orientation_System_Single_System_Single_"></a> View\_axes\_are\_orthonormal\_at\_any\_orientation\(float, float\)

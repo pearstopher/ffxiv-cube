@@ -163,6 +163,19 @@ public Vector3 PartyColour
 
  [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
 
+### <a id="Cube_Core_CubeSettings_RotationViewVersion"></a> RotationViewVersion
+
+The settings file format that stores the view as [ViewRotation](Cube.Core.CubeSettings.md#Cube_Core_CubeSettings_ViewRotation). Files older than this stored the
+old control's heading and tilt instead, which [Upgrade](Cube.Core.CubeSettings.md#Cube_Core_CubeSettings_Upgrade) converts.
+
+```csharp
+public const int RotationViewVersion = 2
+```
+
+#### Field Value
+
+ [int](https://learn.microsoft.com/dotnet/api/system.int32)
+
 ### <a id="Cube_Core_CubeSettings_SelfColour"></a> SelfColour
 
 The local player's colour (red, green, blue, each 0–1).
@@ -202,7 +215,7 @@ public bool ShowNpcs
 
 ### <a id="Cube_Core_CubeSettings_ViewPitchDegrees"></a> ViewPitchDegrees
 
-The view control's tilt above the horizontal, in degrees (default 30°, ±90° at most).
+The old control's tilt, in degrees; read like [ViewYawDegrees](Cube.Core.CubeSettings.md#Cube_Core_CubeSettings_ViewYawDegrees). Defaults to 30° (the default view).
 
 ```csharp
 public float ViewPitchDegrees
@@ -211,6 +224,19 @@ public float ViewPitchDegrees
 #### Field Value
 
  [float](https://learn.microsoft.com/dotnet/api/system.single)
+
+### <a id="Cube_Core_CubeSettings_ViewRotation"></a> ViewRotation
+
+The view control's rotation (PROJECT.md, "View orientation control": the chosen orientation is saved, any
+orientation including roll). Use [View](Cube.Core.CubeSettings.md#Cube_Core_CubeSettings_View) to read it.
+
+```csharp
+public Quaternion ViewRotation
+```
+
+#### Field Value
+
+ [Quaternion](https://learn.microsoft.com/dotnet/api/system.numerics.quaternion)
 
 ### <a id="Cube_Core_CubeSettings_ViewWidgetCorner"></a> ViewWidgetCorner
 
@@ -226,8 +252,8 @@ public WidgetCorner ViewWidgetCorner
 
 ### <a id="Cube_Core_CubeSettings_ViewYawDegrees"></a> ViewYawDegrees
 
-The view control's heading, in degrees (PROJECT.md, "View orientation control": the chosen orientation is
-saved). Degrees, so a hand-edited file is readable. Use [View](Cube.Core.CubeSettings.md#Cube_Core_CubeSettings_View) to read it.
+The old yaw-and-tilt control's heading, in degrees (#63). Only read from files saved before
+[RotationViewVersion](Cube.Core.CubeSettings.md#Cube_Core_CubeSettings_RotationViewVersion), so their view carries over (PROJECT.md); never written again.
 
 ```csharp
 public float ViewYawDegrees
@@ -347,6 +373,52 @@ public void SetView(in ViewOrientation view)
 `view` [ViewOrientation](Cube.Core.ViewOrientation.md)
 
 The orientation the user chose.
+
+### <a id="Cube_Core_CubeSettings_ShouldSerializeViewPitchDegrees"></a> ShouldSerializeViewPitchDegrees\(\)
+
+Never writes the old tilt; see [ShouldSerializeViewYawDegrees](Cube.Core.CubeSettings.md#Cube_Core_CubeSettings_ShouldSerializeViewYawDegrees).
+
+```csharp
+public bool ShouldSerializeViewPitchDegrees()
+```
+
+#### Returns
+
+ [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+Always false.
+
+### <a id="Cube_Core_CubeSettings_ShouldSerializeViewYawDegrees"></a> ShouldSerializeViewYawDegrees\(\)
+
+Tells the JSON serialiser Dalamud uses (Newtonsoft, by naming convention) never to write the old heading, so
+saved files only hold [ViewRotation](Cube.Core.CubeSettings.md#Cube_Core_CubeSettings_ViewRotation).
+
+```csharp
+public bool ShouldSerializeViewYawDegrees()
+```
+
+#### Returns
+
+ [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+Always false.
+
+### <a id="Cube_Core_CubeSettings_Upgrade_System_Int32_"></a> Upgrade\(int\)
+
+Brings settings loaded from an older file format up to date, then repairs them with [Changed](Cube.Core.CubeSettings.md#Cube_Core_CubeSettings_Changed).
+Files before [RotationViewVersion](Cube.Core.CubeSettings.md#Cube_Core_CubeSettings_RotationViewVersion) stored the view as a heading and tilt; they become the same
+orientation (PROJECT.md: orientations saved by the old control carry over). A file from before the view
+control existed has neither, so the old fields' defaults give the default view.
+
+```csharp
+public void Upgrade(int fileVersion)
+```
+
+#### Parameters
+
+`fileVersion` [int](https://learn.microsoft.com/dotnet/api/system.int32)
+
+The format version the settings were saved with.
 
 ### <a id="Cube_Core_CubeSettings_ValidColour_System_Numerics_Vector3_System_Numerics_Vector3_"></a> ValidColour\(Vector3, Vector3\)
 

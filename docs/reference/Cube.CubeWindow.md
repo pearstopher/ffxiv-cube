@@ -67,25 +67,13 @@ internal const int DrawListCapacity = 1280
 
  [int](https://learn.microsoft.com/dotnet/api/system.int32)
 
-### <a id="Cube_CubeWindow_GizmoDistance"></a> GizmoDistance
+### <a id="Cube_CubeWindow_GizmoCamera"></a> GizmoCamera
 
-How far ImGuizmo's camera sits from the cube's centre. Only ImGuizmo's own maths uses it (it orbits around the
-point this far in front of the camera); the drawn cube is orthographic, so any positive value works.
-
-```csharp
-private const float GizmoDistance = 8
-```
-
-#### Field Value
-
- [float](https://learn.microsoft.com/dotnet/api/system.single)
-
-### <a id="Cube_CubeWindow_GizmoModel"></a> GizmoModel
-
-The model matrix ImGuizmo's context needs; unused by the view manipulator.
+The fixed camera ImGuizmo sees the cube through: on ImGuizmo's +Z axis looking at the centre, up along +Y, so
+its screen axes are the window's. Its distance only matters to ImGuizmo's own maths.
 
 ```csharp
-private static readonly Matrix4x4 GizmoModel
+private static readonly Matrix4x4 GizmoCamera
 ```
 
 #### Field Value
@@ -94,8 +82,8 @@ private static readonly Matrix4x4 GizmoModel
 
 ### <a id="Cube_CubeWindow_GizmoProjection"></a> GizmoProjection
 
-A right-handed perspective projection handed to ImGuizmo, only so it sets up its context (mouse hover,
-handedness) the way its view manipulator expects. The cube itself is not drawn with it.
+A right-handed perspective projection for ImGuizmo, matching [GizmoCamera](Cube.CubeWindow.md#Cube_CubeWindow_GizmoCamera). The narrow field of view
+keeps the rings nearly undistorted, like the orthographic cube. The cube itself is not drawn with it.
 
 ```csharp
 private static readonly Matrix4x4 GizmoProjection
@@ -104,6 +92,21 @@ private static readonly Matrix4x4 GizmoProjection
 #### Field Value
 
  [Matrix4x4](https://learn.microsoft.com/dotnet/api/system.numerics.matrix4x4)
+
+### <a id="Cube_CubeWindow_GizmoRectScale"></a> GizmoRectScale
+
+How much bigger than the corner square the rectangle handed to ImGuizmo is. ImGuizmo sizes the rotate gizmo
+from its rectangle (the outer screen ring's radius is 6% of the rectangle's height, the axis rings about the
+same), so a rectangle 7 times the square, centred on it, makes the rings fill the square with a small margin.
+ImGuizmo only uses the rectangle for its projection and doesn't clip to it.
+
+```csharp
+private const float GizmoRectScale = 7
+```
+
+#### Field Value
+
+ [float](https://learn.microsoft.com/dotnet/api/system.single)
 
 ### <a id="Cube_CubeWindow_NameSlots"></a> NameSlots
 
@@ -636,8 +639,8 @@ private void DrawContents()
 
 ### <a id="Cube_CubeWindow_DrawViewControl_System_Numerics_Vector2_System_Numerics_Vector2_"></a> DrawViewControl\(Vector2, Vector2\)
 
-Draws ImGuizmo's view manipulator in the chosen corner (PROJECT.md, "View orientation control") and applies
-any turn the user makes with it.
+Draws ImGuizmo's rotate gizmo in the chosen corner (PROJECT.md, "View orientation control": a ring per axis
+plus an outer screen ring) and applies any turn the user makes with it.
 
 ```csharp
 private void DrawViewControl(Vector2 regionMin, Vector2 regionSize)
@@ -656,16 +659,17 @@ Size of the drawing region, in pixels.
 #### Remarks
 
 <p>
-ImGuizmo is handed the current orientation as a view matrix each frame and changes the matrix when the control
-is dragged, or animates it after a face is clicked. A changed matrix is read back into the settings; the
-projection then picks it up through the settings revision, so it is only rebuilt when the view really changes.
-The camera and the player never feed into this (PROJECT.md: only the control turns the view).
+ImGuizmo is handed the current orientation as a model matrix each frame ([ToGizmoModel](Cube.Core.ViewOrientation.md#Cube_Core_ViewOrientation_ToGizmoModel))
+and turns it while a ring is dragged. Local mode puts the x, y and z rings around the cube's own axes, so the
+ring colours match them. A changed matrix is read back into the settings; the projection then picks it up
+through the settings revision, so it is only rebuilt when the view really changes. The camera and the player
+never feed into this (PROJECT.md: only the control turns the view).
 </p>
 <p>
 The file is saved once the turn is over (mouse released and no change this frame), not on every frame of a
-drag. The 9-argument overload is used because it sets up ImGuizmo's context (mouse hover over this window,
-handedness) first; the short one relies on state from an earlier <code>Manipulate</code> call that this plugin never
-makes. Nothing here allocates: the matrices are structs passed by reference.
+drag. ImGuizmo's global settings (gizmo size, orthographic mode) are left alone because other plugins share
+them; the size comes from the rectangle instead ([GizmoRectScale](Cube.CubeWindow.md#Cube_CubeWindow_GizmoRectScale)). Nothing here allocates: the
+matrices are structs passed by reference.
 </p>
 
 ### <a id="Cube_CubeWindow_PreDraw"></a> PreDraw\(\)

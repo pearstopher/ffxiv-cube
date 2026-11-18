@@ -23,7 +23,7 @@ if (args.Length >= 2 && args[0] == "--demo")
     CubeGeometry.AddSolidCube(list, space, projection, space.RotateOffset(new Vector3(-10, 2, 6)), 0.5f, Colour.Pack(1f, 0.6f, 0.2f, 1f));
     list.SortBackToFront();
     File.WriteAllBytes(args[1], PngWriter.Encode(SnapshotRenderer.Paint(Vector2.Zero, size, list.Items)));
-    Console.WriteLine($"Wrote {args[1]} (demo, yaw {yaw}, view {view.YawDegrees:0}°/{view.PitchDegrees:0}°)");
+    Console.WriteLine($"Wrote {args[1]} (demo, yaw {yaw}, view rotation {view.Rotation})");
     return 0;
 }
 

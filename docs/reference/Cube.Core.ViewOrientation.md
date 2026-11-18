@@ -3,9 +3,8 @@
 Namespace: [Cube.Core](Cube.Core.md)  
 Assembly: Cube.Core.dll  
 
-How the user has turned the cube on screen with the view control (PROJECT.md, "View orientation control"): a
-heading (yaw) and a tilt (pitch) of the viewer around the cube. Default: from above and behind, 30° elevation,
-front face away from the viewer.
+How the user has turned the cube on screen with the view control (PROJECT.md, "View orientation control"): a full
+rotation, roll included. Default: from above and behind, 30° elevation, front face away from the viewer.
 
 ```csharp
 public readonly struct ViewOrientation : IEquatable<ViewOrientation>
@@ -24,36 +23,34 @@ contents with the camera: the camera and player movement never change the view o
 never changes what is inside the cube.
 </p>
 <p>
-Two angles rather than a full rotation, because the view control never rolls the view (ImGuizmo keeps the world's
-up direction, even when looking straight down) and two numbers are easy to save, check and reset. The viewer's
-axes are worked out once in the constructor, so [ViewProjection](Cube.Core.ViewProjection.md#Cube_Core_ViewProjection) only does dot products per point.
+A quaternion rather than angles, because the control is ImGuizmo's rotate gizmo, whose rings can turn the cube
+around any axis, so any orientation is allowed (PROJECT.md: "including roll"). The rotation takes a point in view
+coordinates to the viewer's (right, up, forward) frame. The viewer's axes are worked out once in the constructor,
+so [ViewProjection](Cube.Core.ViewProjection.md#Cube_Core_ViewProjection) only does dot products per point.
 </p>
 <p>
-The view control is ImGuizmo's view manipulator, which works on a right-handed camera view matrix.
-[ToGizmoView](Cube.Core.ViewOrientation.md#Cube_Core_ViewOrientation_ToGizmoView) and [FromGizmoView](Cube.Core.ViewOrientation.md#Cube_Core_ViewOrientation_FromGizmoView) convert, so the plugin can hand ImGuizmo a matrix and
-read the user's change back. Pure maths, so it is unit tested without the game.
+Orientations saved by the old yaw-and-tilt control (#63) are converted with [FromDegrees](Cube.Core.ViewOrientation.md#Cube_Core_ViewOrientation_FromDegrees).
+[ToGizmoModel](Cube.Core.ViewOrientation.md#Cube_Core_ViewOrientation_ToGizmoModel) and [TryFromGizmoModel](Cube.Core.ViewOrientation.md#Cube_Core_ViewOrientation_TryFromGizmoModel) convert to and from the model matrix the gizmo
+turns. Pure maths, so it is unit tested without the game.
 </p>
 
 ## Constructors
 
-### <a id="Cube_Core_ViewOrientation__ctor_System_Single_System_Single_"></a> ViewOrientation\(float, float\)
+### <a id="Cube_Core_ViewOrientation__ctor_System_Numerics_Quaternion_"></a> ViewOrientation\(Quaternion\)
 
-Creates an orientation, wrapping the yaw into −π…π and clamping the pitch to ±90°.
+Creates an orientation from a rotation, normalised. A rotation that isn't usable (zero length or not a number,
+e.g. from a corrupt file) gives the default view, so a bad value never produces a broken cube.
 
 ```csharp
-public ViewOrientation(float yaw, float pitch)
+public ViewOrientation(Quaternion rotation)
 ```
 
 #### Parameters
 
-`yaw` [float](https://learn.microsoft.com/dotnet/api/system.single)
+`rotation` [Quaternion](https://learn.microsoft.com/dotnet/api/system.numerics.quaternion)
 
-The viewer's heading, in radians: 0 looks forward (+Z in view coordinates, the front face away from the viewer),
-positive turns the viewer to the right (looking from above, clockwise).
-
-`pitch` [float](https://learn.microsoft.com/dotnet/api/system.single)
-
-Tilt of the view above the horizontal, in radians; negative looks up from below.
+Takes a point in view coordinates to the viewer's frame: x along the screen's right, y up, z away from the
+viewer.
 
 ## Fields
 
@@ -71,7 +68,7 @@ public const float DefaultPitchDegrees = 30
 
 ### <a id="Cube_Core_ViewOrientation_MaxPitchDegrees"></a> MaxPitchDegrees
 
-Highest tilt: looking straight down. Lower limit is straight up (the negative).
+Highest tilt the old yaw-and-tilt control allowed: looking straight down (and −90° straight up).
 
 ```csharp
 public const float MaxPitchDegrees = 90
@@ -119,33 +116,9 @@ public Vector3 Forward { get; }
 
  [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
 
-### <a id="Cube_Core_ViewOrientation_Pitch"></a> Pitch
-
-The view's tilt above the horizontal, in radians (−π/2…π/2).
-
-```csharp
-public float Pitch { get; }
-```
-
-#### Property Value
-
- [float](https://learn.microsoft.com/dotnet/api/system.single)
-
-### <a id="Cube_Core_ViewOrientation_PitchDegrees"></a> PitchDegrees
-
-The pitch in degrees, as saved in the settings.
-
-```csharp
-public float PitchDegrees { get; }
-```
-
-#### Property Value
-
- [float](https://learn.microsoft.com/dotnet/api/system.single)
-
 ### <a id="Cube_Core_ViewOrientation_Right"></a> Right
 
-The screen's right direction, in view coordinates. Always horizontal: the view never rolls.
+The screen's right direction, in view coordinates.
 
 ```csharp
 public Vector3 Right { get; }
@@ -154,6 +127,18 @@ public Vector3 Right { get; }
 #### Property Value
 
  [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
+
+### <a id="Cube_Core_ViewOrientation_Rotation"></a> Rotation
+
+The rotation from view coordinates to the viewer's frame, normalised. This is what's saved.
+
+```csharp
+public Quaternion Rotation { get; }
+```
+
+#### Property Value
+
+ [Quaternion](https://learn.microsoft.com/dotnet/api/system.numerics.quaternion)
 
 ### <a id="Cube_Core_ViewOrientation_Up"></a> Up
 
@@ -167,31 +152,19 @@ public Vector3 Up { get; }
 
  [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
 
-### <a id="Cube_Core_ViewOrientation_Yaw"></a> Yaw
-
-The viewer's heading, in radians (−π…π).
-
-```csharp
-public float Yaw { get; }
-```
-
-#### Property Value
-
- [float](https://learn.microsoft.com/dotnet/api/system.single)
-
-### <a id="Cube_Core_ViewOrientation_YawDegrees"></a> YawDegrees
-
-The yaw in degrees, as saved in the settings.
-
-```csharp
-public float YawDegrees { get; }
-```
-
-#### Property Value
-
- [float](https://learn.microsoft.com/dotnet/api/system.single)
-
 ## Methods
+
+### <a id="Cube_Core_ViewOrientation_DefaultRotation"></a> DefaultRotation\(\)
+
+The default rotation: heading 0, tilt 30° (computed, not stored, so [Default](Cube.Core.ViewOrientation.md#Cube_Core_ViewOrientation_Default) can't recurse).
+
+```csharp
+private static Quaternion DefaultRotation()
+```
+
+#### Returns
+
+ [Quaternion](https://learn.microsoft.com/dotnet/api/system.numerics.quaternion)
 
 ### <a id="Cube_Core_ViewOrientation_Equals_Cube_Core_ViewOrientation_"></a> Equals\(ViewOrientation\)
 
@@ -233,9 +206,36 @@ The object to compare with the current instance.
 
 <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> if <code class="paramref">obj</code> and this instance are the same type and represent the same value; otherwise, <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>.
 
+### <a id="Cube_Core_ViewOrientation_FromAxes_System_Numerics_Vector3_System_Numerics_Vector3_System_Numerics_Vector3_"></a> FromAxes\(Vector3, Vector3, Vector3\)
+
+A rotation matrix whose columns are the viewer's axes, so a point times it gives its viewer coordinates.
+
+```csharp
+private static Matrix4x4 FromAxes(Vector3 right, Vector3 up, Vector3 forward)
+```
+
+#### Parameters
+
+`right` [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
+
+The screen's right, in view coordinates.
+
+`up` [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
+
+The screen's up.
+
+`forward` [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
+
+The viewing direction.
+
+#### Returns
+
+ [Matrix4x4](https://learn.microsoft.com/dotnet/api/system.numerics.matrix4x4)
+
 ### <a id="Cube_Core_ViewOrientation_FromDegrees_System_Single_System_Single_"></a> FromDegrees\(float, float\)
 
-An orientation from angles in degrees, as stored in the settings.
+An orientation from a heading and a tilt in degrees: the old yaw-and-tilt control's saved values (#63), and a
+handy way to name a view in tests. The tilt is clamped to ±90°, as the old control did.
 
 ```csharp
 public static ViewOrientation FromDegrees(float yawDegrees, float pitchDegrees)
@@ -245,40 +245,16 @@ public static ViewOrientation FromDegrees(float yawDegrees, float pitchDegrees)
 
 `yawDegrees` [float](https://learn.microsoft.com/dotnet/api/system.single)
 
-Heading, in degrees.
+The viewer's heading: 0 looks forward (+Z in view coordinates, the front face away from the viewer), positive
+turns the viewer to the right (looking from above, clockwise).
 
 `pitchDegrees` [float](https://learn.microsoft.com/dotnet/api/system.single)
 
-Tilt, in degrees.
+Tilt of the view above the horizontal; negative looks up from below.
 
 #### Returns
 
  [ViewOrientation](Cube.Core.ViewOrientation.md)
-
-### <a id="Cube_Core_ViewOrientation_FromGizmoView_System_Numerics_Matrix4x4__"></a> FromGizmoView\(in Matrix4x4\)
-
-Reads an orientation back from an ImGuizmo view matrix (after the user dragged or clicked the view control).
-Any roll is dropped, and a view that somehow went past straight up or down is clamped.
-
-```csharp
-public static ViewOrientation FromGizmoView(in Matrix4x4 view)
-```
-
-#### Parameters
-
-`view` [Matrix4x4](https://learn.microsoft.com/dotnet/api/system.numerics.matrix4x4)
-
-The view matrix ImGuizmo returned.
-
-#### Returns
-
- [ViewOrientation](Cube.Core.ViewOrientation.md)
-
-#### Remarks
-
-The matrix's columns are the camera's right, up and back axes in ImGuizmo's world, which is view coordinates
-with Z mirrored (see [ToGizmoView](Cube.Core.ViewOrientation.md#Cube_Core_ViewOrientation_ToGizmoView)). The yaw comes from the right axis, which stays horizontal and
-well defined even looking straight down; if it ever isn't usable, the forward direction is used instead.
 
 ### <a id="Cube_Core_ViewOrientation_GetHashCode"></a> GetHashCode\(\)
 
@@ -294,38 +270,51 @@ public override int GetHashCode()
 
 A 32-bit signed integer that is the hash code for this instance.
 
-### <a id="Cube_Core_ViewOrientation_Mirror_System_Numerics_Vector3_"></a> Mirror\(Vector3\)
+### <a id="Cube_Core_ViewOrientation_IsUsable_System_Numerics_Quaternion_"></a> IsUsable\(Quaternion\)
 
-Converts between view coordinates and ImGuizmo's right-handed world by mirroring Z.
+Whether a rotation can be normalised: every part a number and not (nearly) zero length.
 
 ```csharp
-private static Vector3 Mirror(Vector3 v)
+private static bool IsUsable(Quaternion q)
 ```
 
 #### Parameters
 
-`v` [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
+`q` [Quaternion](https://learn.microsoft.com/dotnet/api/system.numerics.quaternion)
 
-A direction.
+The rotation.
 
 #### Returns
 
- [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
+ [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-### <a id="Cube_Core_ViewOrientation_ToGizmoView_System_Single_"></a> ToGizmoView\(float\)
+### <a id="Cube_Core_ViewOrientation_Mirror_System_Numerics_Matrix4x4_"></a> Mirror\(Matrix4x4\)
 
-The camera view matrix ImGuizmo's view manipulator expects for this orientation: right-handed, looking at the
-cube's centre from <code class="paramref">distance</code> away, laid out like `System.Numerics.Matrix4x4.CreateLookAt(System.Numerics.Vector3%2cSystem.Numerics.Vector3%2cSystem.Numerics.Vector3)`.
+Converts a rotation between view coordinates and ImGuizmo's right-handed world by mirroring Z on both sides
+(S·M·S with S = diag(1, 1, −1)), which negates the entries that mix Z with X or Y. Its own inverse.
 
 ```csharp
-public Matrix4x4 ToGizmoView(float distance)
+private static Matrix4x4 Mirror(Matrix4x4 m)
 ```
 
 #### Parameters
 
-`distance` [float](https://learn.microsoft.com/dotnet/api/system.single)
+`m` [Matrix4x4](https://learn.microsoft.com/dotnet/api/system.numerics.matrix4x4)
 
-How far the camera is from the centre; only matters to ImGuizmo's own maths.
+A rotation matrix.
+
+#### Returns
+
+ [Matrix4x4](https://learn.microsoft.com/dotnet/api/system.numerics.matrix4x4)
+
+### <a id="Cube_Core_ViewOrientation_ToGizmoModel"></a> ToGizmoModel\(\)
+
+The model matrix for ImGuizmo's rotate gizmo: the cube's rotation as seen by a camera on the +Z axis looking
+at the centre (laid out like `System.Numerics.Matrix4x4.CreateLookAt(System.Numerics.Vector3%2cSystem.Numerics.Vector3%2cSystem.Numerics.Vector3)`, the way ImGuizmo expects).
+
+```csharp
+public Matrix4x4 ToGizmoModel()
+```
 
 #### Returns
 
@@ -334,13 +323,39 @@ How far the camera is from the centre; only matters to ImGuizmo's own maths.
 #### Remarks
 
 View coordinates are left-handed (right, up, forward), ImGuizmo's world is right-handed, so Z is mirrored on
-the way in and out. The widget's own cube therefore turns exactly like the drawn cube.
+both sides of the rotation. The gizmo's x, y and z rings then lie around the cube's own x, y and z axes, so the
+ring colours match the cube's axes and dragging the x ring turns the cube around its x axis.
+
+### <a id="Cube_Core_ViewOrientation_TryFromGizmoModel_System_Numerics_Matrix4x4__Cube_Core_ViewOrientation__"></a> TryFromGizmoModel\(in Matrix4x4, out ViewOrientation\)
+
+Reads an orientation back from the model matrix ImGuizmo's rotate gizmo returned after a drag. Any scale or
+drift the gizmo's maths added is removed.
+
+```csharp
+public static bool TryFromGizmoModel(in Matrix4x4 model, out ViewOrientation view)
+```
+
+#### Parameters
+
+`model` [Matrix4x4](https://learn.microsoft.com/dotnet/api/system.numerics.matrix4x4)
+
+The model matrix, laid out as by [ToGizmoModel](Cube.Core.ViewOrientation.md#Cube_Core_ViewOrientation_ToGizmoModel).
+
+`view` [ViewOrientation](Cube.Core.ViewOrientation.md)
+
+The orientation it holds.
+
+#### Returns
+
+ [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+False if the matrix holds no usable rotation; the caller then keeps the old view.
 
 ## Operators
 
 ### <a id="Cube_Core_ViewOrientation_op_Equality_Cube_Core_ViewOrientation_Cube_Core_ViewOrientation_"></a> operator ==\(ViewOrientation, ViewOrientation\)
 
-Two orientations are equal when their angles are exactly equal.
+Two orientations are equal when their rotations are exactly equal.
 
 ```csharp
 public static bool operator ==(ViewOrientation left, ViewOrientation right)
@@ -362,7 +377,7 @@ The other.
 
 ### <a id="Cube_Core_ViewOrientation_op_Inequality_Cube_Core_ViewOrientation_Cube_Core_ViewOrientation_"></a> operator \!=\(ViewOrientation, ViewOrientation\)
 
-Two orientations differ when either angle differs.
+Two orientations differ when their rotations differ.
 
 ```csharp
 public static bool operator !=(ViewOrientation left, ViewOrientation right)

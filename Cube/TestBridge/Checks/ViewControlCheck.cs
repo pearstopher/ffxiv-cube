@@ -28,13 +28,17 @@ internal sealed class ViewControlCheck(string folder) : BridgeCheck
     /// <summary>How far a wireframe end may be from Core's own projection, in pixels: float noise only.</summary>
     private const float LineTolerance = 0.01f;
 
-    /// <summary>The angles snapshotted (yaw°, pitch°, name): default, turned and tilted, from below, straight down.</summary>
-    private static readonly (float Yaw, float Pitch, string Name)[] Angles =
+    /// <summary>
+    /// The orientations snapshotted: default, turned and tilted, from below, straight down, and rolled 30° (the rotate
+    /// gizmo's rings allow roll, #79).
+    /// </summary>
+    private static readonly (ViewOrientation View, string Name)[] Angles =
     [
-        (0f, ViewOrientation.DefaultPitchDegrees, "default"),
-        (45f, 60f, "turned"),
-        (-30f, -35f, "below"),
-        (0f, 90f, "top"),
+        (ViewOrientation.Default, "default"),
+        (ViewOrientation.FromDegrees(45f, 60f), "turned"),
+        (ViewOrientation.FromDegrees(-30f, -35f), "below"),
+        (ViewOrientation.FromDegrees(0f, 90f), "top"),
+        (Rolled(ViewOrientation.FromDegrees(45f, 60f), 30f), "rolled"),
     ];
 
     /// <summary>The user's settings before the check.</summary>
@@ -66,15 +70,15 @@ internal sealed class ViewControlCheck(string folder) : BridgeCheck
 
         if (window.LastProjection.Orientation != ViewOrientation.Default)
         {
-            yield return CheckStep.Fail($"Default settings drew view {window.LastProjection.Orientation.YawDegrees:0.0}°/{window.LastProjection.Orientation.PitchDegrees:0.0}°.");
+            yield return CheckStep.Fail($"Default settings drew view {window.LastProjection.Orientation.Rotation}.");
             yield break;
         }
 
         var defaultLines = Lines(window);
         string? problem = null;
-        foreach (var (yaw, pitch, name) in Angles)
+        foreach (var (view, name) in Angles)
         {
-            settings.SetView(ViewOrientation.FromDegrees(yaw, pitch));
+            settings.SetView(view);
             foreach (var step in WaitForDraws(window))
             {
                 yield return step;
@@ -104,6 +108,27 @@ internal sealed class ViewControlCheck(string folder) : BridgeCheck
         {
             yield return CheckStep.Fail($"Turning the view moved the wireframe only {moved:0.0} px.");
             yield break;
+        }
+
+        // A roll (only possible with the rotate gizmo) must move it too.
+        settings.SetView(Rolled(ViewOrientation.FromDegrees(45f, 60f), 30f));
+        foreach (var step in WaitForDraws(window))
+        {
+            yield return step;
+        }
+
+        var rolled = MaxMove(turnedLines, Lines(window));
+        context.Metric("rollMovedPixels", rolled);
+        if (rolled < 5f)
+        {
+            yield return CheckStep.Fail($"Rolling the view moved the wireframe only {rolled:0.0} px.");
+            yield break;
+        }
+
+        settings.SetView(ViewOrientation.FromDegrees(45f, 60f));
+        foreach (var step in WaitForDraws(window))
+        {
+            yield return step;
         }
 
         // The camera never turns the view: turn the simulated camera, the wireframe stays put.
@@ -152,9 +177,15 @@ internal sealed class ViewControlCheck(string folder) : BridgeCheck
 
         var resetMove = MaxMove(defaultLines, Lines(window));
         yield return window.LastProjection.Orientation == ViewOrientation.Default && resetMove <= LineTolerance
-            ? CheckStep.Pass($"{Angles.Length} view angles matched Core and were snapshotted; turning moved the wireframe {moved:0} px; the camera didn't turn the view; the control followed the corner setting; reset restored the default.")
-            : CheckStep.Fail($"Reset view left orientation {window.LastProjection.Orientation.YawDegrees:0.0}°/{window.LastProjection.Orientation.PitchDegrees:0.0}° (wireframe {resetMove:0.00} px off).");
+            ? CheckStep.Pass($"{Angles.Length} view orientations matched Core and were snapshotted; turning moved the wireframe {moved:0} px, rolling {rolled:0} px; the camera didn't turn the view; the control followed the corner setting; reset restored the default.")
+            : CheckStep.Fail($"Reset view left orientation {window.LastProjection.Orientation.Rotation} (wireframe {resetMove:0.00} px off).");
     }
+
+    /// <summary>An orientation turned further around the screen axis, as the gizmo's outer ring does.</summary>
+    /// <param name="view">The orientation to roll.</param>
+    /// <param name="degrees">How far to roll.</param>
+    private static ViewOrientation Rolled(ViewOrientation view, float degrees) =>
+        new(Quaternion.Concatenate(view.Rotation, Quaternion.CreateFromAxisAngle(Vector3.UnitZ, degrees * MathF.PI / 180f)));
 
     /// <inheritdoc/>
     public override void Cleanup(BridgeContext context)
@@ -176,7 +207,7 @@ internal sealed class ViewControlCheck(string folder) : BridgeCheck
     {
         if (window.LastProjection.Orientation != want)
         {
-            return $"Set view {want.YawDegrees:0.0}°/{want.PitchDegrees:0.0}° but the frame used {window.LastProjection.Orientation.YawDegrees:0.0}°/{window.LastProjection.Orientation.PitchDegrees:0.0}°.";
+            return $"Set view {want.Rotation} but the frame used {window.LastProjection.Orientation.Rotation}.";
         }
 
         var expected = new DrawList(16);
@@ -190,7 +221,7 @@ internal sealed class ViewControlCheck(string folder) : BridgeCheck
         }
 
         var off = MaxMove(expectedLines, drawn);
-        return off <= LineTolerance ? null : $"At {want.YawDegrees:0}°/{want.PitchDegrees:0}° the wireframe is {off:0.00} px from Core's projection.";
+        return off <= LineTolerance ? null : $"At {want.Rotation} the wireframe is {off:0.00} px from Core's projection.";
     }
 
     /// <summary>The last frame's wireframe lines, as end points on screen.</summary>

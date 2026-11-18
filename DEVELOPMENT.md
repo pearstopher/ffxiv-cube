@@ -178,4 +178,5 @@ https://raw.githubusercontent.com/pearstopher/ffxiv-cube/main/repo.json
 | Docs site build fails with `InvalidFileLink` for a link or image in `README.md` | The README is included in the site too, and files outside `docs/` aren't part of it. Use full GitHub URLs in the README (`https://raw.githubusercontent.com/pearstopher/ffxiv-cube/main/...` for images). |
 | The plugin isn't listed under Installed Dev Plugins | Check that the path in `/xlsettings` points at the `.dll` file itself and that the file exists. |
 | The plugin is listed but won't load | Look in `/xllog` for the exception. After a game patch, Dalamud may need an update first. |
+| A frame-counting bridge check times out (e.g. `draw-within-budget`) | The game is in the background, where its frame limiter drops it to about 10 fps. Bring the game to the front, or give the check a longer `Timeout` (the budget check has 30 s for this reason). |
 | My change didn't take effect | Compare the build time in the `loaded (...)` line with your last build. If it's older, point the dev location at Debug (section 3), then rebuild or reload. |
