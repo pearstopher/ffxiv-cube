@@ -9,8 +9,12 @@ namespace Cube.Core;
 /// <param name="BetweenAreas">A loading screen is up.</param>
 /// <param name="InCutscene">A cutscene is playing.</param>
 /// <param name="InGPose">Group pose is active.</param>
-public readonly record struct GameState(bool LoggedIn, bool HasLocalPlayer, bool BetweenAreas, bool InCutscene, bool InGPose)
+/// <param name="InPvP">
+/// In a PvP area (Crystalline Conflict, Frontline, Rival Wings, and the Wolves' Den lobby). The official Dalamud rules
+/// ban any PvP advantage, and the cube would work like a radar there (<c>docs/dalamud-repo-standards.md</c>).
+/// </param>
+public readonly record struct GameState(bool LoggedIn, bool HasLocalPlayer, bool BetweenAreas, bool InCutscene, bool InGPose, bool InPvP)
 {
     /// <summary>A normal in-game state: logged in, with a character, nothing in the way.</summary>
-    public static GameState Playing { get; } = new(true, true, false, false, false);
+    public static GameState Playing { get; } = new(true, true, false, false, false, false);
 }

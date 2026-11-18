@@ -38,3 +38,10 @@ A cutscene is playing.
 `GPose = 4` 
 
 Group pose is active.
+
+
+
+`PvP = 5` 
+
+In a PvP area. The official Dalamud rules ban any PvP advantage, and showing enemy players behind you or
+behind walls would be one.

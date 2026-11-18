@@ -19,7 +19,7 @@ A [Dalamud](https://github.com/goatcorp/Dalamud) plugin for FINAL FANTASY XIV th
 - **Near things cover far things,** so you can see which players are in front.
 - **Turn the view with the little x/y/z cube** in the corner of the window: drag it to look from any side, above or
   below, or click one of its faces to look straight at that side. Your view is remembered.
-- **Nothing is drawn while you're logged out, loading, in a cutscene or in GPose.**
+- **Nothing is drawn while you're logged out, loading, in a cutscene, in GPose, or in PvP.**
 
 It only reads what the game already knows and draws it in its own window. It never changes anything in the game,
 never sends anything to the server, and never automates anything. Names are only drawn on screen; they're never

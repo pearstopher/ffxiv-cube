@@ -132,5 +132,5 @@ the camera's direction vector (docs/research-notes.md, #10).
 
  [VisibilityTests](Cube.Tests.VisibilityTests.md)
 
-Checks when the cube is hidden (PROJECT.md, "When hidden": not logged in, during loading screens, cutscenes and
-GPose; shown otherwise).
+Checks when the cube is hidden (PROJECT.md, "When hidden": not logged in, during loading screens, cutscenes,
+GPose and in PvP areas; shown otherwise).

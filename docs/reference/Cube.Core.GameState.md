@@ -17,13 +17,13 @@ public readonly record struct GameState : IEquatable<GameState>
 
 ## Constructors
 
-### <a id="Cube_Core_GameState__ctor_System_Boolean_System_Boolean_System_Boolean_System_Boolean_System_Boolean_"></a> GameState\(bool, bool, bool, bool, bool\)
+### <a id="Cube_Core_GameState__ctor_System_Boolean_System_Boolean_System_Boolean_System_Boolean_System_Boolean_System_Boolean_"></a> GameState\(bool, bool, bool, bool, bool, bool\)
 
 The game states that decide whether the cube is drawn (PROJECT.md, "When hidden"). Read once per frame by the
 plugin from Dalamud's client state and condition flags (<code>docs/research-notes.md</code>, "When to hide").
 
 ```csharp
-public GameState(bool LoggedIn, bool HasLocalPlayer, bool BetweenAreas, bool InCutscene, bool InGPose)
+public GameState(bool LoggedIn, bool HasLocalPlayer, bool BetweenAreas, bool InCutscene, bool InGPose, bool InPvP)
 ```
 
 #### Parameters
@@ -47,6 +47,11 @@ A cutscene is playing.
 `InGPose` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
 Group pose is active.
+
+`InPvP` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+In a PvP area (Crystalline Conflict, Frontline, Rival Wings, and the Wolves' Den lobby). The official Dalamud rules
+ban any PvP advantage, and the cube would work like a radar there (<code>docs/dalamud-repo-standards.md</code>).
 
 ## Properties
 
@@ -92,6 +97,19 @@ Group pose is active.
 
 ```csharp
 public bool InGPose { get; init; }
+```
+
+#### Property Value
+
+ [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+### <a id="Cube_Core_GameState_InPvP"></a> InPvP
+
+In a PvP area (Crystalline Conflict, Frontline, Rival Wings, and the Wolves' Den lobby). The official Dalamud rules
+ban any PvP advantage, and the cube would work like a radar there (<code>docs/dalamud-repo-standards.md</code>).
+
+```csharp
+public bool InPvP { get; init; }
 ```
 
 #### Property Value

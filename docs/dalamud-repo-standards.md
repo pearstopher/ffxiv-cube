@@ -4,7 +4,7 @@ The rules for plugins in the official repository ([goatcorp/DalamudPluginsD17](h
 
 **Cube is personal use only and is never submitted** (PROJECT.md, "Release and distribution"). This check only makes sure it follows the official rules; no submission files are prepared.
 
-**Summary:** Cube meets every rule except one gap: in PvP it would show enemy players around you, which the rules ban. That's fixed in #69 (hide the cube in PvP). Everything else: no plugin dependencies, no server traffic, no hooks, and read-only game access.
+**Summary:** Cube meets every rule. The one gap found (in PvP it would show enemy players around you, which the rules ban) was fixed in #69: the cube is hidden in PvP areas. Otherwise: no plugin dependencies, no server traffic, no hooks, and read-only game access.
 
 ## Sources
 
@@ -56,8 +56,8 @@ Checked against `Cube/Cube.csproj`, which DalamudPackager turns into the `Cube.j
 | Doesn't collect other players' account IDs | ✅ | Players are told apart by object table slot and `EntityId`, a per-session object ID, never content or account IDs. Names are only drawn on screen, never written to files outside Debug test output, never sent (PROJECT.md, "Privacy"). |
 | No hard dependency on rule-breaking plugins | ✅ | No plugin dependencies at all, no IPC (CLAUDE.md, PROJECT.md "Phase 2"). vnavmesh is reference material only. |
 | Not only useful out of spec | ✅ | It's a view of normal play. |
-| No PvP or competitive advantage | ❌ → #69 | In PvP the cube would show enemy players behind you or behind walls, like a radar. #69 adds PvP to PROJECT.md "When hidden" so the cube shows nothing there. |
-| Not a "common non-starter" (emote looping, skipping cutscenes or dialogs, auto crafting, auto loot, friend alerts, AOE markers or recolouring, camera zoom, FFLogs, parsers, Fantasia, XIVCombo, anything in PvP) | ✅ after #69 | None of these. It reads the camera's direction but never changes the camera. PvP is covered by #69. |
+| No PvP or competitive advantage | ✅ | In PvP the cube would show enemy players behind you or behind walls, like a radar, so it's hidden in PvP areas (PROJECT.md "When hidden", read from `IClientState.IsPvP`; fixed in #69). |
+| Not a "common non-starter" (emote looping, skipping cutscenes or dialogs, auto crafting, auto loot, friend alerts, AOE markers or recolouring, camera zoom, FFLogs, parsers, Fantasia, XIVCombo, anything in PvP) | ✅ | None of these. It reads the camera's direction but never changes the camera. It shows nothing in PvP (#69). |
 
 The restrictions page doesn't mention radars or player-position overlays directly, and says review is subjective. Cube only shows players already loaded around you (the game's own render range), never more, so it doesn't show information the player couldn't already see by turning the camera.
 
@@ -81,7 +81,7 @@ All code in `Cube/` and `Cube.Core/` was read. `Cube.Core` is plain logic with n
 | --- | --- | --- | --- |
 | `GameObjectManager`, `Control.LocalPlayer` (FFXIVClientStructs) | `PlayerReader` | Your position (the cube's centre) and the players in the 200 character slots: position, party/alliance flags, name. | Reads only. |
 | `CameraManager` scene camera (FFXIVClientStructs) | `CameraReader` | Which way the camera looks, for the Camera orientation mode. | Reads only. |
-| `IClientState`, `ICondition` | `GameStateReader` | Logged in, GPose, loading screens and cutscenes, to hide the cube (PROJECT.md, "When hidden"). | Reads only. |
+| `IClientState`, `ICondition` | `GameStateReader` | Logged in, GPose, PvP, loading screens and cutscenes, to hide the cube (PROJECT.md, "When hidden"). | Reads only. |
 | `ICommandManager` | `Plugin` | The `/cube` and `/cube config` command. | Registered on load, removed on unload. |
 | `IDalamudPluginInterface.UiBuilder`, `WindowSystem` | `Plugin`, `CubeWindow`, `SettingsWindow` | Draws the two windows with ImGui; the installer's open and settings buttons. | Draws in the plugin's own windows only. |
 | `SavePluginConfig` | `Configuration` | Saves the settings to `pluginConfigs\Cube.json`. No names or IDs in it. | Writes the plugin's own config file. |
@@ -114,4 +114,4 @@ The collision features (#28–#32) must also stay read-only: read the collision 
 
 ## Follow-up issues
 
-1. **Hide the cube in PvP** (#69).
+1. **Hide the cube in PvP** (#69). Done.

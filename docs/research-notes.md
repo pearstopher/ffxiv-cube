@@ -86,6 +86,7 @@ Checked 2026-11-17 by reading MiniMappingway (`Service/FinderService.cs`, `Manag
 | Loading screen | `ICondition[ConditionFlag.BetweenAreas]` or `[BetweenAreas51]` | MiniMappingway instead checks the `_LocationTitle`/`FadeMiddle` addons; the condition flags are simpler and documented. |
 | Cutscene | `ICondition[OccupiedInCutSceneEvent]`, `[WatchingCutscene]`, `[WatchingCutscene78]` | |
 | GPose | `IClientState.IsGPosing` | |
+| PvP area (#69) | `IClientState.IsPvP` | True in Crystalline Conflict, Frontline, Rival Wings and the Wolves' Den. `IsPvPExcludingDen` would skip the lobby; hiding there too is simpler. |
 
 Dalamud already hides plugin windows during cutscenes, GPose and when the user hides the game UI, **but only if the user's Dalamud settings say so** (`UiBuilder`: `ToggleUiHideDuringCutscenes`, `ToggleUiHideDuringGpose`, `ToggleUiHide`). PROJECT.md requires hiding regardless, so the plugin checks the conditions itself (#21) and draws nothing then; Dalamud's own hiding is a bonus.
 
