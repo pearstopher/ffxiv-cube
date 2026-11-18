@@ -3,8 +3,8 @@
 Namespace: [Cube.TestBridge.Checks](Cube.TestBridge.Checks.md)  
 Assembly: Cube.dll  
 
-Checks the draw path stays within PROJECT.md's phase 1 budgets ("Efficiency and memory"):
-under 0.5 ms per frame on average and zero bytes allocated per frame in steady state.
+Checks the draw path stays within PROJECT.md's budgets ("Efficiency and memory"): under 0.5 ms per frame on average
+and zero bytes allocated per frame in steady state, for phase 1 and, with collision on, phase 2 (#33).
 A budget failure is a failed test, not a note (CLAUDE.md).
 
 ```csharp
@@ -20,8 +20,9 @@ internal sealed class DrawBudgetCheck : BridgeCheck
 
 ## Remarks
 
-Opens the window with [UseCrowd](Cube.TestBridge.FakePlayers.md#Cube_TestBridge_FakePlayers_UseCrowd) (the most players the game can have around plus the NPC
-cap, each with a cube and a full-length label), lets it warm up (first-use caches, JIT, name strings) and then measures
+Opens the window in the [WorstCase](Cube.TestBridge.Checks.WorstCase.md#Cube_TestBridge_Checks_WorstCase): the most players the game can have around plus the NPC cap, each
+with a cube and a full-length label, and collision on at full detail in the largest cube. It waits for a collision
+gather to finish, lets the window warm up (first-use caches, JIT, name strings) and then measures
 [FramesToMeasure](Cube.TestBridge.Checks.DrawBudgetCheck.md#Cube_TestBridge_Checks_DrawBudgetCheck_FramesToMeasure) frames with the window's [DrawCostSampler](Cube.Core.DrawCostSampler.md#Cube_Core_DrawCostSampler).
 
 ## Fields
@@ -62,17 +63,17 @@ private const int WarmUpFrames = 30
 
  [int](https://learn.microsoft.com/dotnet/api/system.int32)
 
-### <a id="Cube_TestBridge_Checks_DrawBudgetCheck_showedNpcs"></a> showedNpcs
+### <a id="Cube_TestBridge_Checks_DrawBudgetCheck_saved"></a> saved
 
-The user's NPC setting before the check, restored by [Cleanup](Cube.TestBridge.Checks.DrawBudgetCheck.md#Cube_TestBridge_Checks_DrawBudgetCheck_Cleanup).
+The user's settings before the check, restored by [Cleanup](Cube.TestBridge.Checks.DrawBudgetCheck.md#Cube_TestBridge_Checks_DrawBudgetCheck_Cleanup).
 
 ```csharp
-private bool showedNpcs
+private readonly CubeSettings saved
 ```
 
 #### Field Value
 
- [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+ [CubeSettings](Cube.Core.CubeSettings.md)
 
 ### <a id="Cube_TestBridge_Checks_DrawBudgetCheck_wasOpen"></a> wasOpen
 
@@ -102,7 +103,7 @@ public override string Name { get; }
 
 ### <a id="Cube_TestBridge_Checks_DrawBudgetCheck_Timeout"></a> Timeout
 
-Room for the 150 frames even when the game runs in the background at about 10 fps (its own frame limiter); the
+Room for a collision gather and the 150 frames even when the game runs in the background at about 10 fps (its own frame limiter); the
 budget is per frame, so a slow frame rate mustn't fail the check (#79).
 
 ```csharp

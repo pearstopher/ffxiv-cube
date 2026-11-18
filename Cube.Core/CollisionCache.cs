@@ -80,6 +80,12 @@ public sealed class CollisionCache
     /// <summary>How many gathers were abandoned and started again because the scene or the player moved on.</summary>
     public long Restarts { get; private set; }
 
+    /// <summary>
+    /// How many times the zone changed after the first <see cref="Step{TSource}"/>, each dropping both sets. The test
+    /// bridge reports it to show memory stays bounded across zone changes (#33).
+    /// </summary>
+    public long ZoneChanges { get; private set; }
+
     /// <summary>Frames the current or last gather has taken so far.</summary>
     public int GatherFrames { get; private set; }
 
@@ -122,6 +128,11 @@ public sealed class CollisionCache
         this.LastStepColliders = 0;
         if (!this.hasZone || zone != this.zone)
         {
+            if (this.hasZone)
+            {
+                this.ZoneChanges++;
+            }
+
             this.Clear();
             this.zone = zone;
             this.hasZone = true;

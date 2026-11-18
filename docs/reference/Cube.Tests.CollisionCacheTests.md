@@ -87,6 +87,13 @@ public void Detail_change_during_a_gather_starts_it_again()
 public void Each_frame_resumes_at_the_next_collider_by_index()
 ```
 
+### <a id="Cube_Tests_CollisionCacheTests_First_zone_is_not_counted_as_a_change"></a> First\_zone\_is\_not\_counted\_as\_a\_change\(\)
+
+```csharp
+[Fact]
+public void First_zone_is_not_counted_as_a_change()
+```
+
 ### <a id="Cube_Tests_CollisionCacheTests_Gather_is_spread_over_frames_when_the_budget_runs_out"></a> Gather\_is\_spread\_over\_frames\_when\_the\_budget\_runs\_out\(\)
 
 ```csharp
@@ -106,6 +113,13 @@ public void Gathering_and_idle_frames_allocate_nothing()
 ```csharp
 [Fact]
 public void Invalidate_keeps_the_boxes_and_gathers_again()
+```
+
+### <a id="Cube_Tests_CollisionCacheTests_Many_zone_changes_reuse_the_same_two_buffers"></a> Many\_zone\_changes\_reuse\_the\_same\_two\_buffers\(\)
+
+```csharp
+[Fact]
+public void Many_zone_changes_reuse_the_same_two_buffers()
 ```
 
 ### <a id="Cube_Tests_CollisionCacheTests_Memory_is_bounded_by_the_cap"></a> Memory\_is\_bounded\_by\_the\_cap\(\)

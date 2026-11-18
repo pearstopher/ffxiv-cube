@@ -253,3 +253,29 @@ Every raycast hit lies in a node box and a triangle cell: the scene walk sees th
 ### Read-only and within the rules
 
 Everything above is a memory read of the client's own collision scene on the framework thread, plus calls to read-only getters (`GetColliderType`) and the game's raycast (which takes the module's shared lock itself). Nothing is written, nothing is hooked (vnavmesh hooks the raycast in its debug view; this plugin doesn't), nothing is sent. No dependency on vnavmesh: its source was only read.
+
+## Phase 2 verification (#33)
+
+Measured 2026-11-18 in game, Debug build, standing still in the housing interior from #28, with the bridge (`draw-within-budget`, `collision-zone-changes`, `soak-ten-minutes-at-the-cap`). The budget and soak checks now run the worst case whatever the user chose (`WorstCase`): 100 fake players and 50 fake NPCs, all labelled, and collision on at full detail in the largest cube (100 yalms).
+
+### Frame budgets with collision on
+
+| What | Value |
+| --- | --- |
+| `draw-within-budget`: 101 players, 50 NPCs, 358 collision boxes, 120 frames | **0.376 ms** and **0.404 ms** average on two runs, **0 bytes** (budget 0.5 ms, 0 bytes) |
+| `collision-reader`: 10 forced gathers over 20 frames | average 0.12 ms, max 0.22 ms per gathering frame, 0 bytes (limit 1 ms) |
+| Soak, 10 min: 6,644 drawn frames (the game was in the background, about 11 fps) | **0.383 ms** average, **0 bytes**, 0 name strings built |
+| Soak gathering: 19 gathers over 38 frames | 0.122 ms average per gathering frame, **0 bytes** |
+
+The draw cost with all three caps (0.38–0.40 ms) is in the same range as #74's players-and-NPCs measurement without collision (0.44–0.47 ms in a city): run-to-run noise from what else the game is doing is as large as the collision boxes' share. Inside the budget, but with little room: if a later change pushes it over, lower `PlayerReader.MaxNpcs` first (as #74 said), then the box cap.
+
+### Memory across zone changes
+
+- No human is in game to teleport, so the bridge simulates zone changes: `CollisionReader.SimulatedZone` (Debug only) replaces the game's zone id. The cache sees what it sees after a teleport: a new zone id, so it drops both box sets and gathers afresh. Only the loaded scene stays the same.
+- `collision-zone-changes` (every run): 11 changes (10 simulated, then back to the real zone). Each was followed by a gather of the same 358 boxes into **one of the same two sets** (capacity 2,000), so a new zone never allocates new buffers. 0 bytes allocated gathering or drawing.
+- Soak: a zone change every 30 seconds, **19 changes, all 19 gathered again**, 0 bytes. The process heap went from 1,444 MB to 1,453 MB with 498 gen-0 collections over the 10 minutes; as in #23 that is Dalamud and the other plugins (the plugin's own draw and gather paths allocated nothing), so it is recorded, not judged.
+- `CollisionCache.ZoneChanges` counts real zone changes too, so a run after real teleports shows them in the metrics.
+
+### Still to measure
+
+- **Outdoors and in a city** (carried over from #28): every number above is from the same housing interior. The probe and these checks run on every bridge run, so the first run outdoors records terrain numbers without a code change.

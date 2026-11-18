@@ -33,10 +33,15 @@ their per-frame time budget, allocate nothing and stay under the box cap.
 Checks the collision settings in the running game (#32: collision on/off and detail level, saved and applied
 immediately; PROJECT.md, "Collision (phase 2)").
 
+ [CollisionZoneChangesCheck](Cube.TestBridge.Checks.CollisionZoneChangesCheck.md)
+
+Checks memory stays bounded across zone changes (PROJECT.md, "Bounded memory": caches have fixed caps, nothing
+grows with time spent in game, and collision data is dropped when you change zone; #33).
+
  [DrawBudgetCheck](Cube.TestBridge.Checks.DrawBudgetCheck.md)
 
-Checks the draw path stays within PROJECT.md's phase 1 budgets ("Efficiency and memory"):
-under 0.5 ms per frame on average and zero bytes allocated per frame in steady state.
+Checks the draw path stays within PROJECT.md's budgets ("Efficiency and memory"): under 0.5 ms per frame on average
+and zero bytes allocated per frame in steady state, for phase 1 and, with collision on, phase 2 (#33).
 A budget failure is a failed test, not a note (CLAUDE.md).
 
  [DrawListMatchesCoreCheck](Cube.TestBridge.Checks.DrawListMatchesCoreCheck.md)
@@ -117,9 +122,10 @@ a settings window, <code>/cube config</code>; the acceptance rule that settings 
 
  [SoakCheck](Cube.TestBridge.Checks.SoakCheck.md)
 
-Soak: draws the worst case for ten minutes and checks nothing grows (PROJECT.md, "Efficiency and memory": zero
-bytes allocated per frame in steady state, bounded memory, nothing grows with time spent in game). Runs only when
-asked for with <code>ingame_test.py --soak</code>.
+Soak: draws the worst case for ten minutes, changing zone every half minute, and checks nothing grows (PROJECT.md,
+"Efficiency and memory": zero bytes allocated per frame in steady state, bounded memory, nothing grows with time
+spent in game, collision data dropped on a zone change). Runs only when asked for with
+<code>ingame_test.py --soak</code>.
 
  [ViewControlCheck](Cube.TestBridge.Checks.ViewControlCheck.md)
 
@@ -136,6 +142,11 @@ A fixed cube of on/off cells centred on the player, allocated once: the shape a 
 
 Checks the cube window draws when opened and stops drawing when closed (PROJECT.md, "Features":
 <code>/cube</code> toggles the window; "Efficiency": skip everything when the window is closed).
+
+ [WorstCase](Cube.TestBridge.Checks.WorstCase.md)
+
+The most expensive settings and contents the cube can have, shared by the budget and soak checks so both measure
+the same thing (PROJECT.md, "Efficiency and memory": the phase 2 budgets hold with collision on; #33).
 
 ### Structs
 

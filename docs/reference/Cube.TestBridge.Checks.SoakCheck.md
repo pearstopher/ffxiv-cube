@@ -3,9 +3,10 @@
 Namespace: [Cube.TestBridge.Checks](Cube.TestBridge.Checks.md)  
 Assembly: Cube.dll  
 
-Soak: draws the worst case for ten minutes and checks nothing grows (PROJECT.md, "Efficiency and memory": zero
-bytes allocated per frame in steady state, bounded memory, nothing grows with time spent in game). Runs only when
-asked for with <code>ingame_test.py --soak</code>.
+Soak: draws the worst case for ten minutes, changing zone every half minute, and checks nothing grows (PROJECT.md,
+"Efficiency and memory": zero bytes allocated per frame in steady state, bounded memory, nothing grows with time
+spent in game, collision data dropped on a zone change). Runs only when asked for with
+<code>ingame_test.py --soak</code>.
 
 ```csharp
 internal sealed class SoakCheck : BridgeCheck
@@ -28,6 +29,13 @@ byte count ([NameBuildFrames](Cube.CubeWindow.md#Cube_CubeWindow_NameBuildFrames
 area that count is 0.
 </p>
 <p>
+<b>Collision (#33).</b> The soak runs in the [WorstCase](Cube.TestBridge.Checks.WorstCase.md#Cube_TestBridge_Checks_WorstCase), collision on. Every
+[ZoneChangeInterval](Cube.TestBridge.Checks.SoakCheck.md#Cube_TestBridge_Checks_SoakCheck_ZoneChangeInterval) it switches the reader to another simulated zone
+([SimulatedZone](Cube.Game.CollisionReader.md#Cube_Game_CollisionReader_SimulatedZone)), so the cache drops everything and gathers again, as after a
+teleport. Gathering frames are kept out of the draw cost (PROJECT.md: budgeted background gathering is exempt) and
+judged on their own: zero bytes over the whole soak, and every zone change followed by a completed gather.
+</p>
+<p>
 The process's managed heap (`System.GC.GetTotalMemory(System.Boolean)`) and gen-0 collections are recorded as metrics
 but not judged: the heap is shared with Dalamud and every other plugin, so it moves for reasons that aren't ours.
 Since the draw path allocates nothing and every buffer is allocated once at load, the plugin's share can't grow.
@@ -47,6 +55,18 @@ private static readonly TimeSpan Duration
 
  [TimeSpan](https://learn.microsoft.com/dotnet/api/system.timespan)
 
+### <a id="Cube_TestBridge_Checks_SoakCheck_FirstSimulatedZone"></a> FirstSimulatedZone
+
+First simulated zone id; far above the game's territory ids so it can't match a real one.
+
+```csharp
+private const uint FirstSimulatedZone = 900000
+```
+
+#### Field Value
+
+ [uint](https://learn.microsoft.com/dotnet/api/system.uint32)
+
 ### <a id="Cube_TestBridge_Checks_SoakCheck_WarmUpFrames"></a> WarmUpFrames
 
 Frames drawn before measuring starts.
@@ -59,17 +79,29 @@ private const int WarmUpFrames = 60
 
  [int](https://learn.microsoft.com/dotnet/api/system.int32)
 
-### <a id="Cube_TestBridge_Checks_SoakCheck_showedNpcs"></a> showedNpcs
+### <a id="Cube_TestBridge_Checks_SoakCheck_ZoneChangeInterval"></a> ZoneChangeInterval
 
-The user's NPC setting before the check.
+How often the soak changes the simulated zone.
 
 ```csharp
-private bool showedNpcs
+private static readonly TimeSpan ZoneChangeInterval
 ```
 
 #### Field Value
 
- [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+ [TimeSpan](https://learn.microsoft.com/dotnet/api/system.timespan)
+
+### <a id="Cube_TestBridge_Checks_SoakCheck_saved"></a> saved
+
+The user's settings before the check, restored by [Cleanup](Cube.TestBridge.Checks.SoakCheck.md#Cube_TestBridge_Checks_SoakCheck_Cleanup).
+
+```csharp
+private readonly CubeSettings saved
+```
+
+#### Field Value
+
+ [CubeSettings](Cube.Core.CubeSettings.md)
 
 ### <a id="Cube_TestBridge_Checks_SoakCheck_wasOpen"></a> wasOpen
 
