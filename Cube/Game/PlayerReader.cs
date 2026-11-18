@@ -68,7 +68,11 @@ internal static class PlayerReader
     /// are read and no NPC is looked at.
     /// </remarks>
     /// <param name="set">This frame's player set, already begun with the frame's cube.</param>
-    public static unsafe void Read(PlayerSet set)
+    /// <param name="localY">
+    /// The local player's height this frame, as <see cref="CubeWindow"/> read it. Used instead of the object's own so the
+    /// marker and the cube agree on the same frame's value (and so the bridge's simulated jump can move the marker, #105).
+    /// </param>
+    public static unsafe void Read(PlayerSet set, float localY)
     {
         var npcs = set.ShowsNpcs;
         var manager = GameObjectManager.Instance();
@@ -93,7 +97,14 @@ internal static class PlayerReader
             if (kind == CsObjectKind.Pc)
             {
                 var character = (CsCharacter*)obj;
-                set.Offer(slot, obj->EntityId, obj->Position, obj == local, character->IsPartyMember, character->IsAllianceMember, obj->Name);
+                var position = obj->Position;
+                var isLocal = obj == local;
+                if (isLocal)
+                {
+                    position.Y = localY;
+                }
+
+                set.Offer(slot, obj->EntityId, position, isLocal, character->IsPartyMember, character->IsAllianceMember, obj->Name);
             }
             else if (npcs && (kind == CsObjectKind.EventNpc || kind == CsObjectKind.BattleNpc))
             {

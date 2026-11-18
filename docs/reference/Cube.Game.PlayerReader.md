@@ -79,13 +79,13 @@ public const int ObjectSlots = 819
 
 ## Methods
 
-### <a id="Cube_Game_PlayerReader_Read_Cube_Core_PlayerSet_"></a> Read\(PlayerSet\)
+### <a id="Cube_Game_PlayerReader_Read_Cube_Core_PlayerSet_System_Single_"></a> Read\(PlayerSet, float\)
 
 Offers every player character, and every named NPC if the set shows NPCs, to the set; the set keeps those
 inside the cube.
 
 ```csharp
-public static void Read(PlayerSet set)
+public static void Read(PlayerSet set, float localY)
 ```
 
 #### Parameters
@@ -93,6 +93,11 @@ public static void Read(PlayerSet set)
 `set` [PlayerSet](Cube.Core.PlayerSet.md)
 
 This frame's player set, already begun with the frame's cube.
+
+`localY` [float](https://learn.microsoft.com/dotnet/api/system.single)
+
+The local player's height this frame, as [CubeWindow](Cube.CubeWindow.md#Cube_CubeWindow) read it. Used instead of the object's own so the
+marker and the cube agree on the same frame's value (and so the bridge's simulated jump can move the marker, #105).
 
 #### Remarks
 

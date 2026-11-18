@@ -65,6 +65,12 @@ Reads what was typed after <code>/cube</code> (PROJECT.md, "Features": <code>/cu
 Marker for the Core assembly. Core holds all the cube logic (geometry, projection, drawing order) and
 must not depend on Dalamud or the game, so it can be unit tested on its own.
 
+ [CubeAnchor](Cube.Core.CubeAnchor.md)
+
+Decides where the cube is anchored each frame (PROJECT.md, "Exact behaviour rules", Cube, "Jump"; #105): on the
+local player, except that while the player is jumping its height is held at the take-off height, so the world
+stays still in the cube and the player's marker visibly rises and lands.
+
  [CubeGeometry](Cube.Core.CubeGeometry.md)
 
 Turns cubes into draw-list primitives: the big cube as a wireframe, and a single solid cube as its visible faces

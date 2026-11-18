@@ -137,6 +137,20 @@ public sealed class PlayerSet
     /// <returns>True if the player is inside the cube and was kept.</returns>
     public bool Offer(int slot, uint entityId, Vector3 position, bool isLocal, bool isParty, bool isAlliance, ReadOnlySpan<byte> nameUtf8)
     {
+        if (isLocal)
+        {
+            // While the player jumps the cube is held at the take-off height (#105), so the player can leave the box
+            // vertically. Their own marker is always drawn, kept at the face it would cross (PROJECT.md, "Jump").
+            // x and z follow the player, so only the height can be out. It is put a hair inside the face (0.01%), so
+            // the inclusive containment test can't reject it through rounding.
+            var offset = position.Y - this.space.Centre.Y;
+            var half = this.space.Half.Y;
+            if (MathF.Abs(offset) > half)
+            {
+                position.Y = this.space.Centre.Y + (MathF.Sign(offset) * half * 0.9999f);
+            }
+        }
+
         if (!this.Accept(slot, position, this.playerCount == this.playerCapacity))
         {
             return false;

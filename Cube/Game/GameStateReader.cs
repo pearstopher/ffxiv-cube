@@ -29,4 +29,39 @@ internal sealed class GameStateReader(IClientState clientState, ICondition condi
         condition[ConditionFlag.OccupiedInCutSceneEvent] || condition[ConditionFlag.WatchingCutscene] || condition[ConditionFlag.WatchingCutscene78],
         clientState.IsGPosing,
         clientState.IsPvP);
+
+    /// <summary>
+    /// Whether the game says the local player is jumping (PROJECT.md, "Jump"; #105): the cube holds its height while
+    /// this is true. Both jump flags are accepted, as the cutscene and loading flags are, because which one the game
+    /// raises isn't known until the owner's manual session (<c>docs/manual-tests.md</c>, "Jump"). A flag lookup:
+    /// read-only, no allocation.
+    /// </summary>
+    public bool IsJumping() => condition[ConditionFlag.Jumping] || condition[ConditionFlag.Jumping61];
+
+#if DEBUG
+    /// <summary>
+    /// Debug logging for the jump research (#105): while a jump flag is set, and for half a second after it clears, one
+    /// line per frame with both flags and the player's height. Allocates only while logging, which is never in
+    /// steady state, so the draw budget is unaffected. Debug builds only.
+    /// </summary>
+    /// <param name="playerY">The local player's real height this frame.</param>
+    public void TraceJump(float playerY)
+    {
+        var flags = (condition[ConditionFlag.Jumping] ? 1 : 0) | (condition[ConditionFlag.Jumping61] ? 2 : 0);
+        var now = System.Diagnostics.Stopwatch.GetTimestamp();
+        if (flags != 0)
+        {
+            this.lastFlagTicks = now;
+        }
+
+        var window = System.Diagnostics.Stopwatch.Frequency / 2;
+        if (this.lastFlagTicks != 0 && now - this.lastFlagTicks <= window)
+        {
+            Plugin.Log.Debug("Jump trace: Jumping={Jumping} Jumping61={Jumping61} y={Y:0.000}", (flags & 1) != 0, (flags & 2) != 0, playerY);
+        }
+    }
+
+    /// <summary>When a jump flag was last seen set, in stopwatch ticks; 0 before the first. Debug builds only.</summary>
+    private long lastFlagTicks;
+#endif
 }
