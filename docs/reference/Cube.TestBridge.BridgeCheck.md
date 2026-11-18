@@ -29,6 +29,7 @@ internal abstract class BridgeCheck
 [CollisionZoneChangesCheck](Cube.TestBridge.Checks.CollisionZoneChangesCheck.md), 
 [DrawBudgetCheck](Cube.TestBridge.Checks.DrawBudgetCheck.md), 
 [DrawListMatchesCoreCheck](Cube.TestBridge.Checks.DrawListMatchesCoreCheck.md), 
+[EnemyMarkersCheck](Cube.TestBridge.Checks.EnemyMarkersCheck.md), 
 [FakePlayersCheck](Cube.TestBridge.Checks.FakePlayersCheck.md), 
 [FrameSnapshotCheck](Cube.TestBridge.Checks.FrameSnapshotCheck.md), 
 [GameStateProbeCheck](Cube.TestBridge.Checks.GameStateProbeCheck.md), 

@@ -704,7 +704,7 @@ internal sealed class CubeWindow : Window
                     target.AddConvexPolyFilled(ref MemoryMarshal.GetReference(corners), corners.Length, p.Colour);
                     break;
                 default:
-                    var name = players[p.Tag - 1].Name;
+                    var name = players[p.Tag - 1].Label;
                     target.AddText(new Vector2(p.A.X, p.A.Y - halfLine), p.Colour, name);
 #if DEBUG
                     this.LastLabelText[labels++] = name;

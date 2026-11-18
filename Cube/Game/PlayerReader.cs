@@ -6,6 +6,8 @@ using Control = FFXIVClientStructs.FFXIV.Client.Game.Control.Control;
 using CsCharacter = FFXIVClientStructs.FFXIV.Client.Game.Character.Character;
 using CsObjectKind = FFXIVClientStructs.FFXIV.Client.Game.Object.ObjectKind;
 using GameObjectManager = FFXIVClientStructs.FFXIV.Client.Game.Object.GameObjectManager;
+using TargetSystem = FFXIVClientStructs.FFXIV.Client.Game.Control.TargetSystem;
+using UIState = FFXIVClientStructs.FFXIV.Client.Game.UI.UIState;
 
 namespace Cube.Game;
 
@@ -42,6 +44,29 @@ internal static class PlayerReader
     /// drawing still fits the 0.5 ms budget alongside a full crowd of players). Extras are dropped and counted.
     /// </summary>
     public const int MaxNpcs = 50;
+
+    /// <summary>Whether an entity is on the game's list of enemies attacking the player (the "hater" list the enmity UI uses).</summary>
+    /// <param name="state">The game's UI state; null is treated as an empty list.</param>
+    /// <param name="entityId">The enemy's entity id.</param>
+    private static unsafe bool IsHater(UIState* state, uint entityId)
+    {
+        if (state == null)
+        {
+            return false;
+        }
+
+        var haters = state->Hater.Haters;
+        var count = Math.Min(state->Hater.HaterCount, haters.Length);
+        for (var i = 0; i < count; i++)
+        {
+            if (haters[i].EntityId == entityId)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     /// <summary>Gets the local player's world position: the cube's centre.</summary>
     /// <param name="position">The position, if logged in.</param>
@@ -83,6 +108,9 @@ internal static class PlayerReader
         }
 
         var local = (FFXIVClientStructs.FFXIV.Client.Game.Object.GameObject*)control->LocalPlayer;
+        var targetSystem = TargetSystem.Instance();
+        var target = targetSystem == null ? null : targetSystem->GetTargetObject();
+        var hate = UIState.Instance();
         var table = manager->Objects.IndexSorted;
         var end = npcs ? Math.Min(table.Length, ObjectSlots) : CharacterSlots;
         for (var slot = 0; slot < end; slot++)
@@ -104,7 +132,7 @@ internal static class PlayerReader
                     position.Y = localY;
                 }
 
-                set.Offer(slot, obj->EntityId, position, isLocal, character->IsPartyMember, character->IsAllianceMember, obj->Name);
+                set.Offer(slot, obj->EntityId, position, isLocal, character->IsPartyMember, character->IsAllianceMember, obj->Name, obj == target);
             }
             else if (npcs && (kind == CsObjectKind.EventNpc || kind == CsObjectKind.BattleNpc))
             {
@@ -112,7 +140,10 @@ internal static class PlayerReader
                     && (obj->BattleNpcSubKind == BattleNpcSubKind.Pet || obj->BattleNpcSubKind == BattleNpcSubKind.Buddy);
                 if (PlayerSet.IsNamedNpc(obj->OwnerId, petOrBuddy, obj->Name))
                 {
-                    set.OfferNpc(slot, obj->EntityId, obj->Position, obj->Name);
+                    // Enemy = a hostile battle NPC; attacking = on the game's enemy list, the one the game keeps of
+                    // everything fighting the player (#111; docs/research-notes.md).
+                    var enemy = PlayerSet.ClassifyNpc(kind == CsObjectKind.BattleNpc, ((CsCharacter*)obj)->IsHostile) == PlayerRelation.Enemy;
+                    set.OfferNpc(slot, obj->EntityId, obj->Position, obj->Name, enemy, obj == target, enemy && IsHater(hate, obj->EntityId));
                 }
             }
         }

@@ -435,3 +435,13 @@ Do it. The game already provides the rotation per collider, so the oriented box 
 1. Probe: log covered volume (axis vs oriented) and the share of turned boxes at a real location.
 2. `CollisionBox` keeps centre, half-size and yaw (with a pure-yaw check; tilted falls back to an axis box); reader builds it from `World`.
 3. `CollisionClipper` cuts against the box's own edges; tests as above; `collision-inside-cube` and `draw-within-budget` bridge checks pass.
+
+## Enemy and attacking detection (#111)
+
+Chosen reads, from FFXIVClientStructs (no hooks, no game calls beyond getters):
+
+- **Enemy:** a battle NPC whose `Character.IsHostile` is set (`PlayerSet.ClassifyNpc`). Event NPCs are never enemies.
+- **Target:** `TargetSystem.GetTargetObject()` (hard target, else soft target) compared with each object's pointer.
+- **Attacking:** the enemy's entity id is in `UIState.Hater.Haters` (the list behind the enmity UI), checked only for enemies.
+
+The fake-player bridge check (`enemy-markers`) covers the colour and label text. The real `IsHostile` and `Hater` reads need a fight to confirm; steps are in `docs/manual-tests.md`. Reliability of the hater list is not yet verified in game.

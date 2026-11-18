@@ -89,7 +89,7 @@ internal sealed class LabelsCheck : BridgeCheck
             }
 
             labelsPerPlayer[index]++;
-            if (drawn >= window.LastLabelCount || window.LastLabelText[drawn] != players[index].Name)
+            if (drawn >= window.LastLabelCount || window.LastLabelText[drawn] != players[index].Label)
             {
                 return CheckStep.Fail($"Label {drawn} (player {index}) wasn't drawn with that player's name.");
             }

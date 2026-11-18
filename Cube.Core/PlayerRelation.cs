@@ -20,4 +20,10 @@ public enum PlayerRelation : byte
     /// fights alongside the player.
     /// </summary>
     Npc = 3,
+
+    /// <summary>
+    /// A hostile battle NPC (#111): drawn in its own colour so enemies stand apart from friendly NPCs. Counts as an NPC
+    /// everywhere else (NPC setting, NPC cap).
+    /// </summary>
+    Enemy = 4,
 }
