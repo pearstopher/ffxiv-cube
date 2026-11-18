@@ -23,8 +23,8 @@ the script polls the results file, so it must never see half a file).
 
  [BoxExtentsTests](Cube.Tests.BoxExtentsTests.md)
 
-Checks the box size rules (PROJECT.md, "Cube" and "Zoom", #90): each extent 10–100, default 40; zoom scales all
-three together keeping their ratios, clamped so no extent leaves 10–100; zooming in means less space.
+Checks the box size rules (PROJECT.md, "Cube" and "Zoom", #90): each extent 1–100, default 40; zoom scales all
+three together keeping their ratios, clamped so no extent leaves 1–100; zooming in means less space.
 
  [BuildInfoTests](Cube.Tests.BuildInfoTests.md)
 
@@ -84,14 +84,14 @@ without the game (CLAUDE.md, "Reference: the previous plugin" layout rule).
  [CubeSettingsTests](Cube.Tests.CubeSettingsTests.md)
 
 Checks the settings' defaults and repair rules (PROJECT.md, "Features": settings for cube size, orientation mode,
-labels on/off, colours and opacity; "NPCs": on by default, purple; "Cube": width, height and depth each 10–100, default 40, zoom keeping their ratios, old single-edge files migrating (#90); "View": Camera
+labels on/off, colours and opacity; "NPCs": on by default, purple; "Cube": width, height and depth each 1–100, default 40, zoom keeping their ratios, old single-edge files migrating (#90); "View": Camera
 mode by default; #32: collision on, full detail by default; saved files from older versions still load) and the
 <code>/cube config</code> command.
 
  [CubeSpaceTests](Cube.Tests.CubeSpaceTests.md)
 
 Checks the cube of space (PROJECT.md, "Exact behaviour rules": Cube, Players, Culling): centred on the player, a box
-whose width, height and depth are each 10–100 yalms (default 40), inside meaning inside on each axis separately,
+whose width, height and depth are each 1–100 yalms (default 40), inside meaning inside on each axis separately,
 aligned by its yaw (Camera mode: front face where the camera looks; North up: east right,
 north forward); containment uses the aligned cube, so things enter and leave at the sides as the camera turns, and
 is inclusive on faces; players outside are not shown at all. Also the zero-allocation rule ("Efficiency and
@@ -212,7 +212,7 @@ GPose and in PvP areas; shown otherwise).
 
 Checks the settings window's zoom slider (#94; PROJECT.md, "Zoom" and "Control"): its value is the box's largest
 extent; moving it scales all three extents together keeping their ratios; its range stops where the smallest
-extent reaches 10 and the largest 100; it stores nothing, so changing an extent moves it; dragging back and forth
+extent reaches 1 and the largest 100; it stores nothing, so changing an extent moves it; dragging back and forth
 never drifts.
 
 ### Structs

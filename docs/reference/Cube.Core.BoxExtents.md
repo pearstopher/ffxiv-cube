@@ -4,7 +4,7 @@ Namespace: [Cube.Core](Cube.Core.md)
 Assembly: Cube.Core.dll  
 
 The rules for the cube's size (PROJECT.md, "Exact behaviour rules", Cube; changed 2026-11-18, #90): the cube is a
-box with three extents in yalms, width (x), height (y) and depth (z), each 10–100, default 40. Zoom scales all three
+box with three extents in yalms, width (x), height (y) and depth (z), each 1–100, default 40. Zoom scales all three
 together, keeping their ratios.
 
 ```csharp
@@ -45,7 +45,7 @@ public const float Default = 40
 
 ### <a id="Cube_Core_BoxExtents_Max"></a> Max
 
-Largest allowed extent, in yalms (PROJECT.md: 10–100).
+Largest allowed extent, in yalms (PROJECT.md: 1–100).
 
 ```csharp
 public const float Max = 100
@@ -57,10 +57,10 @@ public const float Max = 100
 
 ### <a id="Cube_Core_BoxExtents_Min"></a> Min
 
-Smallest allowed extent, in yalms (PROJECT.md: 10–100).
+Smallest allowed extent, in yalms (PROJECT.md: 1–100).
 
 ```csharp
-public const float Min = 10
+public const float Min = 1
 ```
 
 #### Field Value
@@ -181,7 +181,7 @@ How much to scale every extent by.
 
 #### Remarks
 
-The factor itself is clamped, not each extent, so no extent leaves 10–100 and the ratios still hold: zooming
+The factor itself is clamped, not each extent, so no extent leaves 1–100 and the ratios still hold: zooming
 out a 20 × 80 × 40 box by 2 stops at 25 × 100 × 50. A factor that isn't a positive number leaves the size as
 it is.
 
@@ -206,7 +206,7 @@ The current size; clamped first.
 
 #### Remarks
 
-Only the shape matters, so the range stays the same while zooming. A 10 × 100 box can't zoom at all, and both
+Only the shape matters, so the range stays the same while zooming. A 1 × 100 box can't zoom at all, and both
 limits are 100.
 
 ### <a id="Cube_Core_BoxExtents_ZoomTo_System_Numerics_Vector3_System_Single_"></a> ZoomTo\(Vector3, float\)

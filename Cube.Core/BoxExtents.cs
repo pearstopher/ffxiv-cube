@@ -4,7 +4,7 @@ namespace Cube.Core;
 
 /// <summary>
 /// The rules for the cube's size (PROJECT.md, "Exact behaviour rules", Cube; changed 2026-11-18, #90): the cube is a
-/// box with three extents in yalms, width (x), height (y) and depth (z), each 10–100, default 40. Zoom scales all three
+/// box with three extents in yalms, width (x), height (y) and depth (z), each 1–100, default 40. Zoom scales all three
 /// together, keeping their ratios.
 /// </summary>
 /// <remarks>
@@ -23,10 +23,10 @@ public static class BoxExtents
     /// <summary>Default extent on every axis, in yalms (PROJECT.md: default 40).</summary>
     public const float Default = 40f;
 
-    /// <summary>Smallest allowed extent, in yalms (PROJECT.md: 10–100).</summary>
-    public const float Min = 10f;
+    /// <summary>Smallest allowed extent, in yalms (PROJECT.md: 1–100).</summary>
+    public const float Min = 1f;
 
-    /// <summary>Largest allowed extent, in yalms (PROJECT.md: 10–100).</summary>
+    /// <summary>Largest allowed extent, in yalms (PROJECT.md: 1–100).</summary>
     public const float Max = 100f;
 
     /// <summary>The default size: a 40 × 40 × 40 cube (PROJECT.md; "reset to default gives 40×40×40").</summary>
@@ -55,7 +55,7 @@ public static class BoxExtents
     /// where the largest hits <see cref="Max"/>, given as the largest extent (the slider's value).
     /// </summary>
     /// <remarks>
-    /// Only the shape matters, so the range stays the same while zooming. A 10 × 100 box can't zoom at all, and both
+    /// Only the shape matters, so the range stays the same while zooming. A 1 × 100 box can't zoom at all, and both
     /// limits are 100.
     /// </remarks>
     /// <param name="size">The current size; clamped first.</param>
@@ -81,7 +81,7 @@ public static class BoxExtents
     /// contents look bigger).
     /// </summary>
     /// <remarks>
-    /// The factor itself is clamped, not each extent, so no extent leaves 10–100 and the ratios still hold: zooming
+    /// The factor itself is clamped, not each extent, so no extent leaves 1–100 and the ratios still hold: zooming
     /// out a 20 × 80 × 40 box by 2 stops at 25 × 100 × 50. A factor that isn't a positive number leaves the size as
     /// it is.
     /// </remarks>
@@ -95,7 +95,7 @@ public static class BoxExtents
             return size;
         }
 
-        // Min then Max rather than Math.Clamp: for a box at the 1:10 limit the two bounds are equal, and rounding could
+        // Min then Max rather than Math.Clamp: for a box at the 1:100 limit the two bounds are equal, and rounding could
         // put them an ulp the wrong way round, which Math.Clamp would throw on.
         factor = MathF.Max(MathF.Min(factor, Max / Largest(size)), Min / Smallest(size));
 

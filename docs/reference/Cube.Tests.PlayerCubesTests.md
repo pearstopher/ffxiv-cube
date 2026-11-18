@@ -145,3 +145,20 @@ private static CubeSpace Space(float edge = 40)
 #### Returns
 
  [CubeSpace](Cube.Core.CubeSpace.md)
+
+### <a id="Cube_Tests_PlayerCubesTests_Tiny_box_still_draws_markers_at_the_minimum_pixel_size_System_Single_System_Single_System_Single_"></a> Tiny\_box\_still\_draws\_markers\_at\_the\_minimum\_pixel\_size\(float, float, float\)
+
+```csharp
+[Theory]
+[InlineData(new object[] { 1, 1, 1 })]
+[InlineData(new object[] { 1, 100, 1 })]
+public void Tiny_box_still_draws_markers_at_the_minimum_pixel_size(float x, float y, float z)
+```
+
+#### Parameters
+
+`x` [float](https://learn.microsoft.com/dotnet/api/system.single)
+
+`y` [float](https://learn.microsoft.com/dotnet/api/system.single)
+
+`z` [float](https://learn.microsoft.com/dotnet/api/system.single)

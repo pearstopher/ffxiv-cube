@@ -3,8 +3,8 @@
 Namespace: [Cube.Tests](Cube.Tests.md)  
 Assembly: Cube.Tests.dll  
 
-Checks the box size rules (PROJECT.md, "Cube" and "Zoom", #90): each extent 10–100, default 40; zoom scales all
-three together keeping their ratios, clamped so no extent leaves 10–100; zooming in means less space.
+Checks the box size rules (PROJECT.md, "Cube" and "Zoom", #90): each extent 1–100, default 40; zoom scales all
+three together keeping their ratios, clamped so no extent leaves 1–100; zooming in means less space.
 
 ```csharp
 public class BoxExtentsTests
@@ -73,11 +73,11 @@ public void Unusable_zoom_factor_leaves_the_size_alone(float factor)
 
 `factor` [float](https://learn.microsoft.com/dotnet/api/system.single)
 
-### <a id="Cube_Tests_BoxExtentsTests_Zoom_at_the_one_to_ten_limit_does_not_throw"></a> Zoom\_at\_the\_one\_to\_ten\_limit\_does\_not\_throw\(\)
+### <a id="Cube_Tests_BoxExtentsTests_Zoom_at_the_one_to_hundred_limit_does_not_throw"></a> Zoom\_at\_the\_one\_to\_hundred\_limit\_does\_not\_throw\(\)
 
 ```csharp
 [Fact]
-public void Zoom_at_the_one_to_ten_limit_does_not_throw()
+public void Zoom_at_the_one_to_hundred_limit_does_not_throw()
 ```
 
 ### <a id="Cube_Tests_BoxExtentsTests_Zoom_in_means_less_space"></a> Zoom\_in\_means\_less\_space\(\)
@@ -87,11 +87,11 @@ public void Zoom_at_the_one_to_ten_limit_does_not_throw()
 public void Zoom_in_means_less_space()
 ```
 
-### <a id="Cube_Tests_BoxExtentsTests_Zoom_in_stops_when_the_smallest_extent_reaches_10_and_keeps_the_ratios"></a> Zoom\_in\_stops\_when\_the\_smallest\_extent\_reaches\_10\_and\_keeps\_the\_ratios\(\)
+### <a id="Cube_Tests_BoxExtentsTests_Zoom_in_stops_when_the_smallest_extent_reaches_1_and_keeps_the_ratios"></a> Zoom\_in\_stops\_when\_the\_smallest\_extent\_reaches\_1\_and\_keeps\_the\_ratios\(\)
 
 ```csharp
 [Fact]
-public void Zoom_in_stops_when_the_smallest_extent_reaches_10_and_keeps_the_ratios()
+public void Zoom_in_stops_when_the_smallest_extent_reaches_1_and_keeps_the_ratios()
 ```
 
 ### <a id="Cube_Tests_BoxExtentsTests_Zoom_out_keeps_the_ratios"></a> Zoom\_out\_keeps\_the\_ratios\(\)

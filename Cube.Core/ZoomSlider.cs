@@ -33,7 +33,7 @@ public struct ZoomSlider
     /// <summary>The slider's value for the last size given to <see cref="Update"/>: its largest extent.</summary>
     public float Value { get; private set; }
 
-    /// <summary>The slider's lower limit: where the smallest extent would be 10 (<see cref="BoxExtents.ZoomRange"/>).</summary>
+    /// <summary>The slider's lower limit: where the smallest extent would be 1 (<see cref="BoxExtents.ZoomRange"/>).</summary>
     public float Low { get; private set; }
 
     /// <summary>The slider's upper limit: where the largest extent would be 100.</summary>
@@ -63,7 +63,7 @@ public struct ZoomSlider
     /// </summary>
     /// <param name="currentSize">The cube's size now; used only on the first call of a drag.</param>
     /// <param name="value">The slider's new value, the wanted largest extent in yalms.</param>
-    /// <returns>The new size, clamped so no extent leaves 10–100.</returns>
+    /// <returns>The new size, clamped so no extent leaves 1–100.</returns>
     public Vector3 Drag(Vector3 currentSize, float value)
     {
         if (!this.dragging)

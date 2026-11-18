@@ -59,14 +59,14 @@ public class GizmoModelTests
     }
 
     [Fact]
-    public void Axis_handle_is_clamped_to_10_to_100()
+    public void Axis_handle_is_clamped_to_1_to_100()
     {
         var size = new Vector3(40);
-        var model = Matrix4x4.CreateScale(new Vector3(5, 0.01f, 1)) * GizmoModel.Build(ViewOrientation.Default, size);
+        var model = Matrix4x4.CreateScale(new Vector3(5, 0.001f, 1)) * GizmoModel.Build(ViewOrientation.Default, size);
 
         var change = GizmoModel.Read(model, ViewOrientation.Default, size);
 
-        Assert.Equal(new Vector3(100, 10, 40), change.Size);
+        Assert.Equal(new Vector3(100, 1, 40), change.Size);
     }
 
     [Fact]

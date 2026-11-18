@@ -53,6 +53,35 @@ public class PlayerCubesTests
     }
 
     [Theory]
+    [InlineData(1f, 1f, 1f)]
+    [InlineData(1f, 100f, 1f)]
+    public void Tiny_box_still_draws_markers_at_the_minimum_pixel_size(float x, float y, float z)
+    {
+        // PROJECT.md: each extent may be as small as 1 yalm (#101). A marker is 1/40 of 1 yalm there, so the
+        // on-screen minimum must carry it, and nothing may divide by zero or flip.
+        var space = new CubeSpace(Vector3.Zero, new Vector3(x, y, z), 0f);
+        var projection = ViewProjection.Fit(Vector2.Zero, new Vector2(400, 400), space.Half, View);
+        var list = new DrawList(64);
+
+        PlayerCubes.Add(list, space, projection, [Player(Vector3.Zero, PlayerRelation.Self)], PlayerPalette.Default);
+
+        Assert.True(projection.PixelsPerYalm > 0 && float.IsFinite(projection.PixelsPerYalm));
+        Assert.Equal(
+            MathF.Max(space.Largest / 40f, PlayerCubes.MinEdgePixels / projection.PixelsPerYalm) / 2f,
+            PlayerCubes.HalfSize(space, projection),
+            5);
+        var faces = list.Items.ToArray().Where(p => p.Kind == PrimitiveKind.Quad).ToArray();
+        Assert.NotEmpty(faces);
+        foreach (var face in faces)
+        {
+            foreach (var corner in list.Points(face))
+            {
+                Assert.True(float.IsFinite(corner.X) && float.IsFinite(corner.Y));
+            }
+        }
+    }
+
+    [Theory]
     [InlineData(PlayerRelation.Self)]
     [InlineData(PlayerRelation.Party)]
     [InlineData(PlayerRelation.Other)]

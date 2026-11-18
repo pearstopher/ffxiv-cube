@@ -39,6 +39,9 @@ internal sealed class BoxSizeCheck : BridgeCheck
     /// <summary>The box drawn: tall and narrow, so its proportions can't be mistaken for a cube's.</summary>
     private static readonly Vector3 TallBox = new(20, 80, 40);
 
+    /// <summary>A box whose width is the 1-yalm minimum (PROJECT.md, "Cube", #101).</summary>
+    private static readonly Vector3 ThinBox = new(BoxExtents.Min, 50, 20);
+
     /// <summary>The user's settings before the check, restored by <see cref="Cleanup"/>.</summary>
     private readonly CubeSettings saved = new();
 
@@ -101,6 +104,29 @@ internal sealed class BoxSizeCheck : BridgeCheck
         if (settings.Revision != revision)
         {
             yield return CheckStep.Fail($"The settings changed {settings.Revision - revision} times while nothing was touched.");
+            yield break;
+        }
+
+        // The smallest side is 1 yalm (#101): the wireframe is a thin slab (50 times as tall as wide), a fake 0.4 yalms
+        // east is inside it (half-width 0.5) and one 2 yalms east is outside.
+        settings.SetSize(ThinBox);
+        window.Fakes.Clear();
+        window.Fakes.AddAtWorld("Fake Thin Inside", window.LastSpace.Centre + new Vector3(0.4f, 0, 0), PlayerRelation.Other);
+        window.Fakes.AddAtWorld("Fake Thin Outside", window.LastSpace.Centre + new Vector3(2f, 0, 0), PlayerRelation.Other);
+        foreach (var step in WaitForDraws(window))
+        {
+            yield return step;
+        }
+
+        var thinRatio = WireRatio(window);
+        var thinInside = OrientationCheck.HasFake(window, 0);
+        var thinOutside = OrientationCheck.HasFake(window, 1);
+        context.Metric("thinRatio", thinRatio);
+        if (window.LastSpace.Size != ThinBox || MathF.Abs(thinRatio - (ThinBox.Y / ThinBox.X)) > RatioTolerance * ThinBox.Y || !thinInside || thinOutside)
+        {
+            yield return CheckStep.Fail(string.Create(
+                CultureInfo.InvariantCulture,
+                $"The 1-yalm-wide box drew {window.LastSpace.Size} with height/width {thinRatio:0.000} (want {ThinBox.Y / ThinBox.X}); fake 0.4 east inside={thinInside} (want True), fake 2 east inside={thinOutside} (want False)."));
             yield break;
         }
 
