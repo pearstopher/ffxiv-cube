@@ -379,3 +379,59 @@ Findings:
   trigger and event volumes. Meshes are not filtered on material.
 - Phantom count among kept primitive colliders: about 160 before the fix, 0 after (the check fails if any remain).
   Mesh node phantoms (about 1000 of 3600 nodes at this spot) are counted separately and remain.
+
+## Turning collision boxes to fit their objects (#110)
+
+Desk research from the code (`CollisionReader`, `CollisionBox`, `CollisionClipper`, `ClippedBox`) and FFXIVClientStructs' collider types. No measurement in game yet: the numbers below are geometry, and a Debug probe for real fit is part of the proposed implementation.
+
+### Does the game already give the rotation?
+
+**Yes. Nothing has to be worked out from vertices.**
+
+- Every collider has a `World` matrix (`Matrix4x3`): mesh colliders, and the box, cylinder, sphere and plane primitives. It already holds the object's rotation (and scale).
+- A mesh node's `LocalBounds` is a box in the mesh's **own** space, so it is already tight to the object. `CollisionBox.FromTransformed` takes that local box through `World` and then throws the rotation away by wrapping the result in a world-axis box (Arvo's method). That wrapping is the whole waste. Keeping the local min/max plus the matrix gives an exact oriented box.
+- Primitives are unit shapes (-1..1) placed by `World`, so they are exact oriented boxes the same way.
+- So the "minimal-area rectangle / PCA / trial angles" options are not needed. They would only matter for data with no transform; here every box has one. The fence at 45° is a collider turned 45° in its `World`; its nodes' local boxes are thin and straight.
+
+### Cost: computed once, cached
+
+- Gathering stays one matrix read per node, as today (0.12 ms per gathering frame, 0 bytes). Extracting the yaw is a few ALU ops per box: `atan2(M13, M11)` or just the stored `(cos, sin)` pair of the matrix's X axis in the ground plane. No allocation.
+- Cache record: centre (3) + half-size (3) + `cos`, `sin` (2) = 8 floats, **32 bytes** instead of 24. The 2,000-box cap goes from 48 KB to 64 KB. The world AABB is derived on demand (cheap) for the existing region cull.
+- Matrices that are not a pure turn about the vertical axis (pitch or roll, or shear) are the exception. Check `M12`, `M32`, `M21`, `M23` close to zero. When true (expected for nearly everything: placed housing items, fences, walls, terrain tiles at identity), use the oriented box. When false, fall back to today's axis box, so a ramp or tilted prop is never wrong, only as coarse as now. (A full 8-corner oriented box would also draw fine, but then the cube clipping needs a general convex clip; not worth it for a rare case.)
+- Non-uniform scale is handled: it is folded into the half-size (column lengths of the matrix).
+
+### Drawing and culling cost
+
+- An upright prism with a turned rectangular footprint is **already a shape the drawing code supports**: `ClippedBox` holds a footprint polygon of up to 8 corners (`MaxCorners`), counter-clockwise, drawn by the prism path that #93 added for the turned cube. A box turned θ inside a cube turned by yaw is two rectangles intersected: at most 8 corners, exactly the existing limit. A box wholly inside the cube is just its 4 rotated corners (still 8 vertices and 12 edges, same as a box).
+- **Clipping:** `CollisionClipper` today cuts the cube's footprint against four **axis** lines (Sutherland–Hodgman, `Cut(axis, value)`). With a turned box the four lines are general half-planes (a normal and an offset), the same loop with a dot product instead of picking X or Z. Roughly 2x the arithmetic per cut, on the boxes that reach the cube only; the cheap rejects (height, AABB against the footprint's bounds) stay first and cut most boxes before any polygon work. Still allocation-free, buffers on the stack.
+- **Culling:** the region test uses the box's world AABB (computed from centre, half-size and yaw: `|cos|·hx + |sin|·hz`). That AABB is as large as today's, so cull results are unchanged, never worse; the exact test is done by the clip, which returns "nothing" for a box outside the cube. So culling does **not** get harder. A separating-axis test could cull a few more boxes early but isn't needed.
+- Projection is unchanged: 8 corners, 12 edges per box. The per-frame work is the same; only the clip's cut arithmetic changes, and only for turned boxes.
+- When the cube itself is turned (the camera's yaw), every box is already handled as a polygon, so there is no new "slow path". In north-up mode today's axis-aligned fast path (`footprint.IsAxisAligned`) applies only to boxes that are not turned themselves; turned boxes take the polygon path, which is the path every box takes whenever the cube is turned.
+
+### How much it helps (geometry)
+
+Footprint area, a box of length L and width t turned 45°, axis box vs oriented box:
+
+| Object | Axis box | Oriented box | Waste removed |
+| --- | --- | --- | --- |
+| Square 2 × 2 yalm crate turned 45° | 2.83 × 2.83 = 8.0 | 4.0 | 2.0x tighter |
+| Fence segment 10 × 0.3, turned 45° | 7.3 × 7.3 = 53 | 3.0 | **17.7x tighter** |
+| Fence segment 10 × 0.3, turned 30° | 8.9 × 5.2 = 46 | 3.0 | 15x tighter |
+| Wall 20 × 0.5 turned 45° | 14.5 × 14.5 = 210 | 10 | 21x tighter |
+| Anything at 0°, 90° | same | same | none (e.g. most buildings, terrain tiles) |
+
+An axis box around a thin diagonal object swallows a large empty square, which is what looks wrong (and why the phantom-box share in #107 is high for fences). A long fence is also many nodes, each thin: the oriented fence becomes a tidy chain, not a staircase of overlapping squares. **Box counts do not change**: one box per node either way; the saving is covered space and visual fit, not draw cost. The real fit on the game's actual data (covered volume with each method, how many boxes are turned at all) is not measured; the implementation issue should start by adding that to the Debug probe (`CollisionProbeCheck`), logging both volumes and the share of turned boxes.
+
+### Risks and related
+
+- **#115** (`collision-inside-cube` fails: a `Quad` corner is outside the cube's outline at 45°) is in the same clip path. Oriented boxes would exercise it harder; fix #115 first, or as the first step of the implementation.
+- Tests to write first: a box turned by θ clipped to a cube turned by φ for several angles (every corner of the result lies inside both shapes; wholly inside and wholly outside cases; 8-corner worst case); yaw extraction from matrices including scale and mirror; tilted matrices fall back to the axis box.
+- Doc and spec impact: PROJECT.md says "simplified box"; an oriented box still is one. `CollisionBox`'s doc ("world-axis-aligned, like the player cubes") and `docs/reference/` change with it.
+
+### Recommendation
+
+Do it. The game already provides the rotation per collider, so the oriented box costs no extra reads, one cached `(cos, sin)` pair per box (+8 bytes), and one more general clip loop on the polygon path that already exists for a turned cube. Frame cost and allocations stay as now (to be checked by the existing `draw-within-budget` check). Gain is large for thin diagonal things (about 15–20x tighter footprint for fences and walls) and nothing for axis-aligned ones. Proposed implementation issue, after #115:
+
+1. Probe: log covered volume (axis vs oriented) and the share of turned boxes at a real location.
+2. `CollisionBox` keeps centre, half-size and yaw (with a pure-yaw check; tilted falls back to an axis box); reader builds it from `World`.
+3. `CollisionClipper` cuts against the box's own edges; tests as above; `collision-inside-cube` and `draw-within-budget` bridge checks pass.
