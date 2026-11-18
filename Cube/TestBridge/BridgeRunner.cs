@@ -36,6 +36,9 @@ internal sealed class BridgeRunner : IDisposable
     /// <summary>Name of the results file the bridge writes after each run.</summary>
     public const string ResultsFileName = "results.json";
 
+    /// <summary>A request id starting with this asks for a soak run (<c>ingame_test.py --soak</c>).</summary>
+    public const string SoakRequestPrefix = "soak-";
+
     /// <summary>The framework, whose update event drives the checks.</summary>
     private readonly IFramework framework;
 
@@ -195,10 +198,21 @@ internal sealed class BridgeRunner : IDisposable
         this.NextCheck();
     }
 
-    /// <summary>Moves to the next check, or finishes the run.</summary>
+    /// <summary>
+    /// Whether this run is a soak run: the request id starts with <see cref="SoakRequestPrefix"/>. Soak runs take
+    /// minutes, so they run only the <see cref="BridgeCheck.SoakOnly"/> checks, and normal runs skip those.
+    /// </summary>
+    private bool IsSoakRun => this.request.StartsWith(SoakRequestPrefix, StringComparison.Ordinal);
+
+    /// <summary>Moves to the next check that belongs in this kind of run, or finishes the run.</summary>
     private void NextCheck()
     {
-        this.checkIndex++;
+        do
+        {
+            this.checkIndex++;
+        }
+        while (this.checkIndex < this.checks.Count && this.checks[this.checkIndex].SoakOnly != this.IsSoakRun);
+
         if (this.checkIndex >= this.checks.Count)
         {
             this.FinishRun();

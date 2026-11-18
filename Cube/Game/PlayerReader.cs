@@ -21,6 +21,12 @@ internal static class PlayerReader
     /// <summary>The object table slots holding characters (0–199).</summary>
     public const int CharacterSlots = 200;
 
+    /// <summary>
+    /// The most players that can be around at once: one per even character slot (odd slots hold their mounts and
+    /// minions; <c>docs/research-notes.md</c>, #10). The efficiency checks measure at this cap.
+    /// </summary>
+    public const int MaxPlayers = CharacterSlots / 2;
+
     /// <summary>Gets the local player's world position: the cube's centre.</summary>
     /// <param name="position">The position, if logged in.</param>
     /// <returns>False when there is no local player (logged out, title screen, some loading screens).</returns>

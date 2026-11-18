@@ -39,6 +39,8 @@ dotnet run --project Cube.Snapshot -- --demo snapshots/demo.png 0.5
 
 (the last number is the view's yaw in radians).
 
+Add `--soak` to run the soak after the normal checks pass: the bridge draws 100 fake players for ten minutes and fails if the draw path allocates anything or goes over the frame-time budget (`soak-ten-minutes-at-the-cap`). It takes about 11 minutes, so it's not part of the normal run. Run it after changes to the draw path.
+
 | Exit code | Meaning |
 | --- | --- |
 | 0 | Every check passed. |

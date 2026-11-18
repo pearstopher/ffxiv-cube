@@ -81,6 +81,12 @@ Checks each setting changes the drawn frame straight away, and that putting the 
 Checks the settings window draws and the settings are saved in the expected file (PROJECT.md, "Features":
 a settings window, <code>/cube config</code>; the acceptance rule that settings are saved on change).
 
+ [SoakCheck](Cube.TestBridge.Checks.SoakCheck.md)
+
+Soak: draws the worst case for ten minutes and checks nothing grows (PROJECT.md, "Efficiency and memory": zero
+bytes allocated per frame in steady state, bounded memory, nothing grows with time spent in game). Runs only when
+asked for with <code>ingame_test.py --soak</code>.
+
  [WindowOpenCloseCheck](Cube.TestBridge.Checks.WindowOpenCloseCheck.md)
 
 Checks the cube window draws when opened and stops drawing when closed (PROJECT.md, "Features":

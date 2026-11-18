@@ -89,6 +89,18 @@ public const string ResultsFileName = "results.json"
 
  [string](https://learn.microsoft.com/dotnet/api/system.string)
 
+### <a id="Cube_TestBridge_BridgeRunner_SoakRequestPrefix"></a> SoakRequestPrefix
+
+A request id starting with this asks for a soak run (<code>ingame_test.py --soak</code>).
+
+```csharp
+public const string SoakRequestPrefix = "soak-"
+```
+
+#### Field Value
+
+ [string](https://learn.microsoft.com/dotnet/api/system.string)
+
 ### <a id="Cube_TestBridge_BridgeRunner_checkIndex"></a> checkIndex
 
 Index of the check being run.
@@ -283,6 +295,19 @@ public string Folder { get; }
 
  [string](https://learn.microsoft.com/dotnet/api/system.string)
 
+### <a id="Cube_TestBridge_BridgeRunner_IsSoakRun"></a> IsSoakRun
+
+Whether this run is a soak run: the request id starts with [SoakRequestPrefix](Cube.TestBridge.BridgeRunner.md#Cube_TestBridge_BridgeRunner_SoakRequestPrefix). Soak runs take
+minutes, so they run only the [SoakOnly](Cube.TestBridge.BridgeCheck.md#Cube_TestBridge_BridgeCheck_SoakOnly) checks, and normal runs skip those.
+
+```csharp
+private bool IsSoakRun { get; }
+```
+
+#### Property Value
+
+ [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
 ### <a id="Cube_TestBridge_BridgeRunner_RequestPath"></a> RequestPath
 
 Full path of the request file.
@@ -333,7 +358,7 @@ private void FinishRun()
 
 ### <a id="Cube_TestBridge_BridgeRunner_NextCheck"></a> NextCheck\(\)
 
-Moves to the next check, or finishes the run.
+Moves to the next check that belongs in this kind of run, or finishes the run.
 
 ```csharp
 private void NextCheck()

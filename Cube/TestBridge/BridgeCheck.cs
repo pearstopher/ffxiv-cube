@@ -18,6 +18,12 @@ internal abstract class BridgeCheck
     public virtual TimeSpan Timeout => TimeSpan.FromSeconds(10);
 
     /// <summary>
+    /// Whether the check runs only in soak runs (requested with <c>ingame_test.py --soak</c>) instead of every run.
+    /// For checks that take minutes.
+    /// </summary>
+    public virtual bool SoakOnly => false;
+
+    /// <summary>
     /// Runs the check, one step per frame, on the framework thread. Yield <see cref="CheckStep.NextFrame"/>
     /// to wait a frame; finish with <see cref="CheckStep.Pass"/> or <see cref="CheckStep.Fail"/>.
     /// </summary>

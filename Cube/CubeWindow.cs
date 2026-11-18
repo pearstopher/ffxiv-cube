@@ -66,10 +66,16 @@ internal sealed class CubeWindow : Window
         };
     }
 
+#if DEBUG
     /// <summary>
-    /// Name cache slots: the 200 character slots, plus room for the Debug-only fake players above them (#16).
+    /// Name cache slots: the 200 character slots, plus room above them for a full crowd of Debug-only fake players
+    /// (#16, #23), so checks can measure at the player cap.
     /// </summary>
-    internal const int NameSlots = 256;
+    internal const int NameSlots = PlayerReader.CharacterSlots + PlayerReader.MaxPlayers;
+#else
+    /// <summary>Name cache slots: one per character slot. Fixed, so memory never grows (PROJECT.md: bounded memory).</summary>
+    internal const int NameSlots = PlayerReader.CharacterSlots;
+#endif
 
     /// <summary>This frame's primitives, in drawing order. Read by the test bridge.</summary>
     internal DrawList DrawList { get; } = new(DrawListCapacity);
@@ -119,6 +125,15 @@ internal sealed class CubeWindow : Window
     /// </summary>
     /// <remarks>Holds the last 240 frames (about 4 seconds at 60 fps); fixed size, so measuring allocates nothing.</remarks>
     internal DrawCostSampler DrawCost { get; } = new(240, Stopwatch.Frequency);
+
+    /// <summary>
+    /// Frames in which a player's name string was built (someone new came into view). Their allocations are the
+    /// cached label strings, so they're counted here rather than in <see cref="DrawCost"/>. Debug builds only.
+    /// </summary>
+    internal long NameBuildFrames { get; private set; }
+
+    /// <summary>Bytes allocated in <see cref="NameBuildFrames"/>. Debug builds only.</summary>
+    internal long NameBuildBytes { get; private set; }
 
     /// <summary>Synthetic players the test bridge can inject (#16). Empty unless a check enables them. Debug builds only.</summary>
     internal TestBridge.FakePlayers Fakes { get; } = new();
@@ -173,11 +188,22 @@ internal sealed class CubeWindow : Window
     public override void Draw()
     {
 #if DEBUG
+        var startBuilds = this.Players.Names.Builds;
         var startBytes = GC.GetAllocatedBytesForCurrentThread();
         var startTicks = Stopwatch.GetTimestamp();
         this.SafeDrawContents();
         var elapsed = Stopwatch.GetTimestamp() - startTicks;
-        this.DrawCost.Record(elapsed, GC.GetAllocatedBytesForCurrentThread() - startBytes);
+        var allocated = GC.GetAllocatedBytesForCurrentThread() - startBytes;
+        if (this.Players.Names.Builds != startBuilds)
+        {
+            // A new name came into view and its label string was built: allowed (PROJECT.md: labels are rebuilt
+            // when a name changes), and not steady state, so it's counted here instead of against the budget.
+            this.NameBuildFrames++;
+            this.NameBuildBytes += allocated;
+            allocated = 0;
+        }
+
+        this.DrawCost.Record(elapsed, allocated);
 #else
         this.SafeDrawContents();
 #endif

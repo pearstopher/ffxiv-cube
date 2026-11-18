@@ -151,6 +151,26 @@ The frame's player set, already begun.
 
 The frame's cube.
 
+### <a id="Cube_TestBridge_FakePlayers_UseCrowd_System_Int32_"></a> UseCrowd\(int\)
+
+Enables a crowd of fakes inside the cube, replacing any: by default [MaxPlayers](Cube.Game.PlayerReader.md#Cube_Game_PlayerReader_MaxPlayers),
+the most players the game can have around, so the efficiency checks measure the worst case (#23).
+
+```csharp
+public void UseCrowd(int count = 100)
+```
+
+#### Parameters
+
+`count` [int](https://learn.microsoft.com/dotnet/api/system.int32)
+
+How many fakes, at most [MaxPlayers](Cube.Game.PlayerReader.md#Cube_Game_PlayerReader_MaxPlayers).
+
+#### Remarks
+
+Spread on a 5×4×5 grid through the cube, alternating party and other, each with a 21-character name (about
+the longest the game allows), so every one gets a cube and a full-length label.
+
 ### <a id="Cube_TestBridge_FakePlayers_UseStandardSet"></a> UseStandardSet\(\)
 
 Enables the [Standard](Cube.TestBridge.FakePlayers.md#Cube_TestBridge_FakePlayers_Standard) set, replacing any fakes.

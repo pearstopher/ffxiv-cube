@@ -67,6 +67,13 @@ public void Invalid_capacity_or_clock_is_rejected(int capacity, long ticksPerSec
 
 `ticksPerSecond` [long](https://learn.microsoft.com/dotnet/api/system.int64)
 
+### <a id="Cube_Tests_DrawCostSamplerTests_Lifetime_totals_cover_every_frame_even_after_wrapping_and_reset"></a> Lifetime\_totals\_cover\_every\_frame\_even\_after\_wrapping\_and\_reset\(\)
+
+```csharp
+[Fact]
+public void Lifetime_totals_cover_every_frame_even_after_wrapping_and_reset()
+```
+
 ### <a id="Cube_Tests_DrawCostSamplerTests_Oldest_frames_are_dropped_when_full"></a> Oldest\_frames\_are\_dropped\_when\_full\(\)
 
 ```csharp

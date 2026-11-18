@@ -36,6 +36,19 @@ public const int CharacterSlots = 200
 
  [int](https://learn.microsoft.com/dotnet/api/system.int32)
 
+### <a id="Cube_Game_PlayerReader_MaxPlayers"></a> MaxPlayers
+
+The most players that can be around at once: one per even character slot (odd slots hold their mounts and
+minions; <code>docs/research-notes.md</code>, #10). The efficiency checks measure at this cap.
+
+```csharp
+public const int MaxPlayers = 100
+```
+
+#### Field Value
+
+ [int](https://learn.microsoft.com/dotnet/api/system.int32)
+
 ## Methods
 
 ### <a id="Cube_Game_PlayerReader_Read_Cube_Core_PlayerSet_"></a> Read\(PlayerSet\)

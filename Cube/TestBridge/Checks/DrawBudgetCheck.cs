@@ -9,7 +9,8 @@ namespace Cube.TestBridge.Checks;
 /// A budget failure is a failed test, not a note (CLAUDE.md).
 /// </summary>
 /// <remarks>
-/// Opens the window, lets it warm up (first-use caches, JIT) and then measures
+/// Opens the window with <see cref="FakePlayers.UseCrowd"/> (the most players the game can have around, each with a
+/// cube and a full-length label), lets it warm up (first-use caches, JIT, name strings) and then measures
 /// <see cref="FramesToMeasure"/> frames with the window's <see cref="Core.DrawCostSampler"/>.
 /// </remarks>
 internal sealed class DrawBudgetCheck : BridgeCheck
@@ -36,8 +37,8 @@ internal sealed class DrawBudgetCheck : BridgeCheck
         this.wasOpen = context.Window.IsOpen;
         context.Window.IsOpen = true;
 
-        // Measure with players in the cube even when nobody is around: the standard fakes (#16).
-        context.Window.Fakes.UseStandardSet();
+        // Measure the worst case even when nobody is around: a full crowd of fakes, all labelled (#23).
+        context.Window.Fakes.UseCrowd();
 
         var start = sampler.TotalRecorded;
         while (sampler.TotalRecorded - start < WarmUpFrames)
@@ -54,6 +55,8 @@ internal sealed class DrawBudgetCheck : BridgeCheck
         var average = sampler.AverageMilliseconds;
         var bytes = sampler.TotalAllocatedBytes;
         var allocatingFrames = sampler.FramesWithAllocations;
+        context.Metric("players", context.Window.Players.Count);
+        context.Metric("primitives", context.Window.DrawList.Count);
         context.Metric("frames", sampler.Count);
         context.Metric("averageMs", average);
         context.Metric("maxMs", sampler.MaxMilliseconds);
@@ -62,9 +65,10 @@ internal sealed class DrawBudgetCheck : BridgeCheck
 
         var summary = string.Create(
             CultureInfo.InvariantCulture,
-            $"{sampler.Count} frames: average {average:0.0000} ms (budget {BudgetMilliseconds} ms), {bytes} bytes allocated in {allocatingFrames} frame(s) (budget 0).");
+            $"{context.Window.Players.Count} players, {sampler.Count} frames: average {average:0.0000} ms (budget {BudgetMilliseconds} ms), {bytes} bytes allocated in {allocatingFrames} frame(s) (budget 0).");
 
-        yield return average < BudgetMilliseconds && bytes == 0
+        // Fewer players than the crowd would mean the worst case wasn't measured.
+        yield return average < BudgetMilliseconds && bytes == 0 && context.Window.Players.Count >= Game.PlayerReader.MaxPlayers
             ? CheckStep.Pass(summary)
             : CheckStep.Fail(summary);
     }
