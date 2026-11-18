@@ -3,9 +3,9 @@
 Namespace: [Cube.Core](Cube.Core.md)  
 Assembly: Cube.Core.dll  
 
-The cube of space around the local player (PROJECT.md, "Exact behaviour rules", Cube): axis-aligned to
-the world, centred on the player, with an edge of 10–100 yalms (default 40). Answers "is this point
-inside?" and turns world positions into cube-local view coordinates.
+The cube of space around the local player (PROJECT.md, "Exact behaviour rules", Cube): centred on the player,
+with an edge of 10–100 yalms (default 40), turned about the vertical axis by its alignment [Yaw](Cube.Core.CubeSpace.md#Cube_Core_CubeSpace_Yaw).
+Answers "is this point inside?" and turns world positions into cube-local view coordinates.
 
 ```csharp
 public readonly struct CubeSpace
@@ -16,11 +16,16 @@ public readonly struct CubeSpace
 
 <p>
 World axes follow the game (see <code>docs/research-notes.md</code>, #10): X east, Y up, Z south, so north is −Z.
-The cube itself never rotates; only the view around it does, by [Yaw](Cube.Core.CubeSpace.md#Cube_Core_CubeSpace_Yaw) (see [ViewYaw](Cube.Core.ViewYaw.md#Cube_Core_ViewYaw)).
+In Camera mode the cube is aligned to the camera's horizontal direction (its front face points where the camera
+looks); in North up mode [Yaw](Cube.Core.CubeSpace.md#Cube_Core_CubeSpace_Yaw) is 0 and it is aligned to the world (see [ViewYaw](Cube.Core.ViewYaw.md#Cube_Core_ViewYaw)).
 </p>
 <p>
-View coordinates are in yalms relative to the centre: <code>X</code> to the right on screen, <code>Y</code> up,
-<code>Z</code> away from the viewer ("forward"). With yaw 0 (north up), right is east and forward is north.
+Cube-local ("view") coordinates are in yalms relative to the centre: <code>X</code> towards the cube's right face,
+<code>Y</code> up, <code>Z</code> towards its front face ("forward"). The wireframe is drawn from fixed cube-local corners, so
+it never turns on screen (PROJECT.md: "Cube on screen never turns by itself"); when the camera turns, the yaw
+changes and the world <i>contents</i> rotate around the player instead. Containment is tested in the same
+coordinates, so things enter and leave at the cube's sides as the camera turns. With yaw 0 (north up), right is
+east and forward is north.
 </p>
 <p>
 A small immutable struct, so it is rebuilt each frame from the current inputs at no allocation cost.
@@ -50,7 +55,7 @@ Edge length in yalms; clamped to [MinEdge](Cube.Core.CubeSpace.md#Cube_Core_Cube
 
 `yaw` [float](https://learn.microsoft.com/dotnet/api/system.single)
 
-The view's yaw in radians (see [ViewYaw](Cube.Core.ViewYaw.md#Cube_Core_ViewYaw)): 0 looks north, increasing clockwise seen from above.
+The cube's alignment yaw in radians (see [ViewYaw](Cube.Core.ViewYaw.md#Cube_Core_ViewYaw)): 0 faces north, increasing clockwise seen from above.
 
 ### <a id="Cube_Core_CubeSpace__ctor_Cube_Core_CubeSpace__System_Numerics_Vector3_System_Single_"></a> CubeSpace\(in CubeSpace, Vector3, float\)
 
@@ -176,7 +181,8 @@ public float HalfEdge { get; }
 
 ### <a id="Cube_Core_CubeSpace_Yaw"></a> Yaw
 
-The view's yaw in radians: 0 looks north, increasing clockwise seen from above.
+The cube's alignment yaw in radians: the world heading its front face points to. 0 faces north, increasing
+clockwise seen from above.
 
 ```csharp
 public float Yaw { get; }
@@ -209,8 +215,8 @@ The requested edge in yalms.
 
 ### <a id="Cube_Core_CubeSpace_Contains_System_Numerics_Vector3_"></a> Contains\(Vector3\)
 
-Whether a world position is inside the cube. Inclusive: a point exactly on a face, edge or corner
-counts as inside.
+Whether a world position is inside the cube as currently aligned. Inclusive: a point exactly on a face, edge
+or corner counts as inside.
 
 ```csharp
 public bool Contains(Vector3 world)
@@ -226,9 +232,38 @@ A world position.
 
  [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
+#### Remarks
+
+The height test comes first and needs no rotation, so players far above or below are rejected for one
+subtraction (PROJECT.md, "Efficiency": cull before projecting).
+
+### <a id="Cube_Core_CubeSpace_FromView_System_Numerics_Vector3_"></a> FromView\(Vector3\)
+
+Turns cube-local coordinates back into a world position: the inverse of [ToView](Cube.Core.CubeSpace.md#Cube_Core_CubeSpace_ToView). The test bridge
+uses it to place fake players at fixed spots in the cube whatever the camera does.
+
+```csharp
+public Vector3 FromView(Vector3 view)
+```
+
+#### Parameters
+
+`view` [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
+
+A point in cube-local coordinates.
+
+#### Returns
+
+ [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
+
+#### Remarks
+
+The rotation in [RotateOffset](Cube.Core.CubeSpace.md#Cube_Core_CubeSpace_RotateOffset) is its own inverse (it also flips Z, since forward is −Z at yaw 0),
+so the same formula maps back.
+
 ### <a id="Cube_Core_CubeSpace_Recentred_System_Numerics_Vector3_System_Single_"></a> Recentred\(Vector3, float\)
 
-The same view rotation around a new centre and edge, without recomputing the sine and cosine. The window
+The same alignment around a new centre and edge, without recomputing the sine and cosine. The window
 uses it every frame the yaw hasn't changed (PROJECT.md, "Efficiency and memory": recompute only when inputs
 change).
 
@@ -252,7 +287,7 @@ The new edge in yalms.
 
 ### <a id="Cube_Core_CubeSpace_RotateOffset_System_Numerics_Vector3_"></a> RotateOffset\(Vector3\)
 
-Rotates an offset from the centre (world axes) into view axes.
+Rotates an offset from the centre (world axes) into cube-local axes.
 
 ```csharp
 public Vector3 RotateOffset(Vector3 offset)
@@ -275,8 +310,8 @@ right = east (+X), forward = north (−Z).
 
 ### <a id="Cube_Core_CubeSpace_ToView_System_Numerics_Vector3_"></a> ToView\(Vector3\)
 
-Turns a world position into view coordinates (right, up, forward), without culling. Used for the
-cube's own corners and for points already known to be inside.
+Turns a world position into cube-local coordinates (right, up, forward), without culling. Used for points
+already known to be inside.
 
 ```csharp
 public Vector3 ToView(Vector3 world)
@@ -295,7 +330,7 @@ A world position.
 ### <a id="Cube_Core_CubeSpace_TryToView_System_Numerics_Vector3_System_Numerics_Vector3__"></a> TryToView\(Vector3, out Vector3\)
 
 Culls then transforms: returns false for a point outside the cube (players outside aren't shown at all,
-PROJECT.md "Players"), otherwise gives its view coordinates.
+PROJECT.md "Players"), otherwise gives its cube-local coordinates.
 
 ```csharp
 public bool TryToView(Vector3 world, out Vector3 view)
@@ -309,7 +344,7 @@ A world position.
 
 `view` [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
 
-The position in view coordinates, if inside.
+The position in cube-local coordinates, if inside.
 
 #### Returns
 

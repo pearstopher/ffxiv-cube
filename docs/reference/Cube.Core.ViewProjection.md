@@ -171,8 +171,9 @@ A point in view coordinates.
 ### <a id="Cube_Core_ViewProjection_Fit_System_Numerics_Vector2_System_Numerics_Vector2_System_Single_System_Single_"></a> Fit\(Vector2, Vector2, float, float\)
 
 The projection that fits a cube of the given size into a window region, centred. The scale allows for
-any yaw (a corner can swing out to √2 × half the edge horizontally), so the cube doesn't change size
-as the camera turns.
+a corner swinging out to √2 × half the edge horizontally: the camera no longer turns the wireframe (#62),
+but the user's view control (PROJECT.md, "View orientation control") will, and the cube shouldn't change
+size when it does.
 
 ```csharp
 public static ViewProjection Fit(Vector2 regionMin, Vector2 regionSize, float halfEdge, float elevation)

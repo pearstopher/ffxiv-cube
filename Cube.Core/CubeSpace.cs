@@ -3,18 +3,23 @@ using System.Numerics;
 namespace Cube.Core;
 
 /// <summary>
-/// The cube of space around the local player (PROJECT.md, "Exact behaviour rules", Cube): axis-aligned to
-/// the world, centred on the player, with an edge of 10–100 yalms (default 40). Answers "is this point
-/// inside?" and turns world positions into cube-local view coordinates.
+/// The cube of space around the local player (PROJECT.md, "Exact behaviour rules", Cube): centred on the player,
+/// with an edge of 10–100 yalms (default 40), turned about the vertical axis by its alignment <see cref="Yaw"/>.
+/// Answers "is this point inside?" and turns world positions into cube-local view coordinates.
 /// </summary>
 /// <remarks>
 /// <para>
 /// World axes follow the game (see <c>docs/research-notes.md</c>, #10): X east, Y up, Z south, so north is −Z.
-/// The cube itself never rotates; only the view around it does, by <see cref="Yaw"/> (see <see cref="ViewYaw"/>).
+/// In Camera mode the cube is aligned to the camera's horizontal direction (its front face points where the camera
+/// looks); in North up mode <see cref="Yaw"/> is 0 and it is aligned to the world (see <see cref="ViewYaw"/>).
 /// </para>
 /// <para>
-/// View coordinates are in yalms relative to the centre: <c>X</c> to the right on screen, <c>Y</c> up,
-/// <c>Z</c> away from the viewer ("forward"). With yaw 0 (north up), right is east and forward is north.
+/// Cube-local ("view") coordinates are in yalms relative to the centre: <c>X</c> towards the cube's right face,
+/// <c>Y</c> up, <c>Z</c> towards its front face ("forward"). The wireframe is drawn from fixed cube-local corners, so
+/// it never turns on screen (PROJECT.md: "Cube on screen never turns by itself"); when the camera turns, the yaw
+/// changes and the world <i>contents</i> rotate around the player instead. Containment is tested in the same
+/// coordinates, so things enter and leave at the cube's sides as the camera turns. With yaw 0 (north up), right is
+/// east and forward is north.
 /// </para>
 /// <para>
 /// A small immutable struct, so it is rebuilt each frame from the current inputs at no allocation cost.
@@ -42,7 +47,7 @@ public readonly struct CubeSpace
     /// <summary>Creates the cube around a centre.</summary>
     /// <param name="centre">The local player's world position.</param>
     /// <param name="edge">Edge length in yalms; clamped to <see cref="MinEdge"/>–<see cref="MaxEdge"/>.</param>
-    /// <param name="yaw">The view's yaw in radians (see <see cref="ViewYaw"/>): 0 looks north, increasing clockwise seen from above.</param>
+    /// <param name="yaw">The cube's alignment yaw in radians (see <see cref="ViewYaw"/>): 0 faces north, increasing clockwise seen from above.</param>
     public CubeSpace(Vector3 centre, float edge, float yaw)
     {
         this.Centre = centre;
@@ -68,7 +73,7 @@ public readonly struct CubeSpace
     }
 
     /// <summary>
-    /// The same view rotation around a new centre and edge, without recomputing the sine and cosine. The window
+    /// The same alignment around a new centre and edge, without recomputing the sine and cosine. The window
     /// uses it every frame the yaw hasn't changed (PROJECT.md, "Efficiency and memory": recompute only when inputs
     /// change).
     /// </summary>
@@ -85,7 +90,10 @@ public readonly struct CubeSpace
     /// <summary>Half the edge: the distance from the centre to each face.</summary>
     public float HalfEdge { get; }
 
-    /// <summary>The view's yaw in radians: 0 looks north, increasing clockwise seen from above.</summary>
+    /// <summary>
+    /// The cube's alignment yaw in radians: the world heading its front face points to. 0 faces north, increasing
+    /// clockwise seen from above.
+    /// </summary>
     public float Yaw { get; }
 
     /// <summary>
@@ -96,42 +104,61 @@ public readonly struct CubeSpace
     public static float ClampEdge(float edge) => float.IsNaN(edge) ? DefaultEdge : Math.Clamp(edge, MinEdge, MaxEdge);
 
     /// <summary>
-    /// Whether a world position is inside the cube. Inclusive: a point exactly on a face, edge or corner
-    /// counts as inside.
+    /// Whether a world position is inside the cube as currently aligned. Inclusive: a point exactly on a face, edge
+    /// or corner counts as inside.
     /// </summary>
+    /// <remarks>
+    /// The height test comes first and needs no rotation, so players far above or below are rejected for one
+    /// subtraction (PROJECT.md, "Efficiency": cull before projecting).
+    /// </remarks>
     /// <param name="world">A world position.</param>
-    public bool Contains(Vector3 world)
-    {
-        var d = world - this.Centre;
-        return MathF.Abs(d.X) <= this.HalfEdge && MathF.Abs(d.Y) <= this.HalfEdge && MathF.Abs(d.Z) <= this.HalfEdge;
-    }
+    public bool Contains(Vector3 world) => this.TryToView(world, out _);
 
     /// <summary>
     /// Culls then transforms: returns false for a point outside the cube (players outside aren't shown at all,
-    /// PROJECT.md "Players"), otherwise gives its view coordinates.
+    /// PROJECT.md "Players"), otherwise gives its cube-local coordinates.
     /// </summary>
     /// <param name="world">A world position.</param>
-    /// <param name="view">The position in view coordinates, if inside.</param>
+    /// <param name="view">The position in cube-local coordinates, if inside.</param>
     public bool TryToView(Vector3 world, out Vector3 view)
     {
-        if (!this.Contains(world))
+        var offset = world - this.Centre;
+        if (MathF.Abs(offset.Y) > this.HalfEdge)
         {
             view = default;
             return false;
         }
 
-        view = this.ToView(world);
+        var local = this.RotateOffset(offset);
+        if (MathF.Abs(local.X) > this.HalfEdge || MathF.Abs(local.Z) > this.HalfEdge)
+        {
+            view = default;
+            return false;
+        }
+
+        view = local;
         return true;
     }
 
     /// <summary>
-    /// Turns a world position into view coordinates (right, up, forward), without culling. Used for the
-    /// cube's own corners and for points already known to be inside.
+    /// Turns a world position into cube-local coordinates (right, up, forward), without culling. Used for points
+    /// already known to be inside.
     /// </summary>
     /// <param name="world">A world position.</param>
     public Vector3 ToView(Vector3 world) => this.RotateOffset(world - this.Centre);
 
-    /// <summary>Rotates an offset from the centre (world axes) into view axes.</summary>
+    /// <summary>
+    /// Turns cube-local coordinates back into a world position: the inverse of <see cref="ToView"/>. The test bridge
+    /// uses it to place fake players at fixed spots in the cube whatever the camera does.
+    /// </summary>
+    /// <param name="view">A point in cube-local coordinates.</param>
+    /// <remarks>
+    /// The rotation in <see cref="RotateOffset"/> is its own inverse (it also flips Z, since forward is −Z at yaw 0),
+    /// so the same formula maps back.
+    /// </remarks>
+    public Vector3 FromView(Vector3 view) => this.Centre + this.RotateOffset(view);
+
+    /// <summary>Rotates an offset from the centre (world axes) into cube-local axes.</summary>
     /// <param name="offset">An offset in world axes.</param>
     /// <remarks>
     /// With forward = (sin yaw, −cos yaw) and right = (cos yaw, sin yaw) in world (X, Z): yaw 0 gives

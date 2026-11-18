@@ -22,7 +22,9 @@ internal sealed class FakePlayers
 Fakes are offered to the same [PlayerSet](Cube.Core.PlayerSet.md#Cube_Core_PlayerSet) as real players, after them, so they go through exactly the
 same culling, classification and naming. They use object slots from [FirstSlot](Cube.TestBridge.FakePlayers.md#Cube_TestBridge_FakePlayers_FirstSlot) up (above the 200 real
 character slots) and entity ids from [FirstEntityId](Cube.TestBridge.FakePlayers.md#Cube_TestBridge_FakePlayers_FirstEntityId) up, so checks can tell them apart. Positions are
-fractions of the cube's half-edge from the local player, so the same set works at any cube size.
+fractions of the cube's half-edge in cube-local coordinates (see [FromView](Cube.Core.CubeSpace.md#Cube_Core_CubeSpace_FromView)), so the same set
+works at any cube size and stays put in the cube however the camera turns. A fake added with
+[AddAtWorld](Cube.TestBridge.FakePlayers.md#Cube_TestBridge_FakePlayers_AddAtWorld) is instead fixed in the world, like a real player, so it rotates with the contents.
 
 ## Fields
 
@@ -120,6 +122,29 @@ Its label.
 `offset` [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
 
 Position as fractions of the half-edge from the cube centre (1 = on a face).
+
+`relation` [PlayerRelation](Cube.Core.PlayerRelation.md)
+
+Party or other (fakes are never Self).
+
+### <a id="Cube_TestBridge_FakePlayers_AddAtWorld_System_String_System_Numerics_Vector3_Cube_Core_PlayerRelation_"></a> AddAtWorld\(string, Vector3, PlayerRelation\)
+
+Adds one fake at a fixed world position, like a real player standing still, so it rotates with the cube's
+contents when the camera turns (#62).
+
+```csharp
+public void AddAtWorld(string name, Vector3 world, PlayerRelation relation)
+```
+
+#### Parameters
+
+`name` [string](https://learn.microsoft.com/dotnet/api/system.string)
+
+Its label.
+
+`world` [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
+
+Its world position.
 
 `relation` [PlayerRelation](Cube.Core.PlayerRelation.md)
 

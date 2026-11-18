@@ -22,7 +22,7 @@ assignees: ""
 
 ## Settings
 
-<!-- From /cube config: cube size, orientation (Camera / North up), names on or off. Or "defaults". -->
+<!-- From /cube config: cube size, orientation (Rotate contents with camera / Keep contents fixed), names on or off. Or "defaults". -->
 
 ## Versions
 

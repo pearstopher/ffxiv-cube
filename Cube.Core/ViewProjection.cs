@@ -61,8 +61,9 @@ public readonly struct ViewProjection
 
     /// <summary>
     /// The projection that fits a cube of the given size into a window region, centred. The scale allows for
-    /// any yaw (a corner can swing out to √2 × half the edge horizontally), so the cube doesn't change size
-    /// as the camera turns.
+    /// a corner swinging out to √2 × half the edge horizontally: the camera no longer turns the wireframe (#62),
+    /// but the user's view control (PROJECT.md, "View orientation control") will, and the cube shouldn't change
+    /// size when it does.
     /// </summary>
     /// <param name="regionMin">Top-left of the drawing region, in pixels.</param>
     /// <param name="regionSize">Size of the drawing region, in pixels.</param>

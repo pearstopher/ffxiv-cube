@@ -30,7 +30,7 @@ Type `/cube config` (or use the settings button in `/xlplugins`). Changes show s
 | Setting | What it does | Default |
 | --- | --- | --- |
 | Cube size (yalms) | How far the cube reaches around you, edge to edge (10–100). | 40 |
-| Orientation | **Camera:** forward in the cube is where the game camera looks. **North up:** north is always the same side of the cube. | Camera |
+| Orientation | The cube itself stays still on screen; this decides what happens to what's inside it. **Rotate contents with camera:** forward in the cube is where the game camera looks, so when you turn the camera everything inside turns around you. **Keep contents fixed (north stays put):** north is always the same side of the cube and the camera changes nothing. | Rotate contents with camera |
 | Show names | Name labels next to the players' cubes. | On |
 | You / Party / alliance / Others | The colour for each kind of player. | Blue / green / orange |
 | Opacity | How see-through everything in the window is. | 1.00 |

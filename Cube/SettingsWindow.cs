@@ -65,12 +65,12 @@ internal sealed class SettingsWindow : Window
         ImGui.SetNextItemWidth(200);
         this.Track(ImGui.SliderFloat("Cube size (yalms)", ref c.CubeEdge, CubeSpace.MinEdge, CubeSpace.MaxEdge, "%.0f"));
 
+        // The names describe what happens to the contents, not what turns: the cube's frame stays still on screen in
+        // both modes (PROJECT.md, "Cube" and "Cube on screen never turns by itself").
         ImGui.TextUnformatted("Orientation");
-        ImGui.SameLine();
         var mode = (int)c.Orientation;
-        var modeChanged = ImGui.RadioButton("Camera", ref mode, (int)OrientationMode.Camera);
-        ImGui.SameLine();
-        modeChanged |= ImGui.RadioButton("North up", ref mode, (int)OrientationMode.NorthUp);
+        var modeChanged = ImGui.RadioButton("Rotate contents with camera", ref mode, (int)OrientationMode.Camera);
+        modeChanged |= ImGui.RadioButton("Keep contents fixed (north stays put)", ref mode, (int)OrientationMode.NorthUp);
         if (modeChanged)
         {
             c.Orientation = (OrientationMode)mode;

@@ -57,8 +57,10 @@ every handler in try/catch and log). Runs after the other checks, so it also cov
 
  [OrientationCheck](Cube.TestBridge.Checks.OrientationCheck.md)
 
-Checks both orientation modes against the live game camera (PROJECT.md, "View"): in Camera mode the view's yaw
-matches the camera's heading, in North up mode it is 0 whatever the camera does.
+Checks both orientation modes (PROJECT.md, "Cube" and "Cube on screen never turns by itself"): in Camera mode the
+cube's alignment yaw matches the live camera's heading, in North up mode it is 0 whatever the camera does; and
+turning the camera leaves the wireframe exactly where it was on screen while the contents rotate, entering and
+leaving at the sides.
 
  [PlayerCubesCheck](Cube.TestBridge.Checks.PlayerCubesCheck.md)
 

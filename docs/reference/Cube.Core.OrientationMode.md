@@ -3,7 +3,8 @@
 Namespace: [Cube.Core](Cube.Core.md)  
 Assembly: Cube.Core.dll  
 
-How the view around the cube is turned (PROJECT.md, "View": orientation mode setting).
+How the cube is aligned, and so what happens to its contents (PROJECT.md, "Cube": the orientation setting). The
+cube's frame stays still on screen in both modes.
 
 ```csharp
 public enum OrientationMode
@@ -13,10 +14,11 @@ public enum OrientationMode
 
 `Camera = 0` 
 
-The view's yaw follows the game camera, so "forward on screen" matches the game view. The default.
+"Rotate contents with camera", the default: the cube is aligned to the camera's horizontal direction, so
+"forward in the cube" matches the game view and the contents rotate around the player as the camera turns.
 
 
 
 `NorthUp = 1` 
 
-Fixed yaw with north at the back.
+"Keep contents fixed (north stays put)": the cube is aligned to the world with north at the front.

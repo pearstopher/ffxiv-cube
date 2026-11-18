@@ -43,10 +43,11 @@ labels on/off, colours and opacity; "Cube": edge 10–100, default 40; "View": C
 
  [CubeSpaceTests](Cube.Tests.CubeSpaceTests.md)
 
-Checks the cube of space (PROJECT.md, "Exact behaviour rules": Cube, View, Players): axis-aligned, centred on
-the player, edge 10–100 yalms (default 40); players outside are not shown at all; containment is inclusive on
-faces; the view turns by yaw (north up: east right, north forward). Also the zero-allocation rule
-("Efficiency and memory").
+Checks the cube of space (PROJECT.md, "Exact behaviour rules": Cube, Players): centred on the player, edge 10–100
+yalms (default 40), aligned by its yaw (Camera mode: front face where the camera looks; North up: east right,
+north forward); containment uses the aligned cube, so things enter and leave at the sides as the camera turns, and
+is inclusive on faces; players outside are not shown at all. Also the zero-allocation rule ("Efficiency and
+memory").
 
  [DocumentationCoverageTests](Cube.Tests.DocumentationCoverageTests.md)
 
@@ -87,7 +88,8 @@ and only rebuilt when a name changes, no per-frame allocations, bounded memory; 
 
 Checks projection and the draw list (PROJECT.md, "View": fixed-angle view from above and behind, default 30°;
 "Draw order": far things first so near cubes cover far ones; "Cheap drawing": only visible faces, the big cube a
-wireframe; "Efficiency and memory": reused buffers, no per-frame allocations).
+wireframe; "Cube on screen never turns by itself": the camera turns the contents, never the wireframe;
+"Efficiency and memory": reused buffers, no per-frame allocations).
 
  [ReleaseBuildTests](Cube.Tests.ReleaseBuildTests.md)
 

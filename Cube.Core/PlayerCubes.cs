@@ -25,8 +25,8 @@ public static class PlayerCubes
 
     /// <summary>
     /// Furthest a cube's outline reaches sideways from its centre, per unit of half-edge: half its horizontal
-    /// diagonal (√2) once the view has turned it 45°. Using the worst case keeps the label clear of the cube at
-    /// every yaw without measuring the faces.
+    /// diagonal (√2) once the cube's alignment has turned it 45°. Using the worst case keeps the label clear of the
+    /// cube at every yaw without measuring the faces.
     /// </summary>
     private const float WidestReach = 1.4143f;
 

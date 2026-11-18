@@ -5,7 +5,8 @@ Assembly: Cube.Tests.dll
 
 Checks projection and the draw list (PROJECT.md, "View": fixed-angle view from above and behind, default 30°;
 "Draw order": far things first so near cubes cover far ones; "Cheap drawing": only visible faces, the big cube a
-wireframe; "Efficiency and memory": reused buffers, no per-frame allocations).
+wireframe; "Cube on screen never turns by itself": the camera turns the contents, never the wireframe;
+"Efficiency and memory": reused buffers, no per-frame allocations).
 
 ```csharp
 public class ProjectionAndDrawListTests
@@ -60,6 +61,13 @@ public void Building_and_sorting_a_frame_does_not_allocate()
 ```csharp
 [Fact]
 public void Clear_empties_the_list_for_the_next_frame()
+```
+
+### <a id="Cube_Tests_ProjectionAndDrawListTests_Contents_turn_with_the_camera_while_the_wireframe_stays"></a> Contents\_turn\_with\_the\_camera\_while\_the\_wireframe\_stays\(\)
+
+```csharp
+[Fact]
+public void Contents_turn_with_the_camera_while_the_wireframe_stays()
 ```
 
 ### <a id="Cube_Tests_ProjectionAndDrawListTests_Cube_centre_projects_to_the_origin"></a> Cube\_centre\_projects\_to\_the\_origin\(\)
@@ -203,4 +211,11 @@ public void Top_face_is_brightest_and_sides_are_shaded()
 ```csharp
 [Fact]
 public void Up_is_up_on_screen_foreshortened_by_the_elevation()
+```
+
+### <a id="Cube_Tests_ProjectionAndDrawListTests_Wireframe_is_identical_for_any_camera_yaw"></a> Wireframe\_is\_identical\_for\_any\_camera\_yaw\(\)
+
+```csharp
+[Fact]
+public void Wireframe_is_identical_for_any_camera_yaw()
 ```

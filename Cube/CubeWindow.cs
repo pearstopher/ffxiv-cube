@@ -39,7 +39,7 @@ internal sealed class CubeWindow : Window
     /// <summary>The view's elevation in radians (PROJECT.md: 30°).</summary>
     private static readonly float Elevation = ViewProjection.DefaultElevationDegrees * MathF.PI / 180f;
 
-    /// <summary>The view's current yaw; kept between frames so a vertical camera doesn't spin the view.</summary>
+    /// <summary>The cube's current alignment yaw; kept between frames so a vertical camera doesn't spin the contents.</summary>
     private float yaw;
 
     /// <summary>Whether <see cref="LastSpace"/> holds a real frame's cube, so its rotation can be reused.</summary>
@@ -95,6 +95,12 @@ internal sealed class CubeWindow : Window
     /// state. Debug builds only.
     /// </summary>
     internal GameState? SimulatedState { get; set; }
+
+    /// <summary>
+    /// A camera direction the bridge sets to turn the "camera" without touching the game (#62); null reads the real
+    /// camera. Debug builds only.
+    /// </summary>
+    internal Vector3? SimulatedCameraForward { get; set; }
 #endif
 
     /// <summary>The cube space used for the last frame drawn, so the bridge can rebuild the frame independently.</summary>
@@ -255,12 +261,24 @@ internal sealed class CubeWindow : Window
 
         this.ShowLabels = settings.ShowLabels;
 
-        // North up never reads the camera. With no camera (or one looking straight down) the forward vector is zero
-        // and FromForward keeps the previous yaw.
+        // The cube's alignment (PROJECT.md, "Cube"): in Camera mode it follows the camera's horizontal direction, so
+        // the contents rotate while the wireframe stays still. North up never reads the camera. With no camera (or
+        // one looking straight down) the forward vector is zero and FromForward keeps the previous yaw.
         var forward = Vector3.Zero;
         if (settings.Orientation == OrientationMode.Camera)
         {
+#if DEBUG
+            if (this.SimulatedCameraForward is { } simulated)
+            {
+                forward = simulated;
+            }
+            else
+            {
+                CameraReader.TryGetForward(out forward);
+            }
+#else
             CameraReader.TryGetForward(out forward);
+#endif
         }
 
         var yaw = ViewYaw.Settle(this.yaw, ViewYaw.For(settings.Orientation, forward, this.yaw));
@@ -269,7 +287,7 @@ internal sealed class CubeWindow : Window
         var regionMin = ImGui.GetCursorScreenPos();
         var regionSize = ImGui.GetContentRegionAvail();
         // The rotation is only recomputed when the yaw has actually changed.
-        var space =this.hasSpace && yaw == this.yaw
+        var space = this.hasSpace && yaw == this.yaw
             ? this.LastSpace.Recentred(centre, settings.CubeEdge)
             : new CubeSpace(centre, settings.CubeEdge, yaw);
         this.yaw = yaw;

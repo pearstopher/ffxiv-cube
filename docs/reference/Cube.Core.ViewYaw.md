@@ -3,9 +3,9 @@
 Namespace: [Cube.Core](Cube.Core.md)  
 Assembly: Cube.Core.dll  
 
-Chooses the yaw of the view around the cube (PROJECT.md, "View"): in <b>Camera</b> mode it follows the
-game camera so "forward on screen" matches the game view; in <b>North up</b> mode it is fixed with
-north at the back.
+Chooses the cube's alignment yaw (PROJECT.md, "Cube"): in <b>Camera</b> mode it follows the game camera's
+horizontal direction so "forward in the cube" matches the game view; in <b>North up</b> mode it is fixed with
+north at the front. The yaw turns the contents, never the wireframe (see [CubeSpace](Cube.Core.CubeSpace.md#Cube_Core_CubeSpace)).
 
 ```csharp
 public static class ViewYaw
@@ -27,7 +27,7 @@ so no game angle convention is assumed.
 
 ### <a id="Cube_Core_ViewYaw_ChangeThreshold"></a> ChangeThreshold
 
-Smallest yaw change, in radians (about 0.1°), that turns the view. Smaller changes, such as camera jitter or
+Smallest yaw change, in radians (about 0.1°), that turns the contents. Smaller changes, such as camera jitter or
 float noise while the camera is still, keep the previous yaw so the rotation isn't recomputed (PROJECT.md,
 "Efficiency and memory": recompute only when inputs change). Far below what a pixel shows at any window size.
 
@@ -42,7 +42,7 @@ public const float ChangeThreshold = 0.002
 ### <a id="Cube_Core_ViewYaw_MinHorizontalLength"></a> MinHorizontalLength
 
 Below this horizontal length the camera is looking (almost) straight up or down and its heading is
-meaningless, so the previous yaw is kept rather than spinning the view.
+meaningless, so the previous yaw is kept rather than spinning the contents.
 
 ```csharp
 public const float MinHorizontalLength = 0.0001
@@ -54,7 +54,7 @@ public const float MinHorizontalLength = 0.0001
 
 ### <a id="Cube_Core_ViewYaw_NorthUp"></a> NorthUp
 
-The yaw for north-up mode: north at the back of the view.
+The yaw for north-up mode: the cube's front face points north.
 
 ```csharp
 public const float NorthUp = 0

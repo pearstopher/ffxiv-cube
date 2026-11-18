@@ -4,10 +4,11 @@ using Cube.Core;
 namespace Cube.Tests;
 
 /// <summary>
-/// Checks the cube of space (PROJECT.md, "Exact behaviour rules": Cube, View, Players): axis-aligned, centred on
-/// the player, edge 10–100 yalms (default 40); players outside are not shown at all; containment is inclusive on
-/// faces; the view turns by yaw (north up: east right, north forward). Also the zero-allocation rule
-/// ("Efficiency and memory").
+/// Checks the cube of space (PROJECT.md, "Exact behaviour rules": Cube, Players): centred on the player, edge 10–100
+/// yalms (default 40), aligned by its yaw (Camera mode: front face where the camera looks; North up: east right,
+/// north forward); containment uses the aligned cube, so things enter and leave at the sides as the camera turns, and
+/// is inclusive on faces; players outside are not shown at all. Also the zero-allocation rule ("Efficiency and
+/// memory").
 /// </summary>
 public class CubeSpaceTests
 {
@@ -79,12 +80,49 @@ public class CubeSpaceTests
     }
 
     [Fact]
-    public void Cube_is_axis_aligned_so_yaw_does_not_change_containment()
+    public void Point_near_a_corner_leaves_the_cube_as_the_camera_turns()
     {
-        // (19, 0, 19) is inside an axis-aligned 40-yalm cube but would fall outside a cube rotated by 45 degrees.
+        // (19, 0, 19) is inside the world-aligned 40-yalm cube, but 26.9 yalms along the right axis of a cube turned 45°.
         var point = Player + new Vector3(19, 0, 19);
 
+        Assert.True(NorthUp().Contains(point));
+        Assert.False(new CubeSpace(Player, 40, MathF.PI / 4).Contains(point));
+    }
+
+    [Fact]
+    public void Point_outside_a_corner_enters_the_cube_as_the_camera_turns()
+    {
+        // 25 yalms due east is outside the world-aligned cube but inside one turned 45° (17.7 yalms along each axis).
+        var point = Player + new Vector3(25, 0, 0);
+
+        Assert.False(NorthUp().Contains(point));
         Assert.True(new CubeSpace(Player, 40, MathF.PI / 4).Contains(point));
+    }
+
+    [Theory]
+    [InlineData(0f)]
+    [InlineData(0.7f)]
+    [InlineData(2.5f)]
+    [InlineData(-1.9f)]
+    public void Point_ahead_of_the_camera_is_in_front_for_any_yaw(float yaw)
+    {
+        var space = new CubeSpace(Player, 40, yaw);
+        var ahead = Player + (new Vector3(MathF.Sin(yaw), 0, -MathF.Cos(yaw)) * 10);
+
+        Assert.True(space.TryToView(ahead, out var view));
+        AssertClose(new Vector3(0, 0, 10), view);
+    }
+
+    [Theory]
+    [InlineData(0f)]
+    [InlineData(0.7f)]
+    [InlineData(-2.2f)]
+    public void FromView_puts_a_cube_local_point_back_in_the_world(float yaw)
+    {
+        var space = new CubeSpace(Player, 40, yaw);
+        var local = new Vector3(3, -2, 7);
+
+        AssertClose(local, space.ToView(space.FromView(local)));
     }
 
     [Fact]
