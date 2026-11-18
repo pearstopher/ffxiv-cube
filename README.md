@@ -6,7 +6,7 @@
 A [Dalamud](https://github.com/goatcorp/Dalamud) plugin for FINAL FANTASY XIV that draws a window showing a
 3D cube of space around your character, with the players near you inside it as small labelled cubes.
 
-![The cube window: a wireframe cube with you at the centre and nearby players as small coloured cubes, each with a name label](images/cube-window.png)
+![The cube window: a wireframe cube with you at the centre and nearby players as small coloured cubes, each with a name label](https://raw.githubusercontent.com/pearstopher/ffxiv-cube/main/images/cube-window.png)
 
 *Drawn by the project's snapshot tool from a real game frame; in game the bars are the players' names.*
 
