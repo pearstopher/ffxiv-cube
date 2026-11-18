@@ -16,8 +16,8 @@
     <Author>Ane Mora</Author>
     <Name>Cube</Name>
     <Punchline>See the space around you as a cube, with nearby players as small cubes.</Punchline>
-    <Description>Draws a window showing a cube of space around your character, with nearby players as small labelled cubes. It only reads what the game already knows and draws it; it never changes the game or sends anything.</Description>
+    <Description>Draws a window showing a cube of space around your character, with nearby players and NPCs as small labelled cubes and the ground, walls and objects around you as simple boxes. It only reads what the game already knows and draws it; it never changes the game or sends anything.</Description>
     <RepoUrl>https://github.com/pearstopher/ffxiv-cube</RepoUrl>
-    <Tags>cube;radar;players;nearby;3d;map</Tags>
+    <Tags>cube;radar;players;nearby;3d;map;collision</Tags>
   </PropertyGroup>
 </Project>
