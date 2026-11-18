@@ -3,8 +3,8 @@ using System.Numerics;
 namespace Cube.Core;
 
 /// <summary>
-/// Where the view control goes and how big it is (PROJECT.md, "View orientation control": a small control in a corner
-/// of the window). Kept in Core so the placement rules are unit tested.
+/// Where the view controls go and how big they are (PROJECT.md, "View orientation control": a rotate gizmo in a corner
+/// of the window, with a resize gizmo of the same size beside it). Kept in Core so the placement rules are unit tested.
 /// </summary>
 /// <remarks>
 /// The cube is fitted to a circle filling <see cref="ViewProjection.FillFraction"/> of the region's smaller side, so a
@@ -24,8 +24,29 @@ public static class ViewWidget
 
     /// <summary>The control's side length for a drawing region.</summary>
     /// <param name="regionSize">The drawing region's size, in pixels.</param>
+    /// <remarks>
+    /// Two squares sit side by side (#97), so the size is also capped at half the region's width: in a very narrow
+    /// window both shrink rather than overlap, even below <see cref="MinSize"/>.
+    /// </remarks>
     public static float Size(Vector2 regionSize) =>
-        Math.Clamp(MathF.Min(regionSize.X, regionSize.Y) * SizeFraction, MinSize, MaxSize);
+        MathF.Max(0f, MathF.Min(
+            Math.Clamp(MathF.Min(regionSize.X, regionSize.Y) * SizeFraction, MinSize, MaxSize),
+            regionSize.X / 2f));
+
+    /// <summary>
+    /// Top-left of the resize gizmo's square: the same size as the rotate square, next to it along the window's top or
+    /// bottom edge and inward from the chosen corner (#97), so the two never overlap.
+    /// </summary>
+    /// <param name="regionMin">Top-left of the drawing region, in pixels.</param>
+    /// <param name="regionSize">Size of the drawing region, in pixels.</param>
+    /// <param name="corner">The chosen corner, which the rotate gizmo occupies.</param>
+    /// <param name="size">The control's side length (from <see cref="Size"/>).</param>
+    public static Vector2 ResizePosition(Vector2 regionMin, Vector2 regionSize, WidgetCorner corner, float size)
+    {
+        var rotate = Position(regionMin, regionSize, corner, size);
+        var right = corner is WidgetCorner.BottomRight or WidgetCorner.TopRight;
+        return new Vector2(right ? rotate.X - size : rotate.X + size, rotate.Y);
+    }
 
     /// <summary>Top-left of the control, in the chosen corner of the drawing region.</summary>
     /// <param name="regionMin">Top-left of the drawing region, in pixels.</param>

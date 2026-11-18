@@ -102,6 +102,13 @@ public void Current_file_keeps_its_rotation_and_ignores_the_old_fields()
 public void Default_view_is_from_behind_at_30_degrees_with_the_control_bottom_right()
 ```
 
+### <a id="Cube_Tests_ViewSettingsTests_Gizmos_shrink_in_a_narrow_window_instead_of_overlapping"></a> Gizmos\_shrink\_in\_a\_narrow\_window\_instead\_of\_overlapping\(\)
+
+```csharp
+[Fact]
+public void Gizmos_shrink_in_a_narrow_window_instead_of_overlapping()
+```
+
 ### <a id="Cube_Tests_ViewSettingsTests_Old_fields_are_never_written_to_the_file"></a> Old\_fields\_are\_never\_written\_to\_the\_file\(\)
 
 ```csharp
@@ -146,6 +153,25 @@ public void Reset_to_defaults_also_resets_the_view_and_corner()
 public void Reset_view_restores_the_default()
 ```
 
+### <a id="Cube_Tests_ViewSettingsTests_ResizeGizmo_sits_beside_the_rotate_gizmo_inward_from_the_corner_Cube_Core_WidgetCorner_System_Single_System_Single_"></a> ResizeGizmo\_sits\_beside\_the\_rotate\_gizmo\_inward\_from\_the\_corner\(WidgetCorner, float, float\)
+
+```csharp
+[Theory]
+[InlineData(new object[] { WidgetCorner.BottomRight, 260, 220 })]
+[InlineData(new object[] { WidgetCorner.BottomLeft, 60, 220 })]
+[InlineData(new object[] { WidgetCorner.TopRight, 260, 20 })]
+[InlineData(new object[] { WidgetCorner.TopLeft, 60, 20 })]
+public void ResizeGizmo_sits_beside_the_rotate_gizmo_inward_from_the_corner(WidgetCorner corner, float x, float y)
+```
+
+#### Parameters
+
+`corner` [WidgetCorner](Cube.Core.WidgetCorner.md)
+
+`x` [float](https://learn.microsoft.com/dotnet/api/system.single)
+
+`y` [float](https://learn.microsoft.com/dotnet/api/system.single)
+
 ### <a id="Cube_Tests_ViewSettingsTests_Rolled_view_is_stored_as_is"></a> Rolled\_view\_is\_stored\_as\_is\(\)
 
 ```csharp
@@ -159,6 +185,26 @@ public void Rolled_view_is_stored_as_is()
 [Fact]
 public void Turning_the_view_is_stored_in_the_settings_and_bumps_the_revision()
 ```
+
+### <a id="Cube_Tests_ViewSettingsTests_TwoGizmos_never_overlap_and_stay_inside_the_region_Cube_Core_WidgetCorner_System_Single_System_Single_"></a> TwoGizmos\_never\_overlap\_and\_stay\_inside\_the\_region\(WidgetCorner, float, float\)
+
+```csharp
+[Theory]
+[InlineData(new object[] { WidgetCorner.BottomRight, 350, 250 })]
+[InlineData(new object[] { WidgetCorner.TopLeft, 350, 250 })]
+[InlineData(new object[] { WidgetCorner.BottomLeft, 60, 400 })]
+[InlineData(new object[] { WidgetCorner.TopRight, 30, 30 })]
+[InlineData(new object[] { WidgetCorner.BottomRight, 10, 10 })]
+public void TwoGizmos_never_overlap_and_stay_inside_the_region(WidgetCorner corner, float width, float height)
+```
+
+#### Parameters
+
+`corner` [WidgetCorner](Cube.Core.WidgetCorner.md)
+
+`width` [float](https://learn.microsoft.com/dotnet/api/system.single)
+
+`height` [float](https://learn.microsoft.com/dotnet/api/system.single)
 
 ### <a id="Cube_Tests_ViewSettingsTests_Unknown_corner_falls_back_to_bottom_right"></a> Unknown\_corner\_falls\_back\_to\_bottom\_right\(\)
 

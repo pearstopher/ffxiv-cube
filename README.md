@@ -28,7 +28,7 @@ ground, walls and objects around you as simple boxes.
 - **Near things cover far things,** so you can see which players are in front.
 - **Turn the view with the rotate gizmo** in the corner of the window: drag the red, green or blue ring to turn the
   cube around that axis, or the outer ring to spin it on the screen. Any angle works, and your view is remembered.
-- **Resize the cube with the same gizmo:** drag the red, green or blue handle to make the cube wider, taller or
+- **Resize the cube with the second gizmo** next to it: drag the red, green or blue handle to make the cube wider, taller or
   deeper (it becomes a box), or the centre handle to zoom in and out. The size is remembered too.
 - **Nothing is drawn while you're logged out, loading, in a cutscene, in GPose, or in PvP.**
 

@@ -96,19 +96,6 @@ private static readonly Matrix4x4 GizmoCamera
 
  [Matrix4x4](https://learn.microsoft.com/dotnet/api/system.numerics.matrix4x4)
 
-### <a id="Cube_CubeWindow_GizmoOperations"></a> GizmoOperations
-
-What the corner gizmo offers: the rotation rings (#79) and the scale handles (#90), whose axis handles resize
-one extent each and whose centre handle zooms.
-
-```csharp
-private const ImGuizmoOperation GizmoOperations = Rotate | Scale
-```
-
-#### Field Value
-
- [ImGuizmoOperation](https://github.com/goatcorp/Dalamud/blob/master/imgui/Dalamud.Bindings.ImGuizmo/Generated/Enums/ImGuizmoOperation.cs)
-
 ### <a id="Cube_CubeWindow_GizmoProjection"></a> GizmoProjection
 
 A right-handed perspective projection for ImGuizmo, matching [GizmoCamera](Cube.CubeWindow.md#Cube_CubeWindow_GizmoCamera). The narrow field of view
@@ -162,6 +149,31 @@ internal const int PlayerCapacity = 200
 #### Field Value
 
  [int](https://learn.microsoft.com/dotnet/api/system.int32)
+
+### <a id="Cube_CubeWindow_RotateOperation"></a> RotateOperation
+
+What the rotate gizmo offers: the x/y/z rings and the outer screen ring (#79, #97).
+
+```csharp
+private const ImGuizmoOperation RotateOperation = Rotate
+```
+
+#### Field Value
+
+ [ImGuizmoOperation](https://github.com/goatcorp/Dalamud/blob/master/imgui/Dalamud.Bindings.ImGuizmo/Generated/Enums/ImGuizmoOperation.cs)
+
+### <a id="Cube_CubeWindow_ScaleOperation"></a> ScaleOperation
+
+What the resize gizmo offers: scale handles whose axis handles resize one extent each and whose centre handle
+zooms (#90, #97).
+
+```csharp
+private const ImGuizmoOperation ScaleOperation = Scale
+```
+
+#### Field Value
+
+ [ImGuizmoOperation](https://github.com/goatcorp/Dalamud/blob/master/imgui/Dalamud.Bindings.ImGuizmo/Generated/Enums/ImGuizmoOperation.cs)
 
 ### <a id="Cube_CubeWindow_WireAlpha"></a> WireAlpha
 
@@ -674,8 +686,8 @@ internal long SubmitTicks { get; private set; }
 
 ### <a id="Cube_CubeWindow_WidgetMin"></a> WidgetMin
 
-The view control's top-left last frame, in screen pixels. Used for the hover test in [PreDraw](Cube.CubeWindow.md#Cube_CubeWindow_PreDraw) and
-read by the test bridge.
+The top-left of the two gizmos' combined area last frame, in screen pixels. Used for the hover test in
+[PreDraw](Cube.CubeWindow.md#Cube_CubeWindow_PreDraw) and read by the test bridge.
 
 ```csharp
 internal Vector2 WidgetMin { get; private set; }
@@ -687,10 +699,22 @@ internal Vector2 WidgetMin { get; private set; }
 
 ### <a id="Cube_CubeWindow_WidgetSize"></a> WidgetSize
 
-The view control's side length last frame, in pixels; 0 when it wasn't drawn (cube hidden).
+One gizmo square's side length last frame, in pixels; 0 when they weren't drawn (cube hidden).
 
 ```csharp
 internal float WidgetSize { get; private set; }
+```
+
+#### Property Value
+
+ [float](https://learn.microsoft.com/dotnet/api/system.single)
+
+### <a id="Cube_CubeWindow_WidgetWidth"></a> WidgetWidth
+
+The two gizmo squares' combined width last frame (twice [WidgetSize](Cube.CubeWindow.md#Cube_CubeWindow_WidgetSize)), in pixels.
+
+```csharp
+internal float WidgetWidth { get; private set; }
 ```
 
 #### Property Value
@@ -774,11 +798,51 @@ The plugin's per-frame draw path: builds the frame with Core and draws it.
 private void DrawContents()
 ```
 
+### <a id="Cube_CubeWindow_DrawGizmo_System_Int32_System_Numerics_Vector2_System_Single_Dalamud_Bindings_ImGuizmo_ImGuizmoOperation_System_Numerics_Vector3_"></a> DrawGizmo\(int, Vector2, float, ImGuizmoOperation, Vector3\)
+
+Draws one of the two gizmos in its own square and reports what a drag in it changed (#97).
+
+```csharp
+private GizmoChange DrawGizmo(int id, Vector2 min, float side, ImGuizmoOperation operation, Vector3 size)
+```
+
+#### Parameters
+
+`id` [int](https://learn.microsoft.com/dotnet/api/system.int32)
+
+ImGuizmo ID for this gizmo; differs between the two.
+
+`min` [Vector2](https://learn.microsoft.com/dotnet/api/system.numerics.vector2)
+
+Top-left of the gizmo's square, in pixels.
+
+`side` [float](https://learn.microsoft.com/dotnet/api/system.single)
+
+The square's side length.
+
+`operation` [ImGuizmoOperation](https://github.com/goatcorp/Dalamud/blob/master/imgui/Dalamud.Bindings.ImGuizmo/Generated/Enums/ImGuizmoOperation.cs)
+
+Which operation the gizmo offers.
+
+`size` [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
+
+The cube's current size.
+
+#### Returns
+
+ [GizmoChange](Cube.Core.GizmoChange.md)
+
+#### Remarks
+
+Each gizmo gets its own rectangle and ImGuizmo ID so hovering or dragging one never activates the other. The
+rotate gizmo only offers rotation and the resize gizmo only scaling, so a drag can only change its own part;
+the caller ignores the other flag anyway. Nothing is allocated: the matrices are structs passed by reference.
+
 ### <a id="Cube_CubeWindow_DrawViewControl_System_Numerics_Vector2_System_Numerics_Vector2_"></a> DrawViewControl\(Vector2, Vector2\)
 
-Draws ImGuizmo's rotate and scale gizmo in the chosen corner (PROJECT.md, "View orientation control": a ring per
-axis plus an outer screen ring; #90: scale handles that resize the cube per axis, and a centre handle that
-zooms) and applies any turn or resize the user makes with it.
+Draws two ImGuizmo gizmos side by side in the chosen corner (PROJECT.md, "View orientation control"): a rotate
+gizmo (a ring per axis plus an outer screen ring) in the corner and, inward from it, a resize gizmo (#90, #97:
+scale handles that resize the cube per axis, and a centre handle that zooms). Applies any turn or resize.
 
 ```csharp
 private void DrawViewControl(Vector2 regionMin, Vector2 regionSize)
@@ -797,9 +861,10 @@ Size of the drawing region, in pixels.
 #### Remarks
 
 <p>
-ImGuizmo is handed the current orientation and size as one model matrix each frame ([Build](Cube.Core.GizmoModel.md#Cube_Core_GizmoModel_Build))
-and turns or scales it while a handle is dragged. Local mode puts the rings around, and the scale handles along,
-the cube's own axes, so the colours match them and a handle always changes the matching extent. A changed
+They are separate (#97) because the scale handles used to end on the rotation rings, so grabbing a handle's end
+often started a rotation. Each is handed the current orientation and size as a model matrix each frame
+([Build](Cube.Core.GizmoModel.md#Cube_Core_GizmoModel_Build)) by [DrawGizmo](Cube.CubeWindow.md#Cube_CubeWindow_DrawGizmo). Local mode puts the rings around, and the scale
+handles along, the cube's own axes, so the colours match them and a handle always changes the matching extent. A changed
 matrix is read back with [Read](Cube.Core.GizmoModel.md#Cube_Core_GizmoModel_Read), which keeps the turn and the resize apart; the
 projection picks a new view up through the settings revision, so it is only rebuilt when the view really
 changes. The camera and the player never feed into this (PROJECT.md: only the control turns the view).

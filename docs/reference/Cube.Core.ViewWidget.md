@@ -3,8 +3,8 @@
 Namespace: [Cube.Core](Cube.Core.md)  
 Assembly: Cube.Core.dll  
 
-Where the view control goes and how big it is (PROJECT.md, "View orientation control": a small control in a corner
-of the window). Kept in Core so the placement rules are unit tested.
+Where the view controls go and how big they are (PROJECT.md, "View orientation control": a rotate gizmo in a corner
+of the window, with a resize gizmo of the same size beside it). Kept in Core so the placement rules are unit tested.
 
 ```csharp
 public static class ViewWidget
@@ -92,6 +92,37 @@ The control's side length (from [Size](Cube.Core.ViewWidget.md#Cube_Core_ViewWid
 
  [Vector2](https://learn.microsoft.com/dotnet/api/system.numerics.vector2)
 
+### <a id="Cube_Core_ViewWidget_ResizePosition_System_Numerics_Vector2_System_Numerics_Vector2_Cube_Core_WidgetCorner_System_Single_"></a> ResizePosition\(Vector2, Vector2, WidgetCorner, float\)
+
+Top-left of the resize gizmo's square: the same size as the rotate square, next to it along the window's top or
+bottom edge and inward from the chosen corner (#97), so the two never overlap.
+
+```csharp
+public static Vector2 ResizePosition(Vector2 regionMin, Vector2 regionSize, WidgetCorner corner, float size)
+```
+
+#### Parameters
+
+`regionMin` [Vector2](https://learn.microsoft.com/dotnet/api/system.numerics.vector2)
+
+Top-left of the drawing region, in pixels.
+
+`regionSize` [Vector2](https://learn.microsoft.com/dotnet/api/system.numerics.vector2)
+
+Size of the drawing region, in pixels.
+
+`corner` [WidgetCorner](Cube.Core.WidgetCorner.md)
+
+The chosen corner, which the rotate gizmo occupies.
+
+`size` [float](https://learn.microsoft.com/dotnet/api/system.single)
+
+The control's side length (from [Size](Cube.Core.ViewWidget.md#Cube_Core_ViewWidget_Size)).
+
+#### Returns
+
+ [Vector2](https://learn.microsoft.com/dotnet/api/system.numerics.vector2)
+
 ### <a id="Cube_Core_ViewWidget_Size_System_Numerics_Vector2_"></a> Size\(Vector2\)
 
 The control's side length for a drawing region.
@@ -109,3 +140,8 @@ The drawing region's size, in pixels.
 #### Returns
 
  [float](https://learn.microsoft.com/dotnet/api/system.single)
+
+#### Remarks
+
+Two squares sit side by side (#97), so the size is also capped at half the region's width: in a very narrow
+window both shrink rather than overlap, even below [MinSize](Cube.Core.ViewWidget.md#Cube_Core_ViewWidget_MinSize).
