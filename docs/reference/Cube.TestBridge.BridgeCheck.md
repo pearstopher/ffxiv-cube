@@ -32,6 +32,7 @@ internal abstract class BridgeCheck
 [PlayersMatchObjectTableCheck](Cube.TestBridge.Checks.PlayersMatchObjectTableCheck.md), 
 [SettingsCheck](Cube.TestBridge.Checks.SettingsCheck.md), 
 [SettingsWindowCheck](Cube.TestBridge.Checks.SettingsWindowCheck.md), 
+[SoakCheck](Cube.TestBridge.Checks.SoakCheck.md), 
 [WindowOpenCloseCheck](Cube.TestBridge.Checks.WindowOpenCloseCheck.md)
 
 
@@ -48,6 +49,19 @@ public abstract string Name { get; }
 #### Property Value
 
  [string](https://learn.microsoft.com/dotnet/api/system.string)
+
+### <a id="Cube_TestBridge_BridgeCheck_SoakOnly"></a> SoakOnly
+
+Whether the check runs only in soak runs (requested with <code>ingame_test.py --soak</code>) instead of every run.
+For checks that take minutes.
+
+```csharp
+public virtual bool SoakOnly { get; }
+```
+
+#### Property Value
+
+ [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
 ### <a id="Cube_TestBridge_BridgeCheck_Timeout"></a> Timeout
 

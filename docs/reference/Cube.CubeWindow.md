@@ -76,10 +76,11 @@ private static readonly float Elevation
 
 ### <a id="Cube_CubeWindow_NameSlots"></a> NameSlots
 
-Name cache slots: the 200 character slots, plus room for the Debug-only fake players above them (#16).
+Name cache slots: the 200 character slots, plus room above them for a full crowd of Debug-only fake players
+(#16, #23), so checks can measure at the player cap.
 
 ```csharp
-internal const int NameSlots = 256
+internal const int NameSlots = 300
 ```
 
 #### Field Value
@@ -357,6 +358,31 @@ internal static float LineThickness { get; }
 #### Property Value
 
  [float](https://learn.microsoft.com/dotnet/api/system.single)
+
+### <a id="Cube_CubeWindow_NameBuildBytes"></a> NameBuildBytes
+
+Bytes allocated in [NameBuildFrames](Cube.CubeWindow.md#Cube_CubeWindow_NameBuildFrames). Debug builds only.
+
+```csharp
+internal long NameBuildBytes { get; private set; }
+```
+
+#### Property Value
+
+ [long](https://learn.microsoft.com/dotnet/api/system.int64)
+
+### <a id="Cube_CubeWindow_NameBuildFrames"></a> NameBuildFrames
+
+Frames in which a player's name string was built (someone new came into view). Their allocations are the
+cached label strings, so they're counted here rather than in [DrawCost](Cube.CubeWindow.md#Cube_CubeWindow_DrawCost). Debug builds only.
+
+```csharp
+internal long NameBuildFrames { get; private set; }
+```
+
+#### Property Value
+
+ [long](https://learn.microsoft.com/dotnet/api/system.int64)
 
 ### <a id="Cube_CubeWindow_Palette"></a> Palette
 

@@ -143,6 +143,31 @@ public int FramesWithAllocations { get; }
 
  [int](https://learn.microsoft.com/dotnet/api/system.int32)
 
+### <a id="Cube_Core_DrawCostSampler_LifetimeAllocatedBytes"></a> LifetimeAllocatedBytes
+
+Bytes allocated over every frame ever recorded, never reset. A soak check compares it before and after
+minutes of drawing, longer than the held frames cover.
+
+```csharp
+public long LifetimeAllocatedBytes { get; private set; }
+```
+
+#### Property Value
+
+ [long](https://learn.microsoft.com/dotnet/api/system.int64)
+
+### <a id="Cube_Core_DrawCostSampler_LifetimeTicks"></a> LifetimeTicks
+
+Clock ticks spent over every frame ever recorded, never reset.
+
+```csharp
+public long LifetimeTicks { get; private set; }
+```
+
+#### Property Value
+
+ [long](https://learn.microsoft.com/dotnet/api/system.int64)
+
 ### <a id="Cube_Core_DrawCostSampler_MaxMilliseconds"></a> MaxMilliseconds
 
 The slowest held frame, in milliseconds; 0 when empty.
@@ -211,17 +236,17 @@ public void Reset()
 
 ### <a id="Cube_Core_DrawCostSampler_ToMilliseconds_System_Int64_"></a> ToMilliseconds\(long\)
 
-Converts clock ticks to milliseconds.
+Converts a tick count from this sampler's clock to milliseconds.
 
 ```csharp
-private double ToMilliseconds(long value)
+public double ToMilliseconds(long value)
 ```
 
 #### Parameters
 
 `value` [long](https://learn.microsoft.com/dotnet/api/system.int64)
 
-A tick count.
+A tick count, e.g. a difference of [LifetimeTicks](Cube.Core.DrawCostSampler.md#Cube_Core_DrawCostSampler_LifetimeTicks).
 
 #### Returns
 

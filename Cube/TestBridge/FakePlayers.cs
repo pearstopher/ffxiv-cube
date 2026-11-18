@@ -61,6 +61,25 @@ internal sealed class FakePlayers
         }
     }
 
+    /// <summary>
+    /// Enables a crowd of fakes inside the cube, replacing any: by default <see cref="Game.PlayerReader.MaxPlayers"/>,
+    /// the most players the game can have around, so the efficiency checks measure the worst case (#23).
+    /// </summary>
+    /// <remarks>
+    /// Spread on a 5×4×5 grid through the cube, alternating party and other, each with a 21-character name (about
+    /// the longest the game allows), so every one gets a cube and a full-length label.
+    /// </remarks>
+    /// <param name="count">How many fakes, at most <see cref="Game.PlayerReader.MaxPlayers"/>.</param>
+    public void UseCrowd(int count = Game.PlayerReader.MaxPlayers)
+    {
+        this.Clear();
+        for (var i = 0; i < count; i++)
+        {
+            var offset = new Vector3(((i % 5) * 0.45f) - 0.9f, (((i / 5) % 4) * 0.5f) - 0.75f, ((i / 20 % 5) * 0.45f) - 0.9f);
+            this.Add($"Fake Crowd Member {i:000}", offset, i % 2 == 0 ? PlayerRelation.Other : PlayerRelation.Party);
+        }
+    }
+
     /// <summary>Adds one fake.</summary>
     /// <param name="name">Its label.</param>
     /// <param name="offset">Position as fractions of the half-edge from the cube centre (1 = on a face).</param>

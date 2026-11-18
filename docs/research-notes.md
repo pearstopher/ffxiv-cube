@@ -92,3 +92,26 @@ Dalamud already hides plugin windows during cutscenes, GPose and when the user h
 ### Read-only and within the rules
 
 Everything above is a memory read on the framework thread: no hooks, no signatures of our own, no game functions called, nothing sent. Nearby players' positions and names are what the client already shows in game (and what Mappy and MiniMappingway draw on maps). Names are only drawn on screen (PROJECT.md, "Privacy"); the probe logs counts and the local player's position, never names.
+
+## Efficiency pass (#23)
+
+Measured 2026-11-17 in game, Debug build, with the bridge (`draw-within-budget`, `soak-ten-minutes-at-the-cap`).
+
+### Worst case: the player cap
+
+- The game can have at most **100 players** around: one per even character slot (`PlayerReader.MaxPlayers`). The bridge's `FakePlayers.UseCrowd` fills the cube with 100 fakes (plus the real local player), every one with a cube and a 21-character label, about the longest name the game allows.
+- At the cap: **101 players, 416 primitives, 0.23 ms average per frame, 0 bytes allocated** (120 measured frames after warm-up). The budget is 0.5 ms and 0 bytes. With the 7 standard fakes the same path costs about 0.04 ms, so the cost is roughly linear in players, and most of it is ImGui work for the labels and faces, which the spec requires.
+- `draw-within-budget` now always measures at the cap, so a regression in the worst case fails every run.
+
+### Soak: ten minutes at the cap
+
+- **Result:** 28,835 frames over 10 minutes with 101 players: **0 bytes allocated** by the draw path, **0.216 ms** average, 0 name strings built after warm-up. Over the same 10 minutes the whole process's managed heap went from 1,704 MB to 1,729 MB with 724 gen-0 collections: that's Dalamud and the other plugins (see below).
+
+- Run it with `python scripts/ingame_test.py --soak` (about 11 minutes). Soak-only checks run only for a request id starting `soak-`; normal runs skip them.
+- **What "flat" means here.** The process's managed heap (`GC.GetTotalMemory`) is shared with Dalamud and every other plugin, so it is recorded (`heapStartBytes`, `heapEndBytes`, `gen0Collections`) but not judged. The plugin's own share can't grow: every buffer (draw list, player set, name cache, samplers) is allocated once at load with a fixed size, and the soak proves the draw path allocates nothing per frame.
+- **Name strings.** A real player walking into view has their name string built once (PROJECT.md: labels are rebuilt only when a name changes). Those frames are counted separately (`CubeWindow.NameBuildFrames`) rather than against the zero-byte budget, in both `draw-within-budget` and the soak.
+
+### Waste found and removed
+
+- Nothing allocating was left in the draw path; the earlier issues had already removed it and the checks had held it at 0 bytes. This pass added the measurements that prove it at the worst case and over time.
+- Release builds now size the name cache for the 200 real character slots only; the extra 100 slots for fake players exist in Debug builds only.

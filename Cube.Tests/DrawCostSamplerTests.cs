@@ -78,6 +78,23 @@ public class DrawCostSamplerTests
     }
 
     [Fact]
+    public void Lifetime_totals_cover_every_frame_even_after_wrapping_and_reset()
+    {
+        // A soak runs far longer than the held frames; its totals must still count every frame.
+        var sampler = new DrawCostSampler(2, 1000);
+        sampler.Record(1, 8);
+        sampler.Record(2, 0);
+        sampler.Reset();
+        sampler.Record(3, 16);
+        sampler.Record(4, 0);
+        sampler.Record(5, 0);
+
+        Assert.Equal(24, sampler.LifetimeAllocatedBytes);
+        Assert.Equal(15, sampler.LifetimeTicks);
+        Assert.Equal(15.0, sampler.ToMilliseconds(sampler.LifetimeTicks), 6);
+    }
+
+    [Fact]
     public void Recording_and_reading_do_not_allocate()
     {
         var sampler = new DrawCostSampler(120, 1000);

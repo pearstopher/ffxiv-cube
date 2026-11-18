@@ -19,7 +19,10 @@ last loaded (issue #22).
 With --snapshot, the frame the bridge dumped (drawlist.json) is rendered to snapshots/snapshot.png with the dev-only
 Cube.Snapshot tool, so the drawing can be looked at. snapshots/ is git-ignored.
 
-Usage: python scripts/ingame_test.py [--no-build] [--timeout SECONDS] [--snapshot]
+With --soak, once the normal checks pass, the bridge is asked for a soak run: ten minutes of drawing a full crowd of
+fake players, checking nothing is allocated and nothing grows (#23). Takes about 11 minutes.
+
+Usage: python scripts/ingame_test.py [--no-build] [--timeout SECONDS] [--snapshot] [--soak]
 """
 import argparse
 import datetime
@@ -42,6 +45,11 @@ DRAWLIST = BRIDGE / "drawlist.json"
 SNAPSHOT = ROOT / "snapshots" / "snapshot.png"
 
 PASSED, FAILED, UNREACHABLE, BUILD_FAILED = 0, 1, 2, 3
+
+# A request id with this prefix makes the bridge run only its soak checks (BridgeRunner.SoakRequestPrefix).
+SOAK_PREFIX = "soak-"
+SOAK_MINUTES = 10
+SOAK_TIMEOUT = (SOAK_MINUTES + 5) * 60
 
 
 def build_stamp(mtime: float) -> str:
@@ -137,6 +145,7 @@ def main() -> int:
     parser.add_argument("--no-build", action="store_true", help="skip dotnet build; just ask the bridge to run")
     parser.add_argument("--timeout", type=float, default=180, help="seconds to wait for results (default 180)")
     parser.add_argument("--snapshot", action="store_true", help="also render the dumped frame to snapshots/snapshot.png")
+    parser.add_argument("--soak", action="store_true", help=f"after the normal checks pass, run the {SOAK_MINUTES}-minute soak")
     args = parser.parse_args()
 
     before = DLL.stat().st_mtime if DLL.exists() else None
@@ -160,27 +169,54 @@ def main() -> int:
     else:
         print(f"Waiting up to {args.timeout:.0f} s for the game to reload build {stamp}...", flush=True)
 
-    deadline = time.monotonic() + args.timeout
+    results = wait_for_results(stamp, request_id, args.timeout)
+    if results is None:
+        return unreachable(stamp, args.timeout)
+
+    print("\n".join(summary(results)))
+    print(f"Results: {RESULTS}")
+    code = exit_code(results)
+    errors = reload_errors(read_log_tail() or "")
+    if errors:
+        print("FAIL  dalamud.log shows errors from the last unload or since the last load:")
+        print("\n".join(f"  {line}" for line in errors[:10]))
+        code = FAILED
+    if args.snapshot and not render_snapshot():
+        code = FAILED
+    if args.soak and code == PASSED:
+        code = run_soak(stamp)
+    return code
+
+
+def wait_for_results(stamp: str, request_id: str | None, timeout: float) -> dict | None:
+    """Polls results.json until results for this build (and request) appear, or the timeout passes."""
+    deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
         results = read_results()
         if results is not None and is_fresh(results, stamp, request_id):
-            print("\n".join(summary(results)))
-            print(f"Results: {RESULTS}")
-            code = exit_code(results)
-            errors = reload_errors(read_log_tail() or "")
-            if errors:
-                print("FAIL  dalamud.log shows errors from the last unload or since the last load:")
-                print("\n".join(f"  {line}" for line in errors[:10]))
-                code = FAILED
-            if args.snapshot and not render_snapshot():
-                code = FAILED
-            return code
+            return results
         time.sleep(1)
+    return None
 
-    print(f"Game unreachable: no results for build {stamp} within {args.timeout:.0f} s.")
+
+def unreachable(stamp: str, timeout: float) -> int:
+    """Reports that no results came, with the plugin's last load line as a hint."""
+    print(f"Game unreachable: no results for build {stamp} within {timeout:.0f} s.")
     line = last_plugin_log_line()
     print(f"Last plugin line in dalamud.log: {line}" if line else "dalamud.log has no 'Cube loaded' line: the dev plugin isn't set up or enabled.")
     return UNREACHABLE
+
+
+def run_soak(stamp: str) -> int:
+    """Asks the bridge for a soak run (only the long soak-only checks) after the normal run passed (#23)."""
+    request_id = SOAK_PREFIX + uuid.uuid4().hex
+    REQUEST.write_text(request_id, encoding="utf-8")
+    print(f"Soak requested ({SOAK_MINUTES} min of drawing); waiting up to {SOAK_TIMEOUT // 60} min...", flush=True)
+    results = wait_for_results(stamp, request_id, SOAK_TIMEOUT)
+    if results is None:
+        return unreachable(stamp, SOAK_TIMEOUT)
+    print("\n".join(summary(results)))
+    return exit_code(results)
 
 
 if __name__ == "__main__":

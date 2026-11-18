@@ -48,6 +48,19 @@ public sealed class DrawCostSampler
     /// </summary>
     public long TotalRecorded { get; private set; }
 
+    /// <summary>
+    /// Bytes allocated over every frame ever recorded, never reset. A soak check compares it before and after
+    /// minutes of drawing, longer than the held frames cover.
+    /// </summary>
+    public long LifetimeAllocatedBytes { get; private set; }
+
+    /// <summary>Clock ticks spent over every frame ever recorded, never reset.</summary>
+    public long LifetimeTicks { get; private set; }
+
+    /// <summary>Converts a tick count from this sampler's clock to milliseconds.</summary>
+    /// <param name="value">A tick count, e.g. a difference of <see cref="LifetimeTicks"/>.</param>
+    public double ToMilliseconds(long value) => value * 1000.0 / this.ticksPerSecond;
+
     /// <summary>Average time per held frame, in milliseconds; 0 when empty.</summary>
     public double AverageMilliseconds
     {
@@ -126,6 +139,8 @@ public sealed class DrawCostSampler
         this.next = (this.next + 1) % this.ticks.Length;
         this.Count = Math.Min(this.Count + 1, this.ticks.Length);
         this.TotalRecorded++;
+        this.LifetimeAllocatedBytes += allocatedBytes;
+        this.LifetimeTicks += elapsedTicks;
     }
 
     /// <summary>
@@ -137,8 +152,4 @@ public sealed class DrawCostSampler
         this.Count = 0;
         this.next = 0;
     }
-
-    /// <summary>Converts clock ticks to milliseconds.</summary>
-    /// <param name="value">A tick count.</param>
-    private double ToMilliseconds(long value) => value * 1000.0 / this.ticksPerSecond;
 }

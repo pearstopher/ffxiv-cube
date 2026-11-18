@@ -20,7 +20,8 @@ internal sealed class DrawBudgetCheck : BridgeCheck
 
 ## Remarks
 
-Opens the window, lets it warm up (first-use caches, JIT) and then measures
+Opens the window with [UseCrowd](Cube.TestBridge.FakePlayers.md#Cube_TestBridge_FakePlayers_UseCrowd) (the most players the game can have around, each with a
+cube and a full-length label), lets it warm up (first-use caches, JIT, name strings) and then measures
 [FramesToMeasure](Cube.TestBridge.Checks.DrawBudgetCheck.md#Cube_TestBridge_Checks_DrawBudgetCheck_FramesToMeasure) frames with the window's [DrawCostSampler](Cube.Core.DrawCostSampler.md#Cube_Core_DrawCostSampler).
 
 ## Fields
