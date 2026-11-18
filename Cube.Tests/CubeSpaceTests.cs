@@ -5,7 +5,7 @@ namespace Cube.Tests;
 
 /// <summary>
 /// Checks the cube of space (PROJECT.md, "Exact behaviour rules": Cube, Players, Culling): centred on the player, a box
-/// whose width, height and depth are each 10–100 yalms (default 40), inside meaning inside on each axis separately,
+/// whose width, height and depth are each 1–100 yalms (default 40), inside meaning inside on each axis separately,
 /// aligned by its yaw (Camera mode: front face where the camera looks; North up: east right,
 /// north forward); containment uses the aligned cube, so things enter and leave at the sides as the camera turns, and
 /// is inclusive on faces; players outside are not shown at all. Also the zero-allocation rule ("Efficiency and
@@ -19,12 +19,13 @@ public class CubeSpaceTests
 
     [Theory]
     [InlineData(40, 40)]
-    [InlineData(5, 10)]
+    [InlineData(0.2f, 1)]
+    [InlineData(5, 5)]
     [InlineData(10, 10)]
     [InlineData(100, 100)]
     [InlineData(250, 100)]
     [InlineData(float.NaN, 40)]
-    public void Edge_is_clamped_to_10_to_100_yalms(float requested, float expected)
+    public void Edge_is_clamped_to_1_to_100_yalms(float requested, float expected)
     {
         Assert.Equal(new Vector3(expected), NorthUp(requested).Size);
     }
@@ -32,10 +33,10 @@ public class CubeSpaceTests
     [Fact]
     public void Each_extent_is_clamped_separately()
     {
-        var space = new CubeSpace(Player, new Vector3(5, 60, 250), 0);
+        var space = new CubeSpace(Player, new Vector3(0.5f, 60, 250), 0);
 
-        Assert.Equal(new Vector3(10, 60, 100), space.Size);
-        Assert.Equal(new Vector3(5, 30, 50), space.Half);
+        Assert.Equal(new Vector3(1, 60, 100), space.Size);
+        Assert.Equal(new Vector3(0.5f, 30, 50), space.Half);
     }
 
     [Fact]

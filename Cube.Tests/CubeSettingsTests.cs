@@ -6,7 +6,7 @@ namespace Cube.Tests;
 
 /// <summary>
 /// Checks the settings' defaults and repair rules (PROJECT.md, "Features": settings for cube size, orientation mode,
-/// labels on/off, colours and opacity; "NPCs": on by default, purple; "Cube": width, height and depth each 10–100, default 40, zoom keeping their ratios, old single-edge files migrating (#90); "View": Camera
+/// labels on/off, colours and opacity; "NPCs": on by default, purple; "Cube": width, height and depth each 1–100, default 40, zoom keeping their ratios, old single-edge files migrating (#90); "View": Camera
 /// mode by default; #32: collision on, full detail by default; saved files from older versions still load) and the
 /// <c>/cube config</c> command.
 /// </summary>
@@ -111,11 +111,12 @@ public class CubeSettingsTests
     }
 
     [Theory]
-    [InlineData(5f, 10f)]
+    [InlineData(0.2f, 1f)]
+    [InlineData(5f, 5f)]
     [InlineData(500f, 100f)]
     [InlineData(float.NaN, 40f)]
     [InlineData(65f, 65f)]
-    public void Cube_size_is_kept_within_10_to_100(float stored, float expected)
+    public void Cube_size_is_kept_within_1_to_100(float stored, float expected)
     {
         var settings = new CubeSettings { CubeSize = new Vector3(stored, 50, stored) };
 
@@ -199,9 +200,9 @@ public class CubeSettingsTests
     {
         var settings = new CubeSettings();
 
-        settings.SetSize(new Vector3(2, 55, 300));
+        settings.SetSize(new Vector3(0.5f, 55, 300));
 
-        Assert.Equal(new Vector3(10, 55, 100), settings.CubeSize);
+        Assert.Equal(new Vector3(1, 55, 100), settings.CubeSize);
     }
 
     [Theory]

@@ -4,7 +4,7 @@ Namespace: [Cube.Tests](Cube.Tests.md)
 Assembly: Cube.Tests.dll  
 
 Checks the settings' defaults and repair rules (PROJECT.md, "Features": settings for cube size, orientation mode,
-labels on/off, colours and opacity; "NPCs": on by default, purple; "Cube": width, height and depth each 10–100, default 40, zoom keeping their ratios, old single-edge files migrating (#90); "View": Camera
+labels on/off, colours and opacity; "NPCs": on by default, purple; "Cube": width, height and depth each 1–100, default 40, zoom keeping their ratios, old single-edge files migrating (#90); "View": Camera
 mode by default; #32: collision on, full detail by default; saved files from older versions still load) and the
 <code>/cube config</code> command.
 
@@ -108,15 +108,16 @@ public void Cube_config_opens_settings_and_anything_else_toggles_the_cube(string
 
 `isConfig` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-### <a id="Cube_Tests_CubeSettingsTests_Cube_size_is_kept_within_10_to_100_System_Single_System_Single_"></a> Cube\_size\_is\_kept\_within\_10\_to\_100\(float, float\)
+### <a id="Cube_Tests_CubeSettingsTests_Cube_size_is_kept_within_1_to_100_System_Single_System_Single_"></a> Cube\_size\_is\_kept\_within\_1\_to\_100\(float, float\)
 
 ```csharp
 [Theory]
-[InlineData(new object[] { 5, 10 })]
+[InlineData(new object[] { 0.2, 1 })]
+[InlineData(new object[] { 5, 5 })]
 [InlineData(new object[] { 500, 100 })]
 [InlineData(new object[] { NaN, 40 })]
 [InlineData(new object[] { 65, 65 })]
-public void Cube_size_is_kept_within_10_to_100(float stored, float expected)
+public void Cube_size_is_kept_within_1_to_100(float stored, float expected)
 ```
 
 #### Parameters

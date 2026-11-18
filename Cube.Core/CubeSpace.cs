@@ -5,7 +5,7 @@ namespace Cube.Core;
 /// <summary>
 /// The cube of space around the local player (PROJECT.md, "Exact behaviour rules", Cube): centred on the player
 /// horizontally, and vertically too unless "Player height in cube" (#91, <see cref="PlayerHeight"/>) moves them up or down,
-/// a box with a width, height and depth of 10–100 yalms each (default 40, see <see cref="BoxExtents"/>), turned about
+/// a box with a width, height and depth of 1–100 yalms each (default 40, see <see cref="BoxExtents"/>), turned about
 /// the vertical axis by its alignment <see cref="Yaw"/>. Answers "is this point inside?" and turns world positions into
 /// cube-local view coordinates.
 /// </summary>

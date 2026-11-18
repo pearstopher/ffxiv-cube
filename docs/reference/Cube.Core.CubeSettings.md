@@ -71,7 +71,7 @@ public float CubeEdge
 
 ### <a id="Cube_Core_CubeSettings_CubeSize"></a> CubeSize
 
-The cube's width (X), height (Y) and depth (Z) in yalms (PROJECT.md, "Cube": each 10–100, default 40; #90).
+The cube's width (X), height (Y) and depth (Z) in yalms (PROJECT.md, "Cube": each 1–100, default 40; #90).
 Change it with [SetSize](Cube.Core.CubeSettings.md#Cube_Core_CubeSettings_SetSize) (zoom: [Zoom](Cube.Core.BoxExtents.md#Cube_Core_BoxExtents_Zoom) or [ZoomSlider](Cube.Core.ZoomSlider.md#Cube_Core_ZoomSlider)), or bind a
 slider to a component and call
 [Changed](Cube.Core.CubeSettings.md#Cube_Core_CubeSettings_Changed).

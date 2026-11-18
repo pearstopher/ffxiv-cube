@@ -58,11 +58,11 @@ public void Axis_handle_changes_only_its_own_extent_and_not_the_view(int axis)
 
 `axis` [int](https://learn.microsoft.com/dotnet/api/system.int32)
 
-### <a id="Cube_Tests_GizmoModelTests_Axis_handle_is_clamped_to_10_to_100"></a> Axis\_handle\_is\_clamped\_to\_10\_to\_100\(\)
+### <a id="Cube_Tests_GizmoModelTests_Axis_handle_is_clamped_to_1_to_100"></a> Axis\_handle\_is\_clamped\_to\_1\_to\_100\(\)
 
 ```csharp
 [Fact]
-public void Axis_handle_is_clamped_to_10_to_100()
+public void Axis_handle_is_clamped_to_1_to_100()
 ```
 
 ### <a id="Cube_Tests_GizmoModelTests_Centre_handle_zooms_keeping_ratios_even_at_the_limit"></a> Centre\_handle\_zooms\_keeping\_ratios\_even\_at\_the\_limit\(\)

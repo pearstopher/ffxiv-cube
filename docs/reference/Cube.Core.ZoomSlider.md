@@ -79,7 +79,7 @@ public float High { readonly get; private set; }
 
 ### <a id="Cube_Core_ZoomSlider_Low"></a> Low
 
-The slider's lower limit: where the smallest extent would be 10 ([ZoomRange](Cube.Core.BoxExtents.md#Cube_Core_BoxExtents_ZoomRange)).
+The slider's lower limit: where the smallest extent would be 1 ([ZoomRange](Cube.Core.BoxExtents.md#Cube_Core_BoxExtents_ZoomRange)).
 
 ```csharp
 public float Low { readonly get; private set; }
@@ -126,7 +126,7 @@ The slider's new value, the wanted largest extent in yalms.
 
  [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
 
-The new size, clamped so no extent leaves 10–100.
+The new size, clamped so no extent leaves 1–100.
 
 ### <a id="Cube_Core_ZoomSlider_EndDrag"></a> EndDrag\(\)
 

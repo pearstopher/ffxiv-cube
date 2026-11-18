@@ -71,6 +71,18 @@ private static readonly Vector3 TallBox
 
  [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
 
+### <a id="Cube_TestBridge_Checks_BoxSizeCheck_ThinBox"></a> ThinBox
+
+A box whose width is the 1-yalm minimum (PROJECT.md, "Cube", #101).
+
+```csharp
+private static readonly Vector3 ThinBox
+```
+
+#### Field Value
+
+ [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
+
 ### <a id="Cube_TestBridge_Checks_BoxSizeCheck_ZoomedLargest"></a> ZoomedLargest
 
 The zoom slider value set (largest extent): the default cube becomes 32 × 32 × 32, half-width 16.

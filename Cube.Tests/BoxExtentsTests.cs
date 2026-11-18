@@ -4,8 +4,8 @@ using Cube.Core;
 namespace Cube.Tests;
 
 /// <summary>
-/// Checks the box size rules (PROJECT.md, "Cube" and "Zoom", #90): each extent 10–100, default 40; zoom scales all
-/// three together keeping their ratios, clamped so no extent leaves 10–100; zooming in means less space.
+/// Checks the box size rules (PROJECT.md, "Cube" and "Zoom", #90): each extent 1–100, default 40; zoom scales all
+/// three together keeping their ratios, clamped so no extent leaves 1–100; zooming in means less space.
 /// </summary>
 public class BoxExtentsTests
 {
@@ -46,11 +46,11 @@ public class BoxExtentsTests
     }
 
     [Fact]
-    public void Zoom_in_stops_when_the_smallest_extent_reaches_10_and_keeps_the_ratios()
+    public void Zoom_in_stops_when_the_smallest_extent_reaches_1_and_keeps_the_ratios()
     {
-        var zoomed = BoxExtents.Zoom(new Vector3(20, 80, 40), 0.1f);
+        var zoomed = BoxExtents.Zoom(new Vector3(20, 80, 40), 0.01f);
 
-        AssertClose(new Vector3(10, 40, 20), zoomed);
+        AssertClose(new Vector3(1, 4, 2), zoomed);
     }
 
     [Theory]
@@ -70,9 +70,9 @@ public class BoxExtentsTests
     }
 
     [Fact]
-    public void Zoom_at_the_one_to_ten_limit_does_not_throw()
+    public void Zoom_at_the_one_to_hundred_limit_does_not_throw()
     {
-        var size = new Vector3(10, 100, 37.3f);
+        var size = new Vector3(1, 100, 37.3f);
 
         Assert.Equal(size, BoxExtents.Zoom(size, 1.3f));
         Assert.Equal(size, BoxExtents.Zoom(size, 0.7f));

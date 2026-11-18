@@ -4,7 +4,7 @@ Namespace: [Cube.Tests](Cube.Tests.md)
 Assembly: Cube.Tests.dll  
 
 Checks the cube of space (PROJECT.md, "Exact behaviour rules": Cube, Players, Culling): centred on the player, a box
-whose width, height and depth are each 10–100 yalms (default 40), inside meaning inside on each axis separately,
+whose width, height and depth are each 1–100 yalms (default 40), inside meaning inside on each axis separately,
 aligned by its yaw (Camera mode: front face where the camera looks; North up: east right,
 north forward); containment uses the aligned cube, so things enter and leave at the sides as the camera turns, and
 is inclusive on faces; players outside are not shown at all. Also the zero-allocation rule ("Efficiency and
@@ -85,17 +85,18 @@ public void Default_size_is_40_by_40_by_40()
 public void Each_extent_is_clamped_separately()
 ```
 
-### <a id="Cube_Tests_CubeSpaceTests_Edge_is_clamped_to_10_to_100_yalms_System_Single_System_Single_"></a> Edge\_is\_clamped\_to\_10\_to\_100\_yalms\(float, float\)
+### <a id="Cube_Tests_CubeSpaceTests_Edge_is_clamped_to_1_to_100_yalms_System_Single_System_Single_"></a> Edge\_is\_clamped\_to\_1\_to\_100\_yalms\(float, float\)
 
 ```csharp
 [Theory]
 [InlineData(new object[] { 40, 40 })]
-[InlineData(new object[] { 5, 10 })]
+[InlineData(new object[] { 0.2, 1 })]
+[InlineData(new object[] { 5, 5 })]
 [InlineData(new object[] { 10, 10 })]
 [InlineData(new object[] { 100, 100 })]
 [InlineData(new object[] { 250, 100 })]
 [InlineData(new object[] { NaN, 40 })]
-public void Edge_is_clamped_to_10_to_100_yalms(float requested, float expected)
+public void Edge_is_clamped_to_1_to_100_yalms(float requested, float expected)
 ```
 
 #### Parameters

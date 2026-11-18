@@ -11,7 +11,7 @@ Writes a file so that readers only ever see the old or the complete new content,
  [BoxExtents](Cube.Core.BoxExtents.md)
 
 The rules for the cube's size (PROJECT.md, "Exact behaviour rules", Cube; changed 2026-11-18, #90): the cube is a
-box with three extents in yalms, width (x), height (y) and depth (z), each 10–100, default 40. Zoom scales all three
+box with three extents in yalms, width (x), height (y) and depth (z), each 1–100, default 40. Zoom scales all three
 together, keeping their ratios.
 
  [BuildInfo](Cube.Core.BuildInfo.md)
@@ -178,7 +178,7 @@ for the contents reaches outside the cube (PROJECT.md, "Collision (phase 2)": cl
 
 The cube of space around the local player (PROJECT.md, "Exact behaviour rules", Cube): centred on the player
 horizontally, and vertically too unless "Player height in cube" (#91, [PlayerHeight](Cube.Core.PlayerHeight.md#Cube_Core_PlayerHeight)) moves them up or down,
-a box with a width, height and depth of 10–100 yalms each (default 40, see [BoxExtents](Cube.Core.BoxExtents.md#Cube_Core_BoxExtents)), turned about
+a box with a width, height and depth of 1–100 yalms each (default 40, see [BoxExtents](Cube.Core.BoxExtents.md#Cube_Core_BoxExtents)), turned about
 the vertical axis by its alignment [Yaw](Cube.Core.CubeSpace.md#Cube_Core_CubeSpace_Yaw). Answers "is this point inside?" and turns world positions into
 cube-local view coordinates.
 

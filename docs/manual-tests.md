@@ -36,7 +36,7 @@ The bridge checks that set sizes draw in the right proportions, that zooming cha
 Since #97 the resize gizmo is a separate square next to the rotate gizmo (own `Manipulate` call, Scale only), so the handles can't start a rotation.
 
 1. `/cube`: next to the rotate gizmo is a second square with three scale handles (red, green and blue lines with a square end) and a centre handle, lined up with the cube's sides.
-2. Drag the red (x) handle outwards: the cube gets wider (a box), nothing else changes. Drag it inwards: narrower. It stops at 10 and 100 yalms. The window doesn't move during the drag.
+2. Drag the red (x) handle outwards: the cube gets wider (a box), nothing else changes. Drag it inwards: narrower. It stops at 1 and 100 yalms (also drag one width/height/depth slider down to 1: the cube becomes a thin slab and the markers keep their size). The window doesn't move during the drag.
 3. Drag the green (y) handle: only the height changes. Drag the blue (z) handle: only the depth changes.
 4. Turn the view with a ring first (any angle, roll too), then drag each scale handle again: each still changes its own extent (the handle lies along that axis of the box).
 5. Drag the centre handle: the whole box grows or shrinks, keeping its shape; it stops when one side reaches 10 or 100 and keeps its shape there.

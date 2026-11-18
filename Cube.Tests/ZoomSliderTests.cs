@@ -6,7 +6,7 @@ namespace Cube.Tests;
 /// <summary>
 /// Checks the settings window's zoom slider (#94; PROJECT.md, "Zoom" and "Control"): its value is the box's largest
 /// extent; moving it scales all three extents together keeping their ratios; its range stops where the smallest
-/// extent reaches 10 and the largest 100; it stores nothing, so changing an extent moves it; dragging back and forth
+/// extent reaches 1 and the largest 100; it stores nothing, so changing an extent moves it; dragging back and forth
 /// never drifts.
 /// </summary>
 public class ZoomSliderTests
@@ -44,40 +44,41 @@ public class ZoomSliderTests
     }
 
     [Fact]
-    public void Range_stops_where_the_smallest_reaches_10_and_the_largest_100()
+    public void Range_stops_where_the_smallest_reaches_1_and_the_largest_100()
     {
         var slider = default(ZoomSlider);
 
         slider.Update(TallBox);
 
-        Assert.Equal(40f, slider.Low, 3);
+        Assert.Equal(4f, slider.Low, 3);
         Assert.Equal(100f, slider.High);
     }
 
     [Fact]
-    public void A_cube_can_zoom_over_the_whole_10_to_100_range()
+    public void A_cube_can_zoom_over_the_whole_1_to_100_range()
     {
         var slider = default(ZoomSlider);
 
         slider.Update(new Vector3(55));
 
-        Assert.Equal(10f, slider.Low, 3);
+        Assert.Equal(1f, slider.Low, 3);
         Assert.Equal(100f, slider.High);
     }
 
     [Fact]
-    public void A_box_at_the_one_to_ten_limit_cannot_zoom()
+    public void A_box_at_the_one_to_hundred_limit_cannot_zoom()
     {
         var slider = default(ZoomSlider);
 
-        slider.Update(new Vector3(10, 100, 50));
+        slider.Update(new Vector3(1, 100, 50));
 
         Assert.Equal(100f, slider.Low, 3);
         Assert.Equal(100f, slider.High);
     }
 
     [Theory]
-    [InlineData(5f, 10f, 40f, 20f)]
+    [InlineData(5f, 1.25f, 5f, 2.5f)]
+    [InlineData(0.5f, 1f, 4f, 2f)]
     [InlineData(500f, 25f, 100f, 50f)]
     public void Values_past_the_limits_clamp_and_keep_the_ratios(float value, float x, float y, float z)
     {
@@ -143,7 +144,7 @@ public class ZoomSliderTests
         slider.Update(TallBox with { Y = 30 });
 
         Assert.Equal(40f, slider.Value);
-        Assert.Equal(20f, slider.Low, 3);
+        Assert.Equal(2f, slider.Low, 3);
     }
 
     [Fact]

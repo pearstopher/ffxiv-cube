@@ -32,7 +32,7 @@ public class CubeSettings
     public const float MinOpacity = 0.1f;
 
     /// <summary>
-    /// The cube's width (X), height (Y) and depth (Z) in yalms (PROJECT.md, "Cube": each 10–100, default 40; #90).
+    /// The cube's width (X), height (Y) and depth (Z) in yalms (PROJECT.md, "Cube": each 1–100, default 40; #90).
     /// Change it with <see cref="SetSize"/> (zoom: <see cref="BoxExtents.Zoom"/> or <see cref="ZoomSlider"/>), or bind a
     /// slider to a component and call
     /// <see cref="Changed"/>.

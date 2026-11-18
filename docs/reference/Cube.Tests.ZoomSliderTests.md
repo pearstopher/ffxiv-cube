@@ -5,7 +5,7 @@ Assembly: Cube.Tests.dll
 
 Checks the settings window's zoom slider (#94; PROJECT.md, "Zoom" and "Control"): its value is the box's largest
 extent; moving it scales all three extents together keeping their ratios; its range stops where the smallest
-extent reaches 10 and the largest 100; it stores nothing, so changing an extent moves it; dragging back and forth
+extent reaches 1 and the largest 100; it stores nothing, so changing an extent moves it; dragging back and forth
 never drifts.
 
 ```csharp
@@ -32,18 +32,18 @@ private static readonly Vector3 TallBox
 
 ## Methods
 
-### <a id="Cube_Tests_ZoomSliderTests_A_box_at_the_one_to_ten_limit_cannot_zoom"></a> A\_box\_at\_the\_one\_to\_ten\_limit\_cannot\_zoom\(\)
+### <a id="Cube_Tests_ZoomSliderTests_A_box_at_the_one_to_hundred_limit_cannot_zoom"></a> A\_box\_at\_the\_one\_to\_hundred\_limit\_cannot\_zoom\(\)
 
 ```csharp
 [Fact]
-public void A_box_at_the_one_to_ten_limit_cannot_zoom()
+public void A_box_at_the_one_to_hundred_limit_cannot_zoom()
 ```
 
-### <a id="Cube_Tests_ZoomSliderTests_A_cube_can_zoom_over_the_whole_10_to_100_range"></a> A\_cube\_can\_zoom\_over\_the\_whole\_10\_to\_100\_range\(\)
+### <a id="Cube_Tests_ZoomSliderTests_A_cube_can_zoom_over_the_whole_1_to_100_range"></a> A\_cube\_can\_zoom\_over\_the\_whole\_1\_to\_100\_range\(\)
 
 ```csharp
 [Fact]
-public void A_cube_can_zoom_over_the_whole_10_to_100_range()
+public void A_cube_can_zoom_over_the_whole_1_to_100_range()
 ```
 
 ### <a id="Cube_Tests_ZoomSliderTests_A_new_drag_starts_from_the_size_at_that_point"></a> A\_new\_drag\_starts\_from\_the\_size\_at\_that\_point\(\)
@@ -100,11 +100,11 @@ public void Dragging_back_and_forth_returns_exactly_to_the_start()
 public void Dragging_keeps_the_ratios()
 ```
 
-### <a id="Cube_Tests_ZoomSliderTests_Range_stops_where_the_smallest_reaches_10_and_the_largest_100"></a> Range\_stops\_where\_the\_smallest\_reaches\_10\_and\_the\_largest\_100\(\)
+### <a id="Cube_Tests_ZoomSliderTests_Range_stops_where_the_smallest_reaches_1_and_the_largest_100"></a> Range\_stops\_where\_the\_smallest\_reaches\_1\_and\_the\_largest\_100\(\)
 
 ```csharp
 [Fact]
-public void Range_stops_where_the_smallest_reaches_10_and_the_largest_100()
+public void Range_stops_where_the_smallest_reaches_1_and_the_largest_100()
 ```
 
 ### <a id="Cube_Tests_ZoomSliderTests_Slider_to_extents_to_slider_round_trips"></a> Slider\_to\_extents\_to\_slider\_round\_trips\(\)
@@ -132,7 +132,8 @@ public void Updating_and_dragging_do_not_allocate()
 
 ```csharp
 [Theory]
-[InlineData(new object[] { 5, 10, 40, 20 })]
+[InlineData(new object[] { 5, 1.25, 5, 2.5 })]
+[InlineData(new object[] { 0.5, 1, 4, 2 })]
 [InlineData(new object[] { 500, 25, 100, 50 })]
 public void Values_past_the_limits_clamp_and_keep_the_ratios(float value, float x, float y, float z)
 ```
