@@ -202,6 +202,41 @@ public class CollisionCacheTests
     }
 
     [Fact]
+    public void Many_zone_changes_reuse_the_same_two_buffers()
+    {
+        // PROJECT.md, "Bounded memory": nothing grows with zone changes; the sets are reused, never replaced (#33).
+        var cache = Cache();
+        var source = new FakeSource(Scene(5), ticksPerCollider: 1);
+        cache.Step(ref source, Vector3.Zero, Edge, Zone, Stamp);
+        var first = cache.Ready;
+        cache.Invalidate();
+        cache.Step(ref source, Vector3.Zero, Edge, Zone, Stamp);
+        var second = cache.Ready;
+
+        for (var i = 1; i <= 50; i++)
+        {
+            Assert.True(cache.Step(ref source, Vector3.Zero, Edge, Zone + (uint)i, Stamp));
+            Assert.True(ReferenceEquals(cache.Ready, first) || ReferenceEquals(cache.Ready, second));
+            Assert.Equal(5, cache.Ready.Count);
+        }
+
+        Assert.NotSame(first, second);
+        Assert.Equal(50, cache.ZoneChanges);
+    }
+
+    [Fact]
+    public void First_zone_is_not_counted_as_a_change()
+    {
+        var cache = Cache();
+        var source = new FakeSource(Scene(5), ticksPerCollider: 1);
+
+        cache.Step(ref source, Vector3.Zero, Edge, Zone, Stamp);
+        cache.Step(ref source, Vector3.Zero, Edge, Zone, Stamp);
+
+        Assert.Equal(0, cache.ZoneChanges);
+    }
+
+    [Fact]
     public void Scene_change_during_a_gather_starts_it_again()
     {
         var cache = Cache(budget: 10);

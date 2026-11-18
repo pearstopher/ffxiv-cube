@@ -212,6 +212,19 @@ public long Restarts { get; private set; }
 
  [long](https://learn.microsoft.com/dotnet/api/system.int64)
 
+### <a id="Cube_Core_CollisionCache_ZoneChanges"></a> ZoneChanges
+
+How many times the zone changed after the first [Step%60%601](Cube.Core.CollisionCache.md#Cube_Core_CollisionCache_Step_60_601), each dropping both sets. The test
+bridge reports it to show memory stays bounded across zone changes (#33).
+
+```csharp
+public long ZoneChanges { get; private set; }
+```
+
+#### Property Value
+
+ [long](https://learn.microsoft.com/dotnet/api/system.int64)
+
 ## Methods
 
 ### <a id="Cube_Core_CollisionCache_Clear"></a> Clear\(\)

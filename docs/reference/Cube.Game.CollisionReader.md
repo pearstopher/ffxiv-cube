@@ -45,6 +45,19 @@ public CollisionCache Cache { get; }
 
  [CollisionCache](Cube.Core.CollisionCache.md)
 
+### <a id="Cube_Game_CollisionReader_SimulatedZone"></a> SimulatedZone
+
+A zone id the test bridge puts in place of the real one, so zone changes can be checked without a human
+teleporting (#33). Null uses the game's zone. The scene itself is still the real one. Debug builds only.
+
+```csharp
+internal uint? SimulatedZone { get; set; }
+```
+
+#### Property Value
+
+ [uint](https://learn.microsoft.com/dotnet/api/system.uint32)?
+
 ## Methods
 
 ### <a id="Cube_Game_CollisionReader_FindScene"></a> FindScene\(\)

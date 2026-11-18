@@ -32,6 +32,14 @@ internal sealed class CollisionReader
     public CollisionCache Cache { get; } = new(
         (long)(CollisionCache.DefaultBudgetMilliseconds * Stopwatch.Frequency / 1000.0));
 
+#if DEBUG
+    /// <summary>
+    /// A zone id the test bridge puts in place of the real one, so zone changes can be checked without a human
+    /// teleporting (#33). Null uses the game's zone. The scene itself is still the real one. Debug builds only.
+    /// </summary>
+    internal uint? SimulatedZone { get; set; }
+#endif
+
     /// <summary>
     /// One frame's collision work: drops the cache on a zone change, and gathers (or continues gathering) when it is
     /// stale. Called from the cube window's draw path only while the cube is shown, so nothing is read while hidden
@@ -47,6 +55,9 @@ internal sealed class CollisionReader
     {
         var main = GameMain.Instance();
         var zone = main == null ? 0u : main->CurrentTerritoryTypeId;
+#if DEBUG
+        zone = this.SimulatedZone ?? zone;
+#endif
         var scene = FindScene();
         if (scene == null)
         {
