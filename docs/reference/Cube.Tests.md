@@ -94,6 +94,13 @@ wireframe; "Efficiency and memory": reused buffers, no per-frame allocations).
 Checks the in-game test bridge is compiled out of Release builds (CLAUDE.md, "Building and testing":
 the bridge and fake-player code must not ship), and is present in Debug builds where the in-game checks need it.
 
+ [ReleaseVersionTests](Cube.Tests.ReleaseVersionTests.md)
+
+Checks the plugin version in <code>Cube/Cube.csproj</code> is releasable (CLAUDE.md, "CI and releases"): it must be
+<code>MAJOR.MINOR.PATCH.0</code> so the release workflow can match it to a <code>vMAJOR.MINOR.PATCH</code> tag, and it must
+never be older than the version <code>repo.json</code> already publishes, or Dalamud would not offer the next release
+as an update.
+
  [SnapshotTests](Cube.Tests.SnapshotTests.md)
 
 Checks the dev-only snapshot renderer (PROJECT.md, "Automated testing": a dev tool turns a dumped draw list
