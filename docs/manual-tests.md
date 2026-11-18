@@ -54,6 +54,17 @@ The bridge checks that the setting changes which players above or below are insi
 4. Change the height slider or zoom while at 25%: you stay a quarter of the way up the box.
 5. Reload the plugin: the slider keeps its value. "Reset to defaults": back to 50%.
 
+## Jump (#105)
+
+The bridge checks everything except the real jump flag (it can't make the character jump): with a simulated flag and a scripted height the cube holds its height, the world stays still, the marker rises, and landing higher snaps the cube. This session tells us which flag the game raises and what the height does. A Debug build logs a `Jump trace:` line per frame while a jump flag is set and for half a second after.
+
+1. `/cube`. Stand still and jump. The walls and everything in the cube stay still; your marker rises and lands. No jump: the cube follows you as before.
+2. Run and jump. The world scrolls sideways as you run (x and z follow) but doesn't bob up and down.
+3. Jump onto a ledge a few yalms higher. On landing the cube jumps to the new height in one frame. Then jump off a ledge down: same.
+4. Walk off a ledge without jumping (and fall, swim, mount): the cube follows you smoothly, no hold.
+5. Set "Player height in cube" to 0% or 100% and jump: your marker reaches the face and stays at it instead of leaving the box.
+6. Report with the usual block, plus the `Jump trace:` lines from `dalamud.log` for each of steps 1-4 (look for which of `Jumping` / `Jumping61` is True, and whether `y` rises while a flag is set, or before or after it).
+
 ## Collision boxes compared with vnavmesh (#31)
 
 The bridge checks the boxes are inside the cube, in the collision colour, and that the floor is painted under the player (`collision-drawn`), and the snapshot shows them. Whether they match the real walls and floors needs eyes on the game, with vnavmesh's collision debug view as the reference (vnavmesh is only a comparison tool, not a dependency).

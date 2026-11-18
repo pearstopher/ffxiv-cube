@@ -86,6 +86,14 @@ Checks the cube is hidden when logged out, during loading screens, cutscenes, GP
 afterwards (PROJECT.md, "When hidden": the window is just empty then, never an error; "Efficiency and memory": no
 work and no allocations while there's nothing to draw).
 
+ [JumpHoldCheck](Cube.TestBridge.Checks.JumpHoldCheck.md)
+
+Checks "Jump" (#105; PROJECT.md, "Exact behaviour rules", Cube): with a simulated jump flag and a scripted height for
+the local player (no game input, so no automation), the cube's height stays at the take-off height, a thing fixed in
+the world doesn't move vertically in the cube or on screen, the player's marker rises and falls, x and z still
+follow, the marker is kept at the top face when the jump leaves the box, and landing on a higher spot snaps the
+cube to the new height in the first frame.
+
  [LabelsCheck](Cube.TestBridge.Checks.LabelsCheck.md)
 
 Checks every other player in the cube gets exactly one name label showing their name, next to their cube and on
@@ -196,6 +204,10 @@ Counts from edge deduplication.
 Counts from reading.
 
  [PlayerHeightCheck.Sample](Cube.TestBridge.Checks.PlayerHeightCheck.Sample.md)
+
+One frame's measurements.
+
+ [JumpHoldCheck.Sample](Cube.TestBridge.Checks.JumpHoldCheck.Sample.md)
 
 One frame's measurements.
 

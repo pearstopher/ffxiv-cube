@@ -211,6 +211,18 @@ private const float WireThickness = 1.5
 
  [float](https://learn.microsoft.com/dotnet/api/system.single)
 
+### <a id="Cube_CubeWindow_anchor"></a> anchor
+
+Holds the cube's height at the take-off height while the player jumps (PROJECT.md, "Jump"; #105).
+
+```csharp
+private readonly CubeAnchor anchor
+```
+
+#### Field Value
+
+ [CubeAnchor](Cube.Core.CubeAnchor.md)
+
 ### <a id="Cube_CubeWindow_dragging"></a> dragging
 
 Whether the user is turning the view or resizing the cube with the control: set when ImGuizmo changes either,
@@ -321,6 +333,18 @@ private float yaw
  [float](https://learn.microsoft.com/dotnet/api/system.single)
 
 ## Properties
+
+### <a id="Cube_CubeWindow_Anchor"></a> Anchor
+
+The cube's current anchor and whether it is held at the take-off height, for the test bridge (#105).
+
+```csharp
+internal CubeAnchor Anchor { get; }
+```
+
+#### Property Value
+
+ [CubeAnchor](Cube.Core.CubeAnchor.md)
 
 ### <a id="Cube_CubeWindow_BuildTicks"></a> BuildTicks
 
@@ -673,6 +697,32 @@ internal Vector3? SimulatedCameraForward { get; set; }
 
  [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)?
 
+### <a id="Cube_CubeWindow_SimulatedJump"></a> SimulatedJump
+
+A fake jump flag the bridge sets so a jump can be tested without any game input (#105); null reads the game's
+flag. Debug builds only.
+
+```csharp
+internal bool? SimulatedJump { get; set; }
+```
+
+#### Property Value
+
+ [bool](https://learn.microsoft.com/dotnet/api/system.boolean)?
+
+### <a id="Cube_CubeWindow_SimulatedPlayerY"></a> SimulatedPlayerY
+
+A scripted height for the local player (their marker and the cube's anchor), set by the bridge to simulate a
+jump's path (#105); null reads the real height. Debug builds only.
+
+```csharp
+internal float? SimulatedPlayerY { get; set; }
+```
+
+#### Property Value
+
+ [float](https://learn.microsoft.com/dotnet/api/system.single)?
+
 ### <a id="Cube_CubeWindow_SimulatedState"></a> SimulatedState
 
 A game state the bridge sets to test hiding without a real cutscene or loading screen; null uses the real
@@ -904,6 +954,25 @@ public override void PreDraw()
 ImGuizmo reads the mouse directly rather than claiming it as an ImGui item, so without this ImGui would treat
 the drag as a drag on empty window space. An invisible button over the control can't be used instead: ImGuizmo
 ignores clicks while another item is active. Uses last frame's position, which is where the mouse went down.
+
+### <a id="Cube_CubeWindow_ReadJumping_System_Single_"></a> ReadJumping\(float\)
+
+Reads the game's jump flag, treating a failed read as "not jumping" so the cube simply follows the player as it
+did before #105. In Debug builds also logs the flags and height around each jump (research for #105).
+
+```csharp
+private bool ReadJumping(float playerY)
+```
+
+#### Parameters
+
+`playerY` [float](https://learn.microsoft.com/dotnet/api/system.single)
+
+The local player's real height this frame.
+
+#### Returns
+
+ [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
 ### <a id="Cube_CubeWindow_SafeDrawContents"></a> SafeDrawContents\(\)
 

@@ -32,6 +32,7 @@ internal abstract class BridgeCheck
 [FrameSnapshotCheck](Cube.TestBridge.Checks.FrameSnapshotCheck.md), 
 [GameStateProbeCheck](Cube.TestBridge.Checks.GameStateProbeCheck.md), 
 [HiddenStatesCheck](Cube.TestBridge.Checks.HiddenStatesCheck.md), 
+[JumpHoldCheck](Cube.TestBridge.Checks.JumpHoldCheck.md), 
 [LabelsCheck](Cube.TestBridge.Checks.LabelsCheck.md), 
 [NoErrorsCaughtCheck](Cube.TestBridge.Checks.NoErrorsCaughtCheck.md), 
 [OrientationCheck](Cube.TestBridge.Checks.OrientationCheck.md), 

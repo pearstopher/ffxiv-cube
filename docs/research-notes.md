@@ -94,6 +94,20 @@ Dalamud already hides plugin windows during cutscenes, GPose and when the user h
 
 Everything above is a memory read on the framework thread: no hooks, no signatures of our own, no game functions called, nothing sent. Nearby players' positions and names are what the client already shows in game (and what Mappy and MiniMappingway draw on maps). Names are only drawn on screen (PROJECT.md, "Privacy"); the probe logs counts and the local player's position, never names.
 
+## Telling the player is jumping (#105)
+
+### Source
+
+`ICondition[ConditionFlag.Jumping]` and `[ConditionFlag.Jumping61]` (both exist in Dalamud's `ConditionFlag`). A jump counts if either is set, as the cutscene and loading flags do above. Both are plain flag reads on the framework thread: read-only, no hooks, nothing sent, nothing automated (the plugin never makes the character jump).
+
+### What is not yet known
+
+Which flag the game raises, whether it is set for the whole airborne time or only the rise, and whether it lags the height by a frame. The plugin copes with a late flag by taking the previous frame's height as the take-off height. A Debug build logs `Jump trace: Jumping=… Jumping61=… y=…` every frame while either flag is set and for 0.5 s after. The owner's manual session (`docs/manual-tests.md`, "Jump") fills this in; **findings pending**: stand-still jump, running jump, jump onto and off a ledge, walking off a ledge.
+
+### Bridge
+
+The bridge can't jump, so it simulates one: `CubeWindow.SimulatedJump` and `SimulatedPlayerY` replace the flag and the player's height. That checks everything the plugin does with the flag, but not the flag itself.
+
 ## Named NPCs in the object table (#73)
 
 Checked 2026-11-17 against FFXIVClientStructs (`GameObjectManager.ObjectArrays`, `GameObject`, `ObjectKind`, `BattleNpcSubKind`, from the dev hooks folder's XML docs), then measured live with the bridge probe `probe-players-party-camera`, which now also watches the whole object table for 4 seconds (`NpcProbe`) and logs a `Probe #73` line with counts only, never names.

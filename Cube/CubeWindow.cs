@@ -89,6 +89,28 @@ internal sealed class CubeWindow : Window
     /// </summary>
     private const ImGuizmoOperation ScaleOperation = ImGuizmoOperation.Scale;
 
+    /// <summary>Holds the cube's height at the take-off height while the player jumps (PROJECT.md, "Jump"; #105).</summary>
+    private readonly CubeAnchor anchor = new();
+
+    /// <summary>
+    /// The cube's current anchor and whether it is held at the take-off height, for the test bridge (#105).
+    /// </summary>
+    internal CubeAnchor Anchor => this.anchor;
+
+#if DEBUG
+    /// <summary>
+    /// A fake jump flag the bridge sets so a jump can be tested without any game input (#105); null reads the game's
+    /// flag. Debug builds only.
+    /// </summary>
+    internal bool? SimulatedJump { get; set; }
+
+    /// <summary>
+    /// A scripted height for the local player (their marker and the cube's anchor), set by the bridge to simulate a
+    /// jump's path (#105); null reads the real height. Debug builds only.
+    /// </summary>
+    internal float? SimulatedPlayerY { get; set; }
+#endif
+
     /// <summary>The cube's current alignment yaw; kept between frames so a vertical camera doesn't spin the contents.</summary>
     private float yaw;
 
@@ -371,6 +393,7 @@ internal sealed class CubeWindow : Window
             // Hidden: an empty window, and nothing else is read or computed (PROJECT.md, "When hidden").
             this.DrawList.Clear();
             this.Players.Begin(this.LastSpace);
+            this.anchor.Reset();
             this.LastSubmitted = 0;
             this.WidgetSize = 0f;
             this.WidgetWidth = 0f;
@@ -388,6 +411,22 @@ internal sealed class CubeWindow : Window
         }
 
         this.ShowLabels = settings.ShowLabels;
+
+        // The cube follows the player, except that while they jump its height is held at the take-off height
+        // (PROJECT.md, "Jump"; #105). The flag read is wrapped so a failure can never reach the game.
+        var jumping = false;
+#if DEBUG
+        if (this.SimulatedPlayerY is { } simulatedY)
+        {
+            centre.Y = simulatedY;
+        }
+
+        jumping = this.SimulatedJump ?? this.ReadJumping(centre.Y);
+#else
+        jumping = this.ReadJumping(centre.Y);
+#endif
+        var localY = centre.Y;
+        centre = this.anchor.Update(centre, jumping);
 
         // The cube's alignment (PROJECT.md, "Cube"): in Camera mode it follows the camera's horizontal direction, so
         // the contents rotate while the wireframe stays still. North up never reads the camera. With no camera (or
@@ -424,7 +463,7 @@ internal sealed class CubeWindow : Window
         var projection = ViewProjection.Fit(regionMin, regionSize, space.Half, this.view);
 
         this.Players.Begin(space, settings.ShowNpcs);
-        PlayerReader.Read(this.Players);
+        PlayerReader.Read(this.Players, localY);
 
 #if DEBUG
         this.Fakes.Offer(this.Players, space);
@@ -462,6 +501,27 @@ internal sealed class CubeWindow : Window
         this.ProbeDraw?.Invoke(ImGui.GetWindowDrawList());
 #endif
         this.DrawViewControl(regionMin, regionSize);
+    }
+
+    /// <summary>
+    /// Reads the game's jump flag, treating a failed read as "not jumping" so the cube simply follows the player as it
+    /// did before #105. In Debug builds also logs the flags and height around each jump (research for #105).
+    /// </summary>
+    /// <param name="playerY">The local player's real height this frame.</param>
+    private bool ReadJumping(float playerY)
+    {
+        try
+        {
+#if DEBUG
+            this.gameState.TraceJump(playerY);
+#endif
+            return this.gameState.IsJumping();
+        }
+        catch (Exception ex)
+        {
+            this.Errors.Report(ex);
+            return false;
+        }
     }
 
     /// <summary>

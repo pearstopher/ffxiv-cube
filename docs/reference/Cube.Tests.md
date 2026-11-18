@@ -81,6 +81,13 @@ level is its own stamp so a change gathers again at once.
 Checks that Core stays free of Dalamud, game structs and Lumina, so all its logic can be unit tested
 without the game (CLAUDE.md, "Reference: the previous plugin" layout rule).
 
+ [CubeAnchorTests](Cube.Tests.CubeAnchorTests.md)
+
+Checks "Jump" (PROJECT.md, "Exact behaviour rules", Cube; #105): while the player jumps the cube's height is held at
+the take-off height and x and z still follow; landing snaps back to the player straight away; anything without the
+jump flag (walking off a ledge, falling) follows as before; the player's own marker is always drawn, kept at the face
+it would cross; and the zero-allocation rule ("Efficiency and memory").
+
  [CubeSettingsTests](Cube.Tests.CubeSettingsTests.md)
 
 Checks the settings' defaults and repair rules (PROJECT.md, "Features": settings for cube size, orientation mode,
