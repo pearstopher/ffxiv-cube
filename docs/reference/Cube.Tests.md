@@ -208,6 +208,13 @@ the camera's direction vector (docs/research-notes.md, #10).
 Checks when the cube is hidden (PROJECT.md, "When hidden": not logged in, during loading screens, cutscenes,
 GPose and in PvP areas; shown otherwise).
 
+ [ZoomSliderTests](Cube.Tests.ZoomSliderTests.md)
+
+Checks the settings window's zoom slider (#94; PROJECT.md, "Zoom" and "Control"): its value is the box's largest
+extent; moving it scales all three extents together keeping their ratios; its range stops where the smallest
+extent reaches 10 and the largest 100; it stores nothing, so changing an extent moves it; dragging back and forth
+never drifts.
+
 ### Structs
 
  [CollisionCacheTests.FakeSource](Cube.Tests.CollisionCacheTests.FakeSource.md)

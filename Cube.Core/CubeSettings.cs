@@ -33,7 +33,8 @@ public class CubeSettings
 
     /// <summary>
     /// The cube's width (X), height (Y) and depth (Z) in yalms (PROJECT.md, "Cube": each 10–100, default 40; #90).
-    /// Change it with <see cref="SetSize"/> or <see cref="Zoom"/>, or bind a slider to a component and call
+    /// Change it with <see cref="SetSize"/> (zoom: <see cref="BoxExtents.Zoom"/> or <see cref="ZoomSlider"/>), or bind a
+    /// slider to a component and call
     /// <see cref="Changed"/>.
     /// </summary>
     public Vector3 CubeSize = BoxExtents.DefaultSize;
@@ -189,17 +190,6 @@ public class CubeSettings
     public void SetSize(Vector3 size)
     {
         this.CubeSize = size;
-        this.Changed();
-    }
-
-    /// <summary>
-    /// Zooms the cube (PROJECT.md, "Zoom": all three extents scale together, keeping their ratios, clamped so none
-    /// leaves 10–100) and marks the settings changed.
-    /// </summary>
-    /// <param name="factor">How much to scale every extent by; below 1 zooms in (less space, contents look bigger).</param>
-    public void Zoom(float factor)
-    {
-        this.CubeSize = BoxExtents.Zoom(this.CubeSize, factor);
         this.Changed();
     }
 

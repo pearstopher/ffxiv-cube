@@ -43,7 +43,7 @@ Type `/cube config` (or use the settings button in `/xlplugins`). Changes show s
 | Setting | What it does | Default |
 | --- | --- | --- |
 | Width / Height / Depth (yalms) | How far the cube reaches around you on each axis, side to side, top to bottom and front to back (10–100 each). Different values make it a box. | 40 / 40 / 40 |
-| Zoom in / Zoom out | Shrinks or grows all three together, keeping the shape. Zooming in shows less space, bigger. | |
+| Zoom (largest side, yalms) | Shrinks or grows all three together, keeping the shape. Shows the longest side; lower shows less space, bigger. | 40 |
 | Reset size | Back to 40 × 40 × 40. | |
 | Player height in cube | Where you sit from bottom to top of the cube. 0% puts you on the floor of the cube, so it shows only what's above you; 100% puts you on the ceiling, so it shows only what's below. | 50% (middle) |
 | Orientation | The cube itself stays still on screen; this decides what happens to what's inside it. **Rotate contents with camera:** forward in the cube is where the game camera looks, so when you turn the camera everything inside turns around you. **Keep contents fixed (north stays put):** north is always the same side of the cube and the camera changes nothing. | Rotate contents with camera |

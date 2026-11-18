@@ -23,8 +23,9 @@ internal sealed class BoxSizeCheck : BridgeCheck
 <p>
 The view is set straight on and level (heading 0, tilt 0) and the cube north up, so the wireframe's height and width
 on screen are exactly the box's height and width at one scale: a 20-wide, 80-tall box must measure four times as
-tall as wide. A fake fixed 18 yalms east of the player is inside the default cube (half-width 20), outside after one
-"Zoom in" step (half-width 16), and inside again after "Reset size".
+tall as wide. A fake fixed 18 yalms east of the player is inside the default cube (half-width 20), outside after
+setting the zoom slider (#94) to 32 through the same [ZoomSlider](Cube.Core.ZoomSlider.md#Cube_Core_ZoomSlider) the settings window uses (half-width
+16), and inside again after "Reset size".
 </p>
 <p>
 Dragging the gizmo's handles needs a real mouse, so it is a manual step in <code>docs/manual-tests.md</code>; the maths
@@ -69,6 +70,18 @@ private static readonly Vector3 TallBox
 #### Field Value
 
  [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
+
+### <a id="Cube_TestBridge_Checks_BoxSizeCheck_ZoomedLargest"></a> ZoomedLargest
+
+The zoom slider value set (largest extent): the default cube becomes 32 × 32 × 32, half-width 16.
+
+```csharp
+private const float ZoomedLargest = 32
+```
+
+#### Field Value
+
+ [float](https://learn.microsoft.com/dotnet/api/system.single)
 
 ### <a id="Cube_TestBridge_Checks_BoxSizeCheck_saved"></a> saved
 

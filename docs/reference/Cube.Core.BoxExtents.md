@@ -67,19 +67,6 @@ public const float Min = 10
 
  [float](https://learn.microsoft.com/dotnet/api/system.single)
 
-### <a id="Cube_Core_BoxExtents_ZoomStep"></a> ZoomStep
-
-How much one press of the settings window's zoom buttons scales the cube: "Zoom out" multiplies every extent by
-it, "Zoom in" divides by it.
-
-```csharp
-public const float ZoomStep = 1.25
-```
-
-#### Field Value
-
- [float](https://learn.microsoft.com/dotnet/api/system.single)
-
 ## Properties
 
 ### <a id="Cube_Core_BoxExtents_DefaultSize"></a> DefaultSize
@@ -150,6 +137,24 @@ A size, already clamped.
 
  [float](https://learn.microsoft.com/dotnet/api/system.single)
 
+### <a id="Cube_Core_BoxExtents_Smallest_System_Numerics_Vector3_"></a> Smallest\(Vector3\)
+
+The smallest of a size's three extents; it decides how far the box can zoom in.
+
+```csharp
+public static float Smallest(Vector3 size)
+```
+
+#### Parameters
+
+`size` [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
+
+A size, already clamped.
+
+#### Returns
+
+ [float](https://learn.microsoft.com/dotnet/api/system.single)
+
 ### <a id="Cube_Core_BoxExtents_Zoom_System_Numerics_Vector3_System_Single_"></a> Zoom\(Vector3, float\)
 
 Zooms a size: multiplies all three extents by the same factor, so the box keeps its proportions (PROJECT.md:
@@ -179,3 +184,51 @@ How much to scale every extent by.
 The factor itself is clamped, not each extent, so no extent leaves 10–100 and the ratios still hold: zooming
 out a 20 × 80 × 40 box by 2 stops at 25 × 100 × 50. A factor that isn't a positive number leaves the size as
 it is.
+
+### <a id="Cube_Core_BoxExtents_ZoomRange_System_Numerics_Vector3_"></a> ZoomRange\(Vector3\)
+
+The zoom slider's limits for a box of this shape (#94): from where the smallest extent hits [Min](Cube.Core.BoxExtents.md#Cube_Core_BoxExtents_Min) to
+where the largest hits [Max](Cube.Core.BoxExtents.md#Cube_Core_BoxExtents_Max), given as the largest extent (the slider's value).
+
+```csharp
+public static (float Low, float High) ZoomRange(Vector3 size)
+```
+
+#### Parameters
+
+`size` [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
+
+The current size; clamped first.
+
+#### Returns
+
+ \([float](https://learn.microsoft.com/dotnet/api/system.single) [Low](https://learn.microsoft.com/dotnet/api/system.valuetuple\-system.single,system.single\-.low), [float](https://learn.microsoft.com/dotnet/api/system.single) [High](https://learn.microsoft.com/dotnet/api/system.valuetuple\-system.single,system.single\-.high)\)
+
+#### Remarks
+
+Only the shape matters, so the range stays the same while zooming. A 10 × 100 box can't zoom at all, and both
+limits are 100.
+
+### <a id="Cube_Core_BoxExtents_ZoomTo_System_Numerics_Vector3_System_Single_"></a> ZoomTo\(Vector3, float\)
+
+Zooms a size so its largest extent becomes <code class="paramref">largest</code>, keeping the ratios: the zoom slider's
+value turned back into extents (#94). Clamped like [Zoom](Cube.Core.BoxExtents.md#Cube_Core_BoxExtents_Zoom), so a value outside
+[ZoomRange](Cube.Core.BoxExtents.md#Cube_Core_BoxExtents_ZoomRange) stops at the limit.
+
+```csharp
+public static Vector3 ZoomTo(Vector3 size, float largest)
+```
+
+#### Parameters
+
+`size` [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
+
+The size to scale; clamped first.
+
+`largest` [float](https://learn.microsoft.com/dotnet/api/system.single)
+
+The wanted largest extent, in yalms.
+
+#### Returns
+
+ [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)

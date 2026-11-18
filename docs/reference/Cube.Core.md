@@ -226,6 +226,12 @@ rotation, roll included. Default: from above and behind, 30° elevation, front f
 Projects view coordinates (from [CubeSpace](Cube.Core.CubeSpace.md#Cube_Core_CubeSpace)) onto the window, as seen from the user's chosen
 [ViewOrientation](Cube.Core.ViewOrientation.md#Cube_Core_ViewOrientation) (PROJECT.md, "View orientation control"; default from above and behind at 30°).
 
+ [ZoomSlider](Cube.Core.ZoomSlider.md)
+
+The settings window's zoom slider (#94; PROJECT.md, "Zoom"): one value, the box's largest extent in yalms, that
+scales width, height and depth together keeping their ratios. It saves nothing of its own: its value always comes
+from the current extents, so moving a width/height/depth slider or a gizmo handle moves it too.
+
 ### Interfaces
 
  [ICollisionSource](Cube.Core.ICollisionSource.md)

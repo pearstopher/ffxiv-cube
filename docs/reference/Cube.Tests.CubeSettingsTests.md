@@ -244,10 +244,3 @@ public void Unknown_collision_detail_falls_back_to_full()
 [Fact]
 public void Unknown_orientation_falls_back_to_camera()
 ```
-
-### <a id="Cube_Tests_CubeSettingsTests_Zoom_scales_every_extent_and_keeps_the_ratios"></a> Zoom\_scales\_every\_extent\_and\_keeps\_the\_ratios\(\)
-
-```csharp
-[Fact]
-public void Zoom_scales_every_extent_and_keeps_the_ratios()
-```
