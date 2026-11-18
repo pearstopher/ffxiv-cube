@@ -52,6 +52,12 @@ Draws the collision around the player as solid boxes in the cube, sorted togethe
 The rules behind each [CollisionDetail](Cube.Core.CollisionDetail.md#Cube_Core_CollisionDetail) level (#32): how deep the game reader walks a mesh's node tree,
 and how a change of level makes the collision cache gather again straight away.
 
+ [CollisionFilter](Cube.Core.CollisionFilter.md)
+
+Decides which of the game's colliders are drawn (PROJECT.md, "Phase 2": collision means "what the player would
+bump into, walk on, or be stopped by"). Colliders that exist only for something else are dropped, because drawing
+them shows walls the player can walk through (#107).
+
  [Colour](Cube.Core.Colour.md)
 
 Packs and shades colours in the 32-bit layout ImGui uses (<code>0xAABBGGRR</code>), without Core depending on ImGui.
@@ -169,6 +175,11 @@ The colours of a box's three visible faces, worked out once per colour per frame
 One collision box clipped to the cube (PROJECT.md, "Collision (phase 2)": each collider is shown as a simplified
 box, clipped to the cube): an upright prism whose footprint is the part of the box's footprint inside the cube's
 turned square, cut to the cube's height.
+
+ [ColliderFields](Cube.Core.ColliderFields.md)
+
+The fields of a game collider that decide whether the player can bump into it, copied out of the game's struct so
+the decision ([Blocks](Cube.Core.CollisionFilter.md#Cube_Core_CollisionFilter_Blocks)) is a pure function that can be unit tested.
 
  [CollisionBox](Cube.Core.CollisionBox.md)
 

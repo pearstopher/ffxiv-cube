@@ -51,18 +51,6 @@ private const int MaxDepth = 64
 
  [int](https://learn.microsoft.com/dotnet/api/system.int32)
 
-### <a id="Cube_Game_CollisionReader_SceneSource_RaycastActive"></a> RaycastActive
-
-The bit of `FFXIVClientStructs.FFXIV.Common.Component.BGCollision.Collider.VisibilityFlags` marking colliders the game's raycasts use (#28).
-
-```csharp
-private const byte RaycastActive = 1
-```
-
-#### Field Value
-
- [byte](https://learn.microsoft.com/dotnet/api/system.byte)
-
 ### <a id="Cube_Game_CollisionReader_SceneSource_current"></a> current
 
 The collider [OfferNext](Cube.Game.CollisionReader.SceneSource.md#Cube_Game_CollisionReader_SceneSource_OfferNext) reads next, or null at the end of the list.
@@ -173,9 +161,9 @@ False if there was no current collider: the walk is complete.
 
 #### Remarks
 
-Colliders the game's raycasts ignore (`FFXIVClientStructs.FFXIV.Common.Component.BGCollision.Collider.VisibilityFlags` bit 1 clear) are skipped: the
-game ignores them too, so the player can't bump into them (#28). Streamed colliders only load and unload
-terrain meshes, which are in the list themselves, so they add no box.
+Colliders the player can't bump into are skipped ([Blocks](Cube.Core.CollisionFilter.md#Cube_Core_CollisionFilter_Blocks): raycast-inactive,
+off the movement layer, or a primitive without the blocking material bit; #28, #107). Streamed colliders
+only load and unload terrain meshes, which are in the list themselves, so they add no box.
 
 ### <a id="Cube_Game_CollisionReader_SceneSource_OfferNode_FFXIVClientStructs_FFXIV_Common_Component_BGCollision_MeshPCB_FileNode__System_Numerics_Matrix4x4__Cube_Core_CollisionBoxSet_System_Int32_System_Int32_"></a> OfferNode\(FileNode\*, in Matrix4x4, CollisionBoxSet, int, int\)
 

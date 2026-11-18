@@ -76,6 +76,11 @@ Checks the collision detail levels (#32, collision detail setting; PROJECT.md, "
 boxes): Full walks the whole node tree, Medium stops a few levels down, Coarse keeps one box per collider, and every
 level is its own stamp so a change gathers again at once.
 
+ [CollisionFilterTests](Cube.Tests.CollisionFilterTests.md)
+
+Checks which colliders are drawn: PROJECT.md, "Phase 2", says collision is "what the player would bump into, walk
+on, or be stopped by", so colliders the player walks through (#107) must be dropped.
+
  [CoreAssemblyTests](Cube.Tests.CoreAssemblyTests.md)
 
 Checks that Core stays free of Dalamud, game structs and Lumina, so all its logic can be unit tested

@@ -350,3 +350,32 @@ The sample has 96,000 triangles, and #28's house interior 15,000. So **real tria
 - **Don't build "all the real triangles" inside PROJECT.md's 0.5 ms and 0 bytes budget.** Nothing allocates, but ImGui submission alone is 66 ns a filled triangle (idle) and 246 ns (turning), and the scene around the player has 15,000–96,000 of them.
 - Options for the owner to choose between (commented on #99 and #100): (1) keep boxes (the current approach); (2) real triangles only nearest the player up to a cap (about 2,000 filled or 4,500 lines, so that a turning view still fits) and boxes beyond; (3) loosen the collision budget, e.g. to about 2 ms for wireframe drawing of 20,000+ edges while idle, which makes the plugin's per-frame cost many times the current one; (4) draw the triangles into a cached texture and show that while idle (not measured here; it would need a render target, which is a new kind of dependency).
 - The probe code stays in the bridge (Debug only) so the numbers can be repeated after any change.
+
+## Phantom boxes (#107)
+
+Some drawn collision boxes sit where the player can walk straight through. The Debug-only `collision-phantoms` check
+(`CollisionPhantomsCheck`) finds them in the running game: for every collider box within 150 yalms of the player
+(primitive colliders, and mesh nodes holding triangles; 4000 boxes at most) it casts the game's own movement raycast
+(`BGCollisionModule.RaycastMaterialFilter`) through the box (3 x 3 straight down, and two heights in from each side)
+and counts a box as a phantom when no ray hits **its own collider** inside it. It logs, in `Phantoms #107` lines,
+the phantom share per group of collider fields, the kinds of collider the rays hit at all, and the nearest phantoms.
+
+Sample (housing area, player at about -696, 25, -713; 4000 boxes):
+
+| Group | Result |
+| --- | --- |
+| Primitive colliders with `ObjectMaterialValue` `2000`, `2004`, `2005`, `2006`, `200A`, `3000`, `3005` (no `0x4000` bit), layer 1, raycast-active | about 160 colliders, **every one** a phantom; no ray ever hit one |
+| Primitive colliders with `4000/1000`, `4005/1000`, `6004`, `6406` (`0x4000` bit) | 0 phantoms; the rays hit all of them |
+| Primitive colliders on layer `A` (bit 0 clear) | all phantoms (the movement raycast is layer 0 only); already dropped by the layer rule |
+| Mesh colliders, material `0` or `7000`, layer 1 | rays hit both kinds (10591 and 6745 hits); not filtered |
+| Mesh node boxes with no own ray hit | about 1000 of 3600, nearly all in material-0 meshes; the 17 rays miss sparse triangles in a large node box, or an object on top of terrain is hit first. This is box coarseness, not filtering (cause 3 in the issue), left to #100 |
+
+Findings:
+
+- The movement layer (`LayerMask` bit 0) was never tested by the reader (#28 only tested it in the probe) and is now.
+  It removes the layer-`A` primitives (about 45 in the sample).
+- The field that separates blocking from non-blocking primitives is `ObjectMaterialValue` bit `0x4000`: every
+  primitive the game's raycast hit had it and none that lacked it was hit. Primitives without it are the invisible
+  trigger and event volumes. Meshes are not filtered on material.
+- Phantom count among kept primitive colliders: about 160 before the fix, 0 after (the check fails if any remain).
+  Mesh node phantoms (about 1000 of 3600 nodes at this spot) are counted separately and remain.

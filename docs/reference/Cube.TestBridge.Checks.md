@@ -28,6 +28,12 @@ Checks collision never reaches outside the cube on screen, at any camera angle, 
 PROJECT.md, "Collision (phase 2)": clipped to the cube; "Cube": in "Rotate contents with camera" the contents turn
 with the camera).
 
+ [CollisionPhantomsCheck](Cube.TestBridge.Checks.CollisionPhantomsCheck.md)
+
+Research and regression check for #107: some collision boxes are drawn where the player can walk straight through.
+PROJECT.md, "Phase 2", says collision means "what the player would bump into, walk on, or be stopped by", so such
+boxes ("phantoms") must not be drawn.
+
  [CollisionProbeCheck](Cube.TestBridge.Checks.CollisionProbeCheck.md)
 
 Research probe for #28 (where to get collision data): measures, in the running game, the three candidate
@@ -135,6 +141,10 @@ Checks the players the window found match an independent read of Dalamud's objec
 "Automated testing": the players drawn match an independent read of the object table; "Players": every player
 character inside the cube, nobody outside; "NPCs": every named, unowned NPC inside the cube when the setting is on;
 "Colours": self, party/alliance, other).
+
+ [CollisionPhantomsCheck.Result](Cube.TestBridge.Checks.CollisionPhantomsCheck.Result.md)
+
+What [Examine](Cube.TestBridge.Checks.CollisionPhantomsCheck.md#Cube_TestBridge_Checks_CollisionPhantomsCheck_Examine) found.
 
  [SettingsCheck](Cube.TestBridge.Checks.SettingsCheck.md)
 

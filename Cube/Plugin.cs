@@ -136,6 +136,7 @@ public sealed class Plugin : IDalamudPlugin
             this.testBridge.Register(new TestBridge.Checks.CollisionProbeCheck(Log));
             this.testBridge.Register(new TestBridge.Checks.TriangleProbeCheck(Log));
             this.testBridge.Register(new TestBridge.Checks.CollisionReaderCheck());
+            this.testBridge.Register(new TestBridge.Checks.CollisionPhantomsCheck(Log));
             this.testBridge.Register(new TestBridge.Checks.CollisionDrawCheck());
             this.testBridge.Register(new TestBridge.Checks.CollisionInsideCubeCheck());
             this.testBridge.Register(new TestBridge.Checks.CollisionSettingsCheck());
