@@ -41,6 +41,11 @@ Checks the gathered collision is clipped to the cube for drawing, and only when 
 "Collision (phase 2)": boxes clipped to the cube; "Efficiency and memory": recompute only when the inputs change,
 no per-frame allocations, collision data dropped on a zone change).
 
+ [ClippedFuzzTests](Cube.Tests.ClippedFuzzTests.md)
+
+Fuzzes the clipper at 45° (#115; PROJECT.md, "Collision (phase 2)": clipped to the cube): whatever the box, a box
+drawn as a plain rectangle must lie wholly inside the cube.
+
  [ClippedPrismTests](Cube.Tests.ClippedPrismTests.md)
 
 Checks collision stays inside the cube at every cube yaw (#93; PROJECT.md, "Collision (phase 2)": each collider is

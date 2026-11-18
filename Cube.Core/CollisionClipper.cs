@@ -231,13 +231,19 @@ public static class CollisionClipper
 
     /// <summary>The signed area of a polygon (shoelace); positive when the corners go counter-clockwise.</summary>
     /// <param name="polygon">The corners.</param>
+    /// <remarks>
+    /// Measured from the first corner: world coordinates are in the hundreds, and the products of such numbers lose
+    /// the small difference in float, so a sliver cut from the cube's corner read as zero area and was drawn as its
+    /// whole bounding rectangle, which pokes out of the cube (#115).
+    /// </remarks>
     private static float SignedArea(ReadOnlySpan<Vector2> polygon)
     {
         var sum = 0f;
+        var origin = polygon.IsEmpty ? Vector2.Zero : polygon[0];
         for (var i = 0; i < polygon.Length; i++)
         {
-            var p = polygon[i];
-            var q = polygon[(i + 1) % polygon.Length];
+            var p = polygon[i] - origin;
+            var q = polygon[(i + 1) % polygon.Length] - origin;
             sum += (p.X * q.Y) - (q.X * p.Y);
         }
 
