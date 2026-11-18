@@ -133,8 +133,8 @@ names them.
 
  [ViewWidget](Cube.Core.ViewWidget.md)
 
-Where the view control goes and how big it is (PROJECT.md, "View orientation control": a small control in a corner
-of the window). Kept in Core so the placement rules are unit tested.
+Where the view controls go and how big they are (PROJECT.md, "View orientation control": a rotate gizmo in a corner
+of the window, with a resize gizmo of the same size beside it). Kept in Core so the placement rules are unit tested.
 
  [ViewYaw](Cube.Core.ViewYaw.md)
 

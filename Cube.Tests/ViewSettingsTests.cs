@@ -171,6 +171,45 @@ public class ViewSettingsTests
         Assert.Equal(new Vector2(x, y), position);
     }
 
+    [Theory]
+    [InlineData(WidgetCorner.BottomRight, 260f, 220f)]
+    [InlineData(WidgetCorner.BottomLeft, 60f, 220f)]
+    [InlineData(WidgetCorner.TopRight, 260f, 20f)]
+    [InlineData(WidgetCorner.TopLeft, 60f, 20f)]
+    public void ResizeGizmo_sits_beside_the_rotate_gizmo_inward_from_the_corner(WidgetCorner corner, float x, float y)
+    {
+        var position = ViewWidget.ResizePosition(new Vector2(10, 20), new Vector2(350, 250), corner, 50);
+
+        Assert.Equal(new Vector2(x, y), position);
+    }
+
+    [Theory]
+    [InlineData(WidgetCorner.BottomRight, 350f, 250f)]
+    [InlineData(WidgetCorner.TopLeft, 350f, 250f)]
+    [InlineData(WidgetCorner.BottomLeft, 60f, 400f)]
+    [InlineData(WidgetCorner.TopRight, 30f, 30f)]
+    [InlineData(WidgetCorner.BottomRight, 10f, 10f)]
+    public void TwoGizmos_never_overlap_and_stay_inside_the_region(WidgetCorner corner, float width, float height)
+    {
+        var min = new Vector2(10, 20);
+        var region = new Vector2(width, height);
+        var size = ViewWidget.Size(region);
+
+        var rotate = ViewWidget.Position(min, region, corner, size);
+        var resize = ViewWidget.ResizePosition(min, region, corner, size);
+
+        Assert.True(MathF.Abs(rotate.X - resize.X) >= size - 0.001f, "squares overlap");
+        Assert.Equal(rotate.Y, resize.Y);
+        Assert.True(MathF.Min(rotate.X, resize.X) >= min.X - 0.001f);
+        Assert.True(MathF.Max(rotate.X, resize.X) + size <= min.X + width + 0.001f);
+    }
+
+    [Fact]
+    public void Gizmos_shrink_in_a_narrow_window_instead_of_overlapping()
+    {
+        Assert.Equal(30f, ViewWidget.Size(new Vector2(60f, 500f)), 3);
+    }
+
     [Fact]
     public void Control_stays_outside_the_cube_in_a_square_window()
     {

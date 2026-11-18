@@ -158,10 +158,13 @@ internal sealed class ViewControlCheck(string folder) : BridgeCheck
             }
 
             var size = ViewWidget.Size(window.LastRegionSize);
-            var expected = ViewWidget.Position(window.LastRegionMin, window.LastRegionSize, corner, size);
-            if (window.WidgetSize != size || Vector2.Distance(window.WidgetMin, expected) > 0.5f)
+            var rotate = ViewWidget.Position(window.LastRegionMin, window.LastRegionSize, corner, size);
+            var resize = ViewWidget.ResizePosition(window.LastRegionMin, window.LastRegionSize, corner, size);
+            var expected = new Vector2(MathF.Min(rotate.X, resize.X), rotate.Y);
+            if (window.WidgetSize != size || window.WidgetWidth != size * 2f
+                || Vector2.Distance(window.WidgetMin, expected) > 0.5f)
             {
-                yield return CheckStep.Fail($"View control in {corner} is at {window.WidgetMin} size {window.WidgetSize}; expected {expected} size {size}.");
+                yield return CheckStep.Fail($"View controls in {corner} are at {window.WidgetMin} size {window.WidgetSize} width {window.WidgetWidth}; expected {expected} size {size} width {size * 2f} (rotate {rotate}, resize {resize}).");
                 yield break;
             }
         }

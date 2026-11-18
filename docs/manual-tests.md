@@ -18,7 +18,7 @@ The bridge checks every setting changes the frame and that saving writes the fil
 
 The bridge checks that a turned or rolled view changes the frame correctly, that the camera never turns it, the control's corner, and reset. It can't drag ImGuizmo's rings with a real mouse.
 
-1. `/cube`: a small rotate gizmo (red, green and blue rings plus a white outer ring) sits in the bottom-right corner of the cube window, filling its corner square and clear of the big cube.
+1. `/cube`: a small rotate gizmo (red, green and blue rings plus a white outer ring) sits in the bottom-right corner of the cube window, filling its corner square and clear of the big cube. Next to it, inward along the bottom edge, is a second gizmo of the same size (the resize gizmo, see below); the two don't overlap.
 2. Drag the red (x) ring: the big cube turns around its own left-right axis (tilts forward or back). The window itself doesn't move during the drag.
 3. Drag the green (y) ring: the cube turns around its own up axis. Drag the blue (z) ring: it turns around its front-back axis.
 4. Drag the white outer ring: the cube rolls around the screen's axis (it spins flat on the screen).
@@ -33,14 +33,14 @@ The bridge checks that a turned or rolled view changes the frame correctly, that
 
 The bridge checks that set sizes draw in the right proportions, that zooming changes what's inside, reset, and that the gizmo leaves the settings alone when idle. The maths that turns a handle drag into a resize or zoom is unit tested. It can't drag the scale handles with a real mouse.
 
-The gizmo uses one `Manipulate` call with Rotate | Scale. If the scale handles and the rings fight over the mouse (a drag on one does the other), report it: the fix is two separate calls.
+Since #97 the resize gizmo is a separate square next to the rotate gizmo (own `Manipulate` call, Scale only), so the handles can't start a rotation.
 
-1. `/cube`: the corner gizmo now also has three scale handles (red, green and blue lines with a square end, inside the rings) and a centre handle.
+1. `/cube`: next to the rotate gizmo is a second square with three scale handles (red, green and blue lines with a square end) and a centre handle, lined up with the cube's sides.
 2. Drag the red (x) handle outwards: the cube gets wider (a box), nothing else changes. Drag it inwards: narrower. It stops at 10 and 100 yalms. The window doesn't move during the drag.
 3. Drag the green (y) handle: only the height changes. Drag the blue (z) handle: only the depth changes.
 4. Turn the view with a ring first (any angle, roll too), then drag each scale handle again: each still changes its own extent (the handle lies along that axis of the box).
 5. Drag the centre handle: the whole box grows or shrinks, keeping its shape; it stops when one side reaches 10 or 100 and keeps its shape there.
-6. Drag a ring after resizing: the box turns and keeps its size.
+6. Drag a ring in the rotate gizmo after resizing: the box turns and keeps its size.
 7. Other players and NPCs stay the same small size while the box narrows; anything outside the box on any one axis disappears.
 8. Reload the plugin: the size is still the one you chose. `/cube config`, "Reset size": back to 40 × 40 × 40.
 
@@ -72,3 +72,14 @@ The bridge (`collision-inside-cube`) turns a simulated camera to 0°, 30°, 45°
 1. Settings: orientation "Rotate contents with camera", collision on. Stand on open ground (a big floor or field, so the ground is bigger than the cube), `/cube`.
 2. Turn the camera slowly through a full circle. The ground and other collision stay inside the big cube's wireframe the whole way round: no corners poke past its edges, at 45° or anywhere else.
 3. The collision turns with the players, as one scene: the ground's outline follows the cube's sides rather than staying still while everything else turns.
+
+## Split rotate and resize gizmos (#97)
+
+The bridge checks both squares' placement for two corners and that idle frames change nothing. It can't use a real mouse.
+
+1. `/cube`: two gizmos side by side in the corner, not overlapping.
+2. Drag each ring (red, green, blue, white outer) in the rotate gizmo: only the cube's orientation changes, never its size. The resize gizmo doesn't react.
+3. Drag each handle and the centre in the resize gizmo: only the size changes, never the orientation. The rotate gizmo doesn't react.
+4. The window doesn't move while the mouse is on, or dragging in, either gizmo; dragging empty space still moves it.
+5. `/cube config`, "View control corner": try all four corners. Both gizmos move together, the resize one always inward of the rotate one.
+6. Shrink the window until it is very narrow: both gizmos shrink and never overlap.
