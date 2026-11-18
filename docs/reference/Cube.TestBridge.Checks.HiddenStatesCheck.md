@@ -3,7 +3,7 @@
 Namespace: [Cube.TestBridge.Checks](Cube.TestBridge.Checks.md)  
 Assembly: Cube.dll  
 
-Checks the cube is hidden when logged out, during loading screens, cutscenes and GPose, and comes back
+Checks the cube is hidden when logged out, during loading screens, cutscenes, GPose and in PvP areas, and comes back
 afterwards (PROJECT.md, "When hidden": the window is just empty then, never an error; "Efficiency and memory": no
 work and no allocations while there's nothing to draw).
 
@@ -20,7 +20,7 @@ internal sealed class HiddenStatesCheck : BridgeCheck
 
 ## Remarks
 
-A real cutscene or loading screen can't be started from a check, so each state is simulated through
+A real cutscene, loading screen or PvP match can't be started from a check, so each state is simulated through
 [SimulatedState](Cube.CubeWindow.md#Cube_CubeWindow_SimulatedState), which replaces only the game-state read; everything after it is the
 real draw path. The real state is checked first: with the game in normal play the cube must be shown. The
 condition flags behind the real read were confirmed by the #10 probe.

@@ -3,8 +3,8 @@ using Cube.Core;
 namespace Cube.Tests;
 
 /// <summary>
-/// Checks when the cube is hidden (PROJECT.md, "When hidden": not logged in, during loading screens, cutscenes and
-/// GPose; shown otherwise).
+/// Checks when the cube is hidden (PROJECT.md, "When hidden": not logged in, during loading screens, cutscenes,
+/// GPose and in PvP areas; shown otherwise).
 /// </summary>
 public class VisibilityTests
 {
@@ -45,9 +45,21 @@ public class VisibilityTests
     }
 
     [Fact]
+    public void PvP_area_hides_the_cube()
+    {
+        Assert.Equal(Visibility.PvP, VisibilityRules.For(GameState.Playing with { InPvP = true }));
+    }
+
+    [Fact]
+    public void Loading_into_a_PvP_area_still_hides_the_cube()
+    {
+        Assert.NotEqual(Visibility.Shown, VisibilityRules.For(GameState.Playing with { InPvP = true, BetweenAreas = true }));
+    }
+
+    [Fact]
     public void Several_reasons_at_once_still_hide_the_cube()
     {
-        var state = new GameState(LoggedIn: true, HasLocalPlayer: true, BetweenAreas: true, InCutscene: true, InGPose: true);
+        var state = new GameState(LoggedIn: true, HasLocalPlayer: true, BetweenAreas: true, InCutscene: true, InGPose: true, InPvP: true);
 
         Assert.NotEqual(Visibility.Shown, VisibilityRules.For(state));
     }

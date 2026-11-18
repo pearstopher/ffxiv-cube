@@ -3,8 +3,8 @@
 Namespace: [Cube.Tests](Cube.Tests.md)  
 Assembly: Cube.Tests.dll  
 
-Checks when the cube is hidden (PROJECT.md, "When hidden": not logged in, during loading screens, cutscenes and
-GPose; shown otherwise).
+Checks when the cube is hidden (PROJECT.md, "When hidden": not logged in, during loading screens, cutscenes,
+GPose and in PvP areas; shown otherwise).
 
 ```csharp
 public class VisibilityTests
@@ -30,6 +30,13 @@ public void Cutscene_hides_the_cube()
 ```csharp
 [Fact]
 public void GPose_hides_the_cube()
+```
+
+### <a id="Cube_Tests_VisibilityTests_Loading_into_a_PvP_area_still_hides_the_cube"></a> Loading\_into\_a\_PvP\_area\_still\_hides\_the\_cube\(\)
+
+```csharp
+[Fact]
+public void Loading_into_a_PvP_area_still_hides_the_cube()
 ```
 
 ### <a id="Cube_Tests_VisibilityTests_Loading_screen_hides_the_cube"></a> Loading\_screen\_hides\_the\_cube\(\)
@@ -58,6 +65,13 @@ public void Logged_out_hides_the_cube()
 ```csharp
 [Fact]
 public void Normal_play_shows_the_cube()
+```
+
+### <a id="Cube_Tests_VisibilityTests_PvP_area_hides_the_cube"></a> PvP\_area\_hides\_the\_cube\(\)
+
+```csharp
+[Fact]
+public void PvP_area_hides_the_cube()
 ```
 
 ### <a id="Cube_Tests_VisibilityTests_Several_reasons_at_once_still_hide_the_cube"></a> Several\_reasons\_at\_once\_still\_hide\_the\_cube\(\)

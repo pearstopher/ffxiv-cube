@@ -1,8 +1,8 @@
 namespace Cube.Core;
 
 /// <summary>
-/// Decides whether to draw (PROJECT.md, "When hidden": not logged in, loading screens, cutscenes and GPose; the
-/// window is just empty then, never an error).
+/// Decides whether to draw (PROJECT.md, "When hidden": not logged in, loading screens, cutscenes, GPose and PvP
+/// areas; the window is just empty then, never an error).
 /// </summary>
 /// <remarks>
 /// When hidden, the window skips everything else too: no player reading, no geometry (PROJECT.md, "Efficiency and
@@ -17,5 +17,6 @@ public static class VisibilityRules
         : state.BetweenAreas ? Visibility.Loading
         : state.InCutscene ? Visibility.Cutscene
         : state.InGPose ? Visibility.GPose
+        : state.InPvP ? Visibility.PvP
         : Visibility.Shown;
 }

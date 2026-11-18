@@ -89,8 +89,8 @@ north at the front. The yaw turns the contents, never the wireframe (see [CubeSp
 
  [VisibilityRules](Cube.Core.VisibilityRules.md)
 
-Decides whether to draw (PROJECT.md, "When hidden": not logged in, loading screens, cutscenes and GPose; the
-window is just empty then, never an error).
+Decides whether to draw (PROJECT.md, "When hidden": not logged in, loading screens, cutscenes, GPose and PvP
+areas; the window is just empty then, never an error).
 
 ### Structs
 

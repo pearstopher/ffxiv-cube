@@ -4,12 +4,12 @@ using Cube.Core;
 namespace Cube.TestBridge.Checks;
 
 /// <summary>
-/// Checks the cube is hidden when logged out, during loading screens, cutscenes and GPose, and comes back
+/// Checks the cube is hidden when logged out, during loading screens, cutscenes, GPose and in PvP areas, and comes back
 /// afterwards (PROJECT.md, "When hidden": the window is just empty then, never an error; "Efficiency and memory": no
 /// work and no allocations while there's nothing to draw).
 /// </summary>
 /// <remarks>
-/// A real cutscene or loading screen can't be started from a check, so each state is simulated through
+/// A real cutscene, loading screen or PvP match can't be started from a check, so each state is simulated through
 /// <see cref="CubeWindow.SimulatedState"/>, which replaces only the game-state read; everything after it is the
 /// real draw path. The real state is checked first: with the game in normal play the cube must be shown. The
 /// condition flags behind the real read were confirmed by the #10 probe.
@@ -26,13 +26,14 @@ internal sealed class HiddenStatesCheck : BridgeCheck
         (GameState.Playing with { BetweenAreas = true }, Visibility.Loading),
         (GameState.Playing with { InCutscene = true }, Visibility.Cutscene),
         (GameState.Playing with { InGPose = true }, Visibility.GPose),
+        (GameState.Playing with { InPvP = true }, Visibility.PvP),
     ];
 
     /// <summary>The window's open state before the check.</summary>
     private bool wasOpen;
 
     /// <inheritdoc/>
-    public override string Name => "hidden-when-logged-out-loading-cutscene-gpose";
+    public override string Name => "hidden-when-logged-out-loading-cutscene-gpose-pvp";
 
     /// <inheritdoc/>
     public override IEnumerable<CheckStep> Run(BridgeContext context)
@@ -94,7 +95,7 @@ internal sealed class HiddenStatesCheck : BridgeCheck
 
         context.Metric("primitivesAfter", window.DrawList.Count);
         yield return window.LastVisibility == Visibility.Shown && window.DrawList.Count > 12
-            ? CheckStep.Pass($"Shown in normal play; empty and allocation-free when logged out, loading, in a cutscene or GPose; back afterwards ({window.DrawList.Count} primitives).")
+            ? CheckStep.Pass($"Shown in normal play; empty and allocation-free when logged out, loading, in a cutscene, GPose or PvP; back afterwards ({window.DrawList.Count} primitives).")
             : CheckStep.Fail("The cube didn't come back after the hidden states ended.");
     }
 

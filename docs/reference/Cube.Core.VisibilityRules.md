@@ -3,8 +3,8 @@
 Namespace: [Cube.Core](Cube.Core.md)  
 Assembly: Cube.Core.dll  
 
-Decides whether to draw (PROJECT.md, "When hidden": not logged in, loading screens, cutscenes and GPose; the
-window is just empty then, never an error).
+Decides whether to draw (PROJECT.md, "When hidden": not logged in, loading screens, cutscenes, GPose and PvP
+areas; the window is just empty then, never an error).
 
 ```csharp
 public static class VisibilityRules

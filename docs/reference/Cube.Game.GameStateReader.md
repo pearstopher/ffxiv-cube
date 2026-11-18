@@ -4,8 +4,9 @@ Namespace: [Cube.Game](Cube.Game.md)
 Assembly: Cube.dll  
 
 Reads the states that hide the cube (PROJECT.md, "When hidden") from Dalamud, using the sources chosen in #10
-(<code>docs/research-notes.md</code>, "When to hide"): `Dalamud.Plugin.Services.IClientState.IsLoggedIn` and
-`Dalamud.Plugin.Services.IClientState.IsGPosing`, and the loading-screen and cutscene condition flags.
+(<code>docs/research-notes.md</code>, "When to hide"): `Dalamud.Plugin.Services.IClientState.IsLoggedIn`,
+`Dalamud.Plugin.Services.IClientState.IsGPosing` and `Dalamud.Plugin.Services.IClientState.IsPvP`, and the loading-screen and cutscene
+condition flags.
 
 ```csharp
 internal sealed class GameStateReader
@@ -20,15 +21,18 @@ internal sealed class GameStateReader
 ## Remarks
 
 Dalamud can also hide plugin windows in cutscenes and GPose, but only if the user's Dalamud settings say so, so
-the plugin checks for itself. Each read is a property or flag lookup: no allocation.
+the plugin checks for itself. `Dalamud.Plugin.Services.IClientState.IsPvP` is used rather than the variant that excludes the
+Wolves' Den: the lobby isn't a match, but hiding there too is simpler and costs nothing (#69). Each read is a
+property or flag lookup: no allocation.
 
 ## Constructors
 
 ### <a id="Cube_Game_GameStateReader__ctor_Dalamud_Plugin_Services_IClientState_Dalamud_Plugin_Services_ICondition_"></a> GameStateReader\(IClientState, ICondition\)
 
 Reads the states that hide the cube (PROJECT.md, "When hidden") from Dalamud, using the sources chosen in #10
-(<code>docs/research-notes.md</code>, "When to hide"): `Dalamud.Plugin.Services.IClientState.IsLoggedIn` and
-`Dalamud.Plugin.Services.IClientState.IsGPosing`, and the loading-screen and cutscene condition flags.
+(<code>docs/research-notes.md</code>, "When to hide"): `Dalamud.Plugin.Services.IClientState.IsLoggedIn`,
+`Dalamud.Plugin.Services.IClientState.IsGPosing` and `Dalamud.Plugin.Services.IClientState.IsPvP`, and the loading-screen and cutscene
+condition flags.
 
 ```csharp
 public GameStateReader(IClientState clientState, ICondition condition)
@@ -38,7 +42,7 @@ public GameStateReader(IClientState clientState, ICondition condition)
 
 `clientState` [IClientState](https://github.com/goatcorp/Dalamud/blob/master/Dalamud/Plugin/Services/IClientState.cs)
 
-Login and GPose state.
+Login, GPose and PvP state.
 
 `condition` [ICondition](https://github.com/goatcorp/Dalamud/blob/master/Dalamud/Plugin/Services/ICondition.cs)
 
@@ -47,7 +51,9 @@ Condition flags.
 #### Remarks
 
 Dalamud can also hide plugin windows in cutscenes and GPose, but only if the user's Dalamud settings say so, so
-the plugin checks for itself. Each read is a property or flag lookup: no allocation.
+the plugin checks for itself. `Dalamud.Plugin.Services.IClientState.IsPvP` is used rather than the variant that excludes the
+Wolves' Den: the lobby isn't a match, but hiding there too is simpler and costs nothing (#69). Each read is a
+property or flag lookup: no allocation.
 
 ## Methods
 

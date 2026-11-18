@@ -17,4 +17,10 @@ public enum Visibility
 
     /// <summary>Group pose is active.</summary>
     GPose,
+
+    /// <summary>
+    /// In a PvP area. The official Dalamud rules ban any PvP advantage, and showing enemy players behind you or
+    /// behind walls would be one.
+    /// </summary>
+    PvP,
 }

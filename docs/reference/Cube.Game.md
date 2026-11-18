@@ -12,8 +12,9 @@ yaw follows the game camera so "forward on screen" matches the game view).
  [GameStateReader](Cube.Game.GameStateReader.md)
 
 Reads the states that hide the cube (PROJECT.md, "When hidden") from Dalamud, using the sources chosen in #10
-(<code>docs/research-notes.md</code>, "When to hide"): `Dalamud.Plugin.Services.IClientState.IsLoggedIn` and
-`Dalamud.Plugin.Services.IClientState.IsGPosing`, and the loading-screen and cutscene condition flags.
+(<code>docs/research-notes.md</code>, "When to hide"): `Dalamud.Plugin.Services.IClientState.IsLoggedIn`,
+`Dalamud.Plugin.Services.IClientState.IsGPosing` and `Dalamud.Plugin.Services.IClientState.IsPvP`, and the loading-screen and cutscene
+condition flags.
 
  [PlayerReader](Cube.Game.PlayerReader.md)
 

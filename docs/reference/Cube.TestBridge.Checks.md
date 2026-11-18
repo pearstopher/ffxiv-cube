@@ -40,7 +40,7 @@ both, so one in-game run settles the open questions in <code>docs/research-notes
 
  [HiddenStatesCheck](Cube.TestBridge.Checks.HiddenStatesCheck.md)
 
-Checks the cube is hidden when logged out, during loading screens, cutscenes and GPose, and comes back
+Checks the cube is hidden when logged out, during loading screens, cutscenes, GPose and in PvP areas, and comes back
 afterwards (PROJECT.md, "When hidden": the window is just empty then, never an error; "Efficiency and memory": no
 work and no allocations while there's nothing to draw).
 
