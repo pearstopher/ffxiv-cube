@@ -200,6 +200,12 @@ The corners.
 
  [float](https://learn.microsoft.com/dotnet/api/system.single)
 
+#### Remarks
+
+Measured from the first corner: world coordinates are in the hundreds, and the products of such numbers lose
+the small difference in float, so a sliver cut from the cube's corner read as zero area and was drawn as its
+whole bounding rectangle, which pokes out of the cube (#115).
+
 ### <a id="Cube_Core_CollisionClipper_TryClip_Cube_Core_CubeSpace__Cube_Core_CollisionBox__Cube_Core_ClippedBox__"></a> TryClip\(in CubeSpace, in CollisionBox, out ClippedBox\)
 
 Clips one box to the cube.
