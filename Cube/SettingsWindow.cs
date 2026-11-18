@@ -8,8 +8,8 @@ namespace Cube;
 
 /// <summary>
 /// The settings window, opened with <c>/cube config</c> or Dalamud's settings button (PROJECT.md, "Features": cube
-/// size, orientation mode, labels on/off, colours and opacity; "View orientation control": the control's corner and
-/// a way to reset the view).
+/// size, orientation mode, labels on/off, colours and opacity; "NPCs": NPCs on/off and their colour; "View orientation
+/// control": the control's corner and a way to reset the view).
 /// </summary>
 /// <remarks>
 /// Every control edits <see cref="Configuration"/> directly, so changes show in the cube on the next frame. The file
@@ -107,6 +107,15 @@ internal sealed class SettingsWindow : Window
         this.Track(ImGui.ColorEdit3("Party / alliance", ref c.PartyColour, ImGuiColorEditFlags.NoInputs));
         ImGui.SameLine();
         this.Track(ImGui.ColorEdit3("Others", ref c.OtherColour, ImGuiColorEditFlags.NoInputs));
+
+        // Named NPCs (PROJECT.md, "NPCs"): on/off, and their own colour.
+        if (ImGui.Checkbox("Show NPCs", ref c.ShowNpcs))
+        {
+            this.ApplyAndSave();
+        }
+
+        ImGui.SameLine();
+        this.Track(ImGui.ColorEdit3("NPCs", ref c.NpcColour, ImGuiColorEditFlags.NoInputs));
 
         ImGui.SetNextItemWidth(200);
         this.Track(ImGui.SliderFloat("Opacity", ref c.Opacity, CubeSettings.MinOpacity, 1f, "%.2f"));

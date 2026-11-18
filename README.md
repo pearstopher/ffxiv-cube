@@ -15,7 +15,10 @@ A [Dalamud](https://github.com/goatcorp/Dalamud) plugin for FINAL FANTASY XIV th
 - **Type `/cube`** to show or hide the cube window.
 - **You are the cube in the middle.** The big cube is centred on you and moves with you, 40 yalms across by default.
 - **Players inside the cube are shown as small cubes** with their names next to them. Players outside it aren't shown.
-- **Colours tell you who's who:** one colour for you, one for party and alliance members, one for everyone else.
+- **Named NPCs are shown too,** the same way: townspeople, quest NPCs and enemies inside the cube, in purple, with
+  their names. Pets and chocobo companions belong to players, so they're left out. You can turn NPCs off.
+- **Colours tell you who's who:** one colour for you, one for party and alliance members, one for everyone else,
+  and one for NPCs.
 - **Near things cover far things,** so you can see which players are in front.
 - **Turn the view with the little x/y/z cube** in the corner of the window: drag it to look from any side, above or
   below, or click one of its faces to look straight at that side. Your view is remembered.
@@ -35,8 +38,9 @@ Type `/cube config` (or use the settings button in `/xlplugins`). Changes show s
 | Orientation | The cube itself stays still on screen; this decides what happens to what's inside it. **Rotate contents with camera:** forward in the cube is where the game camera looks, so when you turn the camera everything inside turns around you. **Keep contents fixed (north stays put):** north is always the same side of the cube and the camera changes nothing. | Rotate contents with camera |
 | View control corner | Which corner of the cube window the x/y/z view control sits in. | Bottom right |
 | Reset view | Puts the view back to the default: from behind and above, at 30°. | |
-| Show names | Name labels next to the players' cubes. | On |
+| Show names | Name labels next to the players' and NPCs' cubes. | On |
 | You / Party / alliance / Others | The colour for each kind of player. | Blue / green / orange |
+| Show NPCs / NPCs | Whether named NPCs are shown, and their colour. At most 50 are drawn at once. | On / purple |
 | Opacity | How see-through everything in the window is. | 1.00 |
 | Reset to defaults | Puts every setting back. | |
 

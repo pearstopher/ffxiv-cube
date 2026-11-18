@@ -3,8 +3,9 @@
 Namespace: [Cube.TestBridge.Checks](Cube.TestBridge.Checks.md)  
 Assembly: Cube.dll  
 
-Checks every player in the cube is drawn as a cube in their relation's colour (PROJECT.md, "Players" and "Colours";
-"Draw order": far first), using the standard fake players (#16) so it works with nobody around.
+Checks every player and named NPC in the cube is drawn as a cube in their relation's colour (PROJECT.md, "Players",
+"NPCs" and "Colours"; "Draw order": far first), using the standard fake players and fake NPC (#16, #74) so it works
+with nobody around.
 
 ```csharp
 internal sealed class PlayerCubesCheck : BridgeCheck

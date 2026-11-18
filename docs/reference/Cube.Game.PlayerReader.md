@@ -3,9 +3,10 @@
 Namespace: [Cube.Game](Cube.Game.md)  
 Assembly: Cube.dll  
 
-Reads the local player and the players around them straight from the game's object manager and offers each to
-[PlayerSet](Cube.Core.PlayerSet.md#Cube_Core_PlayerSet) (PROJECT.md, "Players"). The approach chosen in #10 (<code>docs/research-notes.md</code>):
-FFXIVClientStructs, not Dalamud's object table, because it allocates nothing per frame.
+Reads the local player, the players around them and the named NPCs straight from the game's object manager and
+offers each to [PlayerSet](Cube.Core.PlayerSet.md#Cube_Core_PlayerSet) (PROJECT.md, "Players" and "NPCs"). The approach chosen in #10
+(<code>docs/research-notes.md</code>): FFXIVClientStructs, not Dalamud's object table, because it allocates nothing per
+frame.
 
 ```csharp
 internal static class PlayerReader
@@ -19,8 +20,9 @@ internal static class PlayerReader
 
 ## Remarks
 
-Only the 200 character slots are scanned; players never live above them. Culling, colour relation and name
-caching happen in Core. A plain memory read: no hooks, no game functions, nothing sent.
+Players and battle NPCs live in the 200 character slots; event NPCs live above them (#73), so the whole table is
+walked only when NPCs are shown. Culling, colour relation and name caching happen in Core. A plain memory read: no
+hooks, no game functions, nothing sent.
 
 ## Fields
 
@@ -30,6 +32,19 @@ The object table slots holding characters (0–199).
 
 ```csharp
 public const int CharacterSlots = 200
+```
+
+#### Field Value
+
+ [int](https://learn.microsoft.com/dotnet/api/system.int32)
+
+### <a id="Cube_Game_PlayerReader_MaxNpcs"></a> MaxNpcs
+
+The most named NPCs drawn per frame (#73: a busy city put 22 in the largest cube; 50 players' worth of extra
+drawing still fits the 0.5 ms budget alongside a full crowd of players). Extras are dropped and counted.
+
+```csharp
+public const int MaxNpcs = 50
 ```
 
 #### Field Value
@@ -49,11 +64,25 @@ public const int MaxPlayers = 100
 
  [int](https://learn.microsoft.com/dotnet/api/system.int32)
 
+### <a id="Cube_Game_PlayerReader_ObjectSlots"></a> ObjectSlots
+
+The length of the game's index-sorted object table, measured in #73 (<code>docs/research-notes.md</code>). The name
+cache has one slot per table index, so its size is fixed at load (PROJECT.md: bounded memory).
+
+```csharp
+public const int ObjectSlots = 819
+```
+
+#### Field Value
+
+ [int](https://learn.microsoft.com/dotnet/api/system.int32)
+
 ## Methods
 
 ### <a id="Cube_Game_PlayerReader_Read_Cube_Core_PlayerSet_"></a> Read\(PlayerSet\)
 
-Offers every player character in the object table to the set; the set keeps those inside the cube.
+Offers every player character, and every named NPC if the set shows NPCs, to the set; the set keeps those
+inside the cube.
 
 ```csharp
 public static void Read(PlayerSet set)
@@ -64,6 +93,11 @@ public static void Read(PlayerSet set)
 `set` [PlayerSet](Cube.Core.PlayerSet.md)
 
 This frame's player set, already begun with the frame's cube.
+
+#### Remarks
+
+With NPCs off (PROJECT.md, "NPCs": the setting; [ShowsNpcs](Cube.Core.PlayerSet.md#Cube_Core_PlayerSet_ShowsNpcs)) only the character slots
+are read and no NPC is looked at.
 
 ### <a id="Cube_Game_PlayerReader_TryGetLocalPosition_System_Numerics_Vector3__"></a> TryGetLocalPosition\(out Vector3\)
 

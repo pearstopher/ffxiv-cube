@@ -31,9 +31,9 @@ One check's outcome, as written to the results file.
 
  [FakePlayers](Cube.TestBridge.FakePlayers.md)
 
-Synthetic players for in-game checks (PROJECT.md, "Automated testing": the bridge can inject synthetic players so
-rendering checks work even when nobody is nearby). Debug builds only: this file lives in <code>TestBridge/</code>,
-which Release builds exclude.
+Synthetic players and NPCs for in-game checks (PROJECT.md, "Automated testing": the bridge can inject synthetic
+players so rendering checks work even when nobody is nearby). Debug builds only: this file lives in
+<code>TestBridge/</code>, which Release builds exclude.
 
 ### Structs
 
@@ -45,7 +45,7 @@ several frames (open the window, wait for it to draw, close it) reads top to bot
 
  [FakePlayers.Fake](Cube.TestBridge.FakePlayers.Fake.md)
 
-One fake player.
+One fake player or NPC.
 
 ### Enums
 

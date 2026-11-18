@@ -4,7 +4,8 @@ namespace Cube.Core;
 /// Draws each player in the cube as a small solid cube in their relation's colour, with a name label for other
 /// players (PROJECT.md, "Players": player cube size fixed relative to the big cube, about 1/40 of its edge, minimum a
 /// few pixels; "Features": the local player is a cube at the centre in its own colour, other players are labelled
-/// with their names; "Labels": the name drawn next to the cube, overlaps are fine).
+/// with their names; "Labels": the name drawn next to the cube, overlaps are fine; "NPCs": named NPCs are shown the
+/// same way, in the NPC colour).
 /// </summary>
 /// <remarks>
 /// Player cubes and labels go into the same <see cref="DrawList"/> as the wireframe and are sorted with it, so near
@@ -64,7 +65,7 @@ public static class PlayerCubes
             var centre = space.ToView(player.Position);
             CubeGeometry.AddSolidCube(list, space, projection, centre, half, palette.For(player.Relation), tag: i + 1);
 
-            // The local player isn't labelled: PROJECT.md labels the *other* players.
+            // The local player isn't labelled: PROJECT.md labels the *other* players (and NPCs).
             if (labels && player.Relation != PlayerRelation.Self)
             {
                 var anchor = projection.ToScreen(centre);

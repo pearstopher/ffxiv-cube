@@ -38,7 +38,8 @@ without the game (CLAUDE.md, "Reference: the previous plugin" layout rule).
  [CubeSettingsTests](Cube.Tests.CubeSettingsTests.md)
 
 Checks the settings' defaults and repair rules (PROJECT.md, "Features": settings for cube size, orientation mode,
-labels on/off, colours and opacity; "Cube": edge 10–100, default 40; "View": Camera mode by default) and the
+labels on/off, colours and opacity; "NPCs": on by default, purple; "Cube": edge 10–100, default 40; "View": Camera
+mode by default; saved files from older versions still load) and the
 <code>/cube config</code> command.
 
  [CubeSpaceTests](Cube.Tests.CubeSpaceTests.md)
@@ -69,8 +70,8 @@ logs; a handler failing every frame must not flood the log).
  [PlayerCubesTests](Cube.Tests.PlayerCubesTests.md)
 
 Checks players are drawn as small coloured cubes (PROJECT.md, "Players": about 1/40 of the big cube's edge, minimum
-a few pixels; "Colours": one colour each for self, party/alliance and others; "Draw order": near cubes cover far
-ones; "Efficiency and memory": no per-frame allocations).
+a few pixels; "Colours": one colour each for self, party/alliance, others and NPCs; "NPCs": drawn like players, in
+the NPC colour; "Draw order": near cubes cover far ones; "Efficiency and memory": no per-frame allocations).
 
  [PlayerLabelsTests](Cube.Tests.PlayerLabelsTests.md)
 
@@ -80,8 +81,9 @@ Checks name labels (PROJECT.md, "Features": other players are labelled with thei
 
  [PlayerSetTests](Cube.Tests.PlayerSetTests.md)
 
-Checks which players are kept and how they're classified and named (PROJECT.md, "Players": only players inside
-the cube are shown; "Colours": self, party/alliance, everyone else; "Efficiency and memory": name labels cached
+Checks which players and NPCs are kept and how they're classified and named (PROJECT.md, "Players": only players
+inside the cube are shown; "NPCs": named, unowned NPCs inside the cube are shown, with an on/off setting; "Colours":
+self, party/alliance, everyone else, NPCs; "Efficiency and memory": name labels cached
 and only rebuilt when a name changes, no per-frame allocations, bounded memory; "Privacy": names stay in memory).
 
  [ProjectionAndDrawListTests](Cube.Tests.ProjectionAndDrawListTests.md)

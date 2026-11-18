@@ -59,6 +59,18 @@ private const int WarmUpFrames = 60
 
  [int](https://learn.microsoft.com/dotnet/api/system.int32)
 
+### <a id="Cube_TestBridge_Checks_SoakCheck_showedNpcs"></a> showedNpcs
+
+The user's NPC setting before the check.
+
+```csharp
+private bool showedNpcs
+```
+
+#### Field Value
+
+ [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
 ### <a id="Cube_TestBridge_Checks_SoakCheck_wasOpen"></a> wasOpen
 
 The window's open state before the check.

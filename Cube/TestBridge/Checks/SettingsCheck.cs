@@ -6,17 +6,21 @@ namespace Cube.TestBridge.Checks;
 
 /// <summary>
 /// Checks each setting changes the drawn frame straight away, and that putting the settings back restores it
-/// (PROJECT.md, "Features": settings for cube size, orientation mode, labels on/off, colours and opacity).
+/// (PROJECT.md, "Features": settings for cube size, orientation mode, labels on/off, colours and opacity; "NPCs": NPCs
+/// on/off and the NPC colour).
 /// </summary>
 /// <remarks>
 /// Changes the settings in memory only, never saving them, and restores the user's values in
-/// <see cref="Cleanup"/> even if a step fails. Uses the standard fake players (#16), all of whom are "other" or
-/// "party", so the colour step changes the "others" colour.
+/// <see cref="Cleanup"/> even if a step fails. Uses the standard fakes (#16, #74): the colour step changes the
+/// "others" colour, the NPC steps change the NPC colour and then turn NPCs off.
 /// </remarks>
 internal sealed class SettingsCheck : BridgeCheck
 {
     /// <summary>A colour no default uses, so a face in it can only come from the changed setting.</summary>
     private static readonly Vector3 TestColour = new(1f, 0f, 1f);
+
+    /// <summary>A second unused colour for the NPC colour step, different from <see cref="TestColour"/>.</summary>
+    private static readonly Vector3 NpcTestColour = new(0f, 1f, 1f);
 
     /// <summary>The user's settings before the check.</summary>
     private readonly CubeSettings saved = new();
@@ -114,6 +118,43 @@ internal sealed class SettingsCheck : BridgeCheck
             yield break;
         }
 
+        // NPC colour (#74): the fake NPC's faces must be shades of the new NPC colour.
+        settings.Orientation = OrientationMode.Camera;
+        settings.Opacity = 1f;
+        settings.NpcColour = NpcTestColour;
+        settings.Changed();
+        foreach (var step in WaitForDraws(window))
+        {
+            yield return step;
+        }
+
+        var npcFaces = CountFaces(window, PlayerRelation.Npc, Colour.Pack(NpcTestColour.X, NpcTestColour.Y, NpcTestColour.Z, 1f), out var wrongNpcFace);
+        if (wrongNpcFace is not null || npcFaces == 0)
+        {
+            yield return CheckStep.Fail(wrongNpcFace ?? "No NPC faces drawn to check the NPC colour on.");
+            yield break;
+        }
+
+        // NPCs off: none in the set, so none drawn or labelled; players stay.
+        settings.ShowNpcs = false;
+        settings.Changed();
+        foreach (var step in WaitForDraws(window))
+        {
+            yield return step;
+        }
+
+        if (window.Players.NpcCount != 0 || CountFaces(window, PlayerRelation.Npc, 0, out _) != 0)
+        {
+            yield return CheckStep.Fail($"NPCs turned off but {window.Players.NpcCount} NPCs are still in the cube.");
+            yield break;
+        }
+
+        if (window.Players.Count < FakePlayers.StandardArriving(false))
+        {
+            yield return CheckStep.Fail($"Turning NPCs off also removed players: {window.Players.Count} left.");
+            yield break;
+        }
+
         // Back to the defaults: the frame returns to how it started.
         settings.CopyFrom(new CubeSettings());
         foreach (var step in WaitForDraws(window))
@@ -124,8 +165,10 @@ internal sealed class SettingsCheck : BridgeCheck
         var labelsAfter = CountLabels(window);
         context.Metric("labels", labelsAfter);
         context.Metric("otherFacesChecked", others);
+        context.Metric("npcFacesChecked", npcFaces);
         yield return labelsAfter == labelsBefore && window.Palette == PlayerPalette.Default && window.LastSpace.Edge == CubeSpace.DefaultEdge
-            ? CheckStep.Pass($"Size, labels, colour, opacity and orientation each changed the next frame; defaults restored it ({labelsAfter} labels).")
+            && window.Players.NpcCount >= FakePlayers.StandardNpcsInside
+            ? CheckStep.Pass($"Size, labels, colour, opacity, orientation, NPC colour and NPCs on/off each changed the next frame; defaults restored it ({labelsAfter} labels).")
             : CheckStep.Fail("Restoring the defaults didn't restore the frame.");
     }
 
@@ -168,6 +211,35 @@ internal sealed class SettingsCheck : BridgeCheck
         }
 
         return others == 0 ? "No other players' faces to check the colour on." : null;
+    }
+
+    /// <summary>Counts the faces drawn for one relation and checks each is a shade of the wanted colour.</summary>
+    /// <param name="window">The cube window.</param>
+    /// <param name="relation">Whose faces to count.</param>
+    /// <param name="want">The packed colour they should be shades of; 0 to only count.</param>
+    /// <param name="problem">What was wrong with a face, or null.</param>
+    /// <returns>How many faces that relation has.</returns>
+    private static int CountFaces(CubeWindow window, PlayerRelation relation, uint want, out string? problem)
+    {
+        problem = null;
+        var count = 0;
+        var players = window.Players.Items;
+        foreach (var p in window.DrawList.Items)
+        {
+            if (p.Kind != PrimitiveKind.Quad || p.Tag == 0 || players[p.Tag - 1].Relation != relation)
+            {
+                continue;
+            }
+
+            if (want != 0 && !IsShadeOf(p.Colour, want))
+            {
+                problem ??= $"A {relation} face is {p.Colour:X8}; expected a shade of {want:X8}.";
+            }
+
+            count++;
+        }
+
+        return count;
     }
 
     /// <summary>Counts label primitives in the last frame.</summary>

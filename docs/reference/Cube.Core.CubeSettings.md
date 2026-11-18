@@ -3,7 +3,8 @@
 Namespace: [Cube.Core](Cube.Core.md)  
 Assembly: Cube.Core.dll  
 
-The user's settings (PROJECT.md, "Features": cube size, orientation mode, labels on/off, colours and opacity; "View
+The user's settings (PROJECT.md, "Features": cube size, orientation mode, labels on/off, colours and opacity; "NPCs":
+NPCs on/off; "View
 orientation control": the saved view orientation and the control's corner),
 with their defaults and the rules for valid values. The plugin's saved configuration derives from this, so the
 rules are unit tested without Dalamud.
@@ -41,6 +42,18 @@ public float CubeEdge
 #### Field Value
 
  [float](https://learn.microsoft.com/dotnet/api/system.single)
+
+### <a id="Cube_Core_CubeSettings_DefaultNpcColour"></a> DefaultNpcColour
+
+Default NPC colour: purple, so NPCs stand apart from players (PROJECT.md, "Colours").
+
+```csharp
+public static readonly Vector3 DefaultNpcColour
+```
+
+#### Field Value
+
+ [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
 
 ### <a id="Cube_Core_CubeSettings_DefaultOtherColour"></a> DefaultOtherColour
 
@@ -89,6 +102,18 @@ public const float MinOpacity = 0.1
 #### Field Value
 
  [float](https://learn.microsoft.com/dotnet/api/system.single)
+
+### <a id="Cube_Core_CubeSettings_NpcColour"></a> NpcColour
+
+Named NPCs' colour.
+
+```csharp
+public Vector3 NpcColour
+```
+
+#### Field Value
+
+ [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
 
 ### <a id="Cube_Core_CubeSettings_Opacity"></a> Opacity
 
@@ -156,6 +181,19 @@ Whether other players' names are drawn (PROJECT.md: labels on/off).
 
 ```csharp
 public bool ShowLabels
+```
+
+#### Field Value
+
+ [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+### <a id="Cube_Core_CubeSettings_ShowNpcs"></a> ShowNpcs
+
+Whether named NPCs are shown (PROJECT.md, "NPCs": a setting turns them on or off, default on). When off, the
+game reader doesn't even look at NPCs. A config file saved before this setting existed loads it as on.
+
+```csharp
+public bool ShowNpcs
 ```
 
 #### Field Value
@@ -278,7 +316,7 @@ Opacity.
 
 ### <a id="Cube_Core_CubeSettings_Palette"></a> Palette\(\)
 
-The player colours at the chosen opacity, packed for drawing.
+The player and NPC colours at the chosen opacity, packed for drawing.
 
 ```csharp
 public PlayerPalette Palette()

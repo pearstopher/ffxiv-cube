@@ -20,8 +20,8 @@ internal sealed class DrawBudgetCheck : BridgeCheck
 
 ## Remarks
 
-Opens the window with [UseCrowd](Cube.TestBridge.FakePlayers.md#Cube_TestBridge_FakePlayers_UseCrowd) (the most players the game can have around, each with a
-cube and a full-length label), lets it warm up (first-use caches, JIT, name strings) and then measures
+Opens the window with [UseCrowd](Cube.TestBridge.FakePlayers.md#Cube_TestBridge_FakePlayers_UseCrowd) (the most players the game can have around plus the NPC
+cap, each with a cube and a full-length label), lets it warm up (first-use caches, JIT, name strings) and then measures
 [FramesToMeasure](Cube.TestBridge.Checks.DrawBudgetCheck.md#Cube_TestBridge_Checks_DrawBudgetCheck_FramesToMeasure) frames with the window's [DrawCostSampler](Cube.Core.DrawCostSampler.md#Cube_Core_DrawCostSampler).
 
 ## Fields
@@ -62,6 +62,18 @@ private const int WarmUpFrames = 30
 
  [int](https://learn.microsoft.com/dotnet/api/system.int32)
 
+### <a id="Cube_TestBridge_Checks_DrawBudgetCheck_showedNpcs"></a> showedNpcs
+
+The user's NPC setting before the check, restored by [Cleanup](Cube.TestBridge.Checks.DrawBudgetCheck.md#Cube_TestBridge_Checks_DrawBudgetCheck_Cleanup).
+
+```csharp
+private bool showedNpcs
+```
+
+#### Field Value
+
+ [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
 ### <a id="Cube_TestBridge_Checks_DrawBudgetCheck_wasOpen"></a> wasOpen
 
 The window's open state before the check, restored by [Cleanup](Cube.TestBridge.Checks.DrawBudgetCheck.md#Cube_TestBridge_Checks_DrawBudgetCheck_Cleanup).
@@ -89,6 +101,24 @@ public override string Name { get; }
  [string](https://learn.microsoft.com/dotnet/api/system.string)
 
 ## Methods
+
+### <a id="Cube_TestBridge_Checks_DrawBudgetCheck_AtCaps_Cube_Core_PlayerSet_"></a> AtCaps\(PlayerSet\)
+
+Whether the set holds at least the player cap and exactly the NPC cap: the worst case (#23, #74).
+
+```csharp
+internal static bool AtCaps(PlayerSet set)
+```
+
+#### Parameters
+
+`set` [PlayerSet](Cube.Core.PlayerSet.md)
+
+The window's player set.
+
+#### Returns
+
+ [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
 ### <a id="Cube_TestBridge_Checks_DrawBudgetCheck_Cleanup_Cube_TestBridge_BridgeContext_"></a> Cleanup\(BridgeContext\)
 

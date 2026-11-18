@@ -4,7 +4,8 @@ Namespace: [Cube.Tests](Cube.Tests.md)
 Assembly: Cube.Tests.dll  
 
 Checks the settings' defaults and repair rules (PROJECT.md, "Features": settings for cube size, orientation mode,
-labels on/off, colours and opacity; "Cube": edge 10–100, default 40; "View": Camera mode by default) and the
+labels on/off, colours and opacity; "NPCs": on by default, purple; "Cube": edge 10–100, default 40; "View": Camera
+mode by default; saved files from older versions still load) and the
 <code>/cube config</code> command.
 
 ```csharp
@@ -17,6 +18,20 @@ public class CubeSettingsTests
 [CubeSettingsTests](Cube.Tests.CubeSettingsTests.md)
 
 
+## Fields
+
+### <a id="Cube_Tests_CubeSettingsTests_JsonOptions"></a> JsonOptions
+
+Serialises public fields, as Dalamud's configuration serialiser does, so these tests see the same saved shape.
+
+```csharp
+private static readonly JsonSerializerOptions JsonOptions
+```
+
+#### Field Value
+
+ [JsonSerializerOptions](https://learn.microsoft.com/dotnet/api/system.text.json.jsonserializeroptions)
+
 ## Methods
 
 ### <a id="Cube_Tests_CubeSettingsTests_Chosen_colour_is_used_for_its_relation"></a> Chosen\_colour\_is\_used\_for\_its\_relation\(\)
@@ -24,6 +39,13 @@ public class CubeSettingsTests
 ```csharp
 [Fact]
 public void Chosen_colour_is_used_for_its_relation()
+```
+
+### <a id="Cube_Tests_CubeSettingsTests_Config_saved_before_npc_settings_existed_loads_with_npcs_on_in_purple"></a> Config\_saved\_before\_npc\_settings\_existed\_loads\_with\_npcs\_on\_in\_purple\(\)
+
+```csharp
+[Fact]
+public void Config_saved_before_npc_settings_existed_loads_with_npcs_on_in_purple()
 ```
 
 ### <a id="Cube_Tests_CubeSettingsTests_Copying_settings_copies_every_value_and_counts_as_a_change"></a> Copying\_settings\_copies\_every\_value\_and\_counts\_as\_a\_change\(\)
@@ -38,6 +60,13 @@ public void Copying_settings_copies_every_value_and_counts_as_a_change()
 ```csharp
 [Fact]
 public void Corrupt_colour_falls_back_to_the_default_and_out_of_range_is_clamped()
+```
+
+### <a id="Cube_Tests_CubeSettingsTests_Corrupt_npc_colour_falls_back_to_purple"></a> Corrupt\_npc\_colour\_falls\_back\_to\_purple\(\)
+
+```csharp
+[Fact]
+public void Corrupt_npc_colour_falls_back_to_purple()
 ```
 
 ### <a id="Cube_Tests_CubeSettingsTests_Cube_config_opens_settings_and_anything_else_toggles_the_cube_System_String_System_Boolean_"></a> Cube\_config\_opens\_settings\_and\_anything\_else\_toggles\_the\_cube\(string?, bool\)
@@ -75,11 +104,11 @@ public void Cube_size_is_kept_within_10_to_100(float stored, float expected)
 
 `expected` [float](https://learn.microsoft.com/dotnet/api/system.single)
 
-### <a id="Cube_Tests_CubeSettingsTests_Default_colours_are_three_different_colours"></a> Default\_colours\_are\_three\_different\_colours\(\)
+### <a id="Cube_Tests_CubeSettingsTests_Default_colours_are_four_different_colours"></a> Default\_colours\_are\_four\_different\_colours\(\)
 
 ```csharp
 [Fact]
-public void Default_colours_are_three_different_colours()
+public void Default_colours_are_four_different_colours()
 ```
 
 ### <a id="Cube_Tests_CubeSettingsTests_Defaults_match_the_spec"></a> Defaults\_match\_the\_spec\(\)
@@ -94,6 +123,13 @@ public void Defaults_match_the_spec()
 ```csharp
 [Fact]
 public void Every_change_bumps_the_revision()
+```
+
+### <a id="Cube_Tests_CubeSettingsTests_Npc_settings_survive_a_save_and_load"></a> Npc\_settings\_survive\_a\_save\_and\_load\(\)
+
+```csharp
+[Fact]
+public void Npc_settings_survive_a_save_and_load()
 ```
 
 ### <a id="Cube_Tests_CubeSettingsTests_Opacity_applies_to_every_player_colour"></a> Opacity\_applies\_to\_every\_player\_colour\(\)

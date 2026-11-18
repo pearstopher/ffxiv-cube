@@ -4,7 +4,8 @@ Namespace: [Cube.TestBridge.Checks](Cube.TestBridge.Checks.md)
 Assembly: Cube.dll  
 
 Checks each setting changes the drawn frame straight away, and that putting the settings back restores it
-(PROJECT.md, "Features": settings for cube size, orientation mode, labels on/off, colours and opacity).
+(PROJECT.md, "Features": settings for cube size, orientation mode, labels on/off, colours and opacity; "NPCs": NPCs
+on/off and the NPC colour).
 
 ```csharp
 internal sealed class SettingsCheck : BridgeCheck
@@ -20,10 +21,22 @@ internal sealed class SettingsCheck : BridgeCheck
 ## Remarks
 
 Changes the settings in memory only, never saving them, and restores the user's values in
-[Cleanup](Cube.TestBridge.Checks.SettingsCheck.md#Cube_TestBridge_Checks_SettingsCheck_Cleanup) even if a step fails. Uses the standard fake players (#16), all of whom are "other" or
-"party", so the colour step changes the "others" colour.
+[Cleanup](Cube.TestBridge.Checks.SettingsCheck.md#Cube_TestBridge_Checks_SettingsCheck_Cleanup) even if a step fails. Uses the standard fakes (#16, #74): the colour step changes the
+"others" colour, the NPC steps change the NPC colour and then turn NPCs off.
 
 ## Fields
+
+### <a id="Cube_TestBridge_Checks_SettingsCheck_NpcTestColour"></a> NpcTestColour
+
+A second unused colour for the NPC colour step, different from [TestColour](Cube.TestBridge.Checks.SettingsCheck.md#Cube_TestBridge_Checks_SettingsCheck_TestColour).
+
+```csharp
+private static readonly Vector3 NpcTestColour
+```
+
+#### Field Value
+
+ [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
 
 ### <a id="Cube_TestBridge_Checks_SettingsCheck_TestColour"></a> TestColour
 
@@ -136,6 +149,38 @@ public override void Cleanup(BridgeContext context)
 `context` [BridgeContext](Cube.TestBridge.BridgeContext.md)
 
 The same context the check ran with.
+
+### <a id="Cube_TestBridge_Checks_SettingsCheck_CountFaces_Cube_CubeWindow_Cube_Core_PlayerRelation_System_UInt32_System_String__"></a> CountFaces\(CubeWindow, PlayerRelation, uint, out string?\)
+
+Counts the faces drawn for one relation and checks each is a shade of the wanted colour.
+
+```csharp
+private static int CountFaces(CubeWindow window, PlayerRelation relation, uint want, out string? problem)
+```
+
+#### Parameters
+
+`window` [CubeWindow](Cube.CubeWindow.md)
+
+The cube window.
+
+`relation` [PlayerRelation](Cube.Core.PlayerRelation.md)
+
+Whose faces to count.
+
+`want` [uint](https://learn.microsoft.com/dotnet/api/system.uint32)
+
+The packed colour they should be shades of; 0 to only count.
+
+`problem` [string](https://learn.microsoft.com/dotnet/api/system.string)?
+
+What was wrong with a face, or null.
+
+#### Returns
+
+ [int](https://learn.microsoft.com/dotnet/api/system.int32)
+
+How many faces that relation has.
 
 ### <a id="Cube_TestBridge_Checks_SettingsCheck_CountLabels_Cube_CubeWindow_"></a> CountLabels\(CubeWindow\)
 

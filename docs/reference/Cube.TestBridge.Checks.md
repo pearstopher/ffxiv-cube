@@ -25,8 +25,9 @@ compares it primitive by primitive, and checks one ImGui call was issued per pri
  [FakePlayersCheck](Cube.TestBridge.Checks.FakePlayersCheck.md)
 
 Checks fake players reach the cube like real ones (PROJECT.md, "Automated testing": synthetic players so rendering
-checks work with nobody nearby; "Players": inside shown, outside not at all): with the standard fakes enabled, every
-fake inside the cube is in the window's player set with its relation, and the one outside isn't.
+checks work with nobody nearby; "Players" and "NPCs": inside shown, outside not at all): with the standard fakes
+enabled, every fake inside the cube, including the fake NPC, is in the window's player set with its relation, and
+the ones outside aren't.
 
  [FrameSnapshotCheck](Cube.TestBridge.Checks.FrameSnapshotCheck.md)
 
@@ -69,19 +70,22 @@ leaving at the sides.
 
  [PlayerCubesCheck](Cube.TestBridge.Checks.PlayerCubesCheck.md)
 
-Checks every player in the cube is drawn as a cube in their relation's colour (PROJECT.md, "Players" and "Colours";
-"Draw order": far first), using the standard fake players (#16) so it works with nobody around.
+Checks every player and named NPC in the cube is drawn as a cube in their relation's colour (PROJECT.md, "Players",
+"NPCs" and "Colours"; "Draw order": far first), using the standard fake players and fake NPC (#16, #74) so it works
+with nobody around.
 
  [PlayersMatchObjectTableCheck](Cube.TestBridge.Checks.PlayersMatchObjectTableCheck.md)
 
 Checks the players the window found match an independent read of Dalamud's object table (PROJECT.md,
 "Automated testing": the players drawn match an independent read of the object table; "Players": every player
-character inside the cube, nobody outside; "Colours": self, party/alliance, other).
+character inside the cube, nobody outside; "NPCs": every named, unowned NPC inside the cube when the setting is on;
+"Colours": self, party/alliance, other).
 
  [SettingsCheck](Cube.TestBridge.Checks.SettingsCheck.md)
 
 Checks each setting changes the drawn frame straight away, and that putting the settings back restores it
-(PROJECT.md, "Features": settings for cube size, orientation mode, labels on/off, colours and opacity).
+(PROJECT.md, "Features": settings for cube size, orientation mode, labels on/off, colours and opacity; "NPCs": NPCs
+on/off and the NPC colour).
 
  [SettingsWindowCheck](Cube.TestBridge.Checks.SettingsWindowCheck.md)
 
