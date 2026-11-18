@@ -146,6 +146,12 @@ Soak: draws the worst case for ten minutes, changing zone every half minute, and
 spent in game, collision data dropped on a zone change). Runs only when asked for with
 <code>ingame_test.py --soak</code>.
 
+ [TriangleProbeCheck](Cube.TestBridge.Checks.TriangleProbeCheck.md)
+
+Research probe for #99 (can the real collision triangles be drawn in the cube?): measures, in the running game,
+reading every triangle in the cube, clipping them to a turned box, deduplicating their edges, projecting and
+sorting them, and the cost of issuing them to ImGui as wireframe, filled triangles, or both.
+
  [ViewControlCheck](Cube.TestBridge.Checks.ViewControlCheck.md)
 
 Checks the view orientation control (PROJECT.md, "View orientation control"): a turned view changes the projected
@@ -169,9 +175,25 @@ the same thing (PROJECT.md, "Efficiency and memory": the phase 2 budgets hold wi
 
 ### Structs
 
+ [TriangleProbeCheck.ClipResult](Cube.TestBridge.Checks.TriangleProbeCheck.ClipResult.md)
+
+Counts from clipping.
+
+ [TriangleProbeCheck.Cost](Cube.TestBridge.Checks.TriangleProbeCheck.Cost.md)
+
+Time of a step.
+
  [CollisionProbeCheck.CubeCounts](Cube.TestBridge.Checks.CollisionProbeCheck.CubeCounts.md)
 
 What one walk found inside one cube size.
+
+ [TriangleProbeCheck.DedupResult](Cube.TestBridge.Checks.TriangleProbeCheck.DedupResult.md)
+
+Counts from edge deduplication.
+
+ [TriangleProbeCheck.ReadResult](Cube.TestBridge.Checks.TriangleProbeCheck.ReadResult.md)
+
+Counts from reading.
 
  [PlayerHeightCheck.Sample](Cube.TestBridge.Checks.PlayerHeightCheck.Sample.md)
 
@@ -190,3 +212,7 @@ Colliders counted by type, without a dictionary so the timed walk allocates noth
  [CollisionReaderCheck.Floor](Cube.TestBridge.Checks.CollisionReaderCheck.Floor.md)
 
 What [FindFloor](Cube.TestBridge.Checks.CollisionReaderCheck.md#Cube_TestBridge_Checks_CollisionReaderCheck_FindFloor) found.
+
+ [TriangleProbeCheck.Mode](Cube.TestBridge.Checks.TriangleProbeCheck.Mode.md)
+
+Drawing cell state: which ImGui work the hook does this frame.

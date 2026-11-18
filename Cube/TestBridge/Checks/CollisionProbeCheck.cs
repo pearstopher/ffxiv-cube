@@ -161,7 +161,7 @@ internal sealed class CollisionProbeCheck(IPluginLog log) : BridgeCheck
     /// <param name="world">The collider's world matrix.</param>
     /// <param name="min">The box's low corner.</param>
     /// <param name="max">The box's high corner.</param>
-    private static void UnitShapeBounds(in Matrix4x3 world, out Vector3 min, out Vector3 max) =>
+    internal static void UnitShapeBounds(in Matrix4x3 world, out Vector3 min, out Vector3 max) =>
         TransformBox(world, -Vector3.One, Vector3.One, out min, out max);
 
     /// <summary>
@@ -173,7 +173,7 @@ internal sealed class CollisionProbeCheck(IPluginLog log) : BridgeCheck
     /// <param name="localMax">The local box's high corner.</param>
     /// <param name="min">The world box's low corner.</param>
     /// <param name="max">The world box's high corner.</param>
-    private static void TransformBox(in Matrix4x3 world, Vector3 localMin, Vector3 localMax, out Vector3 min, out Vector3 max)
+    internal static void TransformBox(in Matrix4x3 world, Vector3 localMin, Vector3 localMax, out Vector3 min, out Vector3 max)
     {
         var centre = world.TransformCoordinate((localMin + localMax) * 0.5f);
         var half = (localMax - localMin) * 0.5f;
@@ -187,7 +187,7 @@ internal sealed class CollisionProbeCheck(IPluginLog log) : BridgeCheck
     /// <param name="aMax">First box's high corner.</param>
     /// <param name="bMin">Second box's low corner.</param>
     /// <param name="bMax">Second box's high corner.</param>
-    private static bool Overlaps(Vector3 aMin, Vector3 aMax, Vector3 bMin, Vector3 bMax) =>
+    internal static bool Overlaps(Vector3 aMin, Vector3 aMax, Vector3 bMin, Vector3 bMax) =>
         aMin.X <= bMax.X && aMax.X >= bMin.X && aMin.Y <= bMax.Y && aMax.Y >= bMin.Y && aMin.Z <= bMax.Z && aMax.Z >= bMin.Z;
 
     /// <summary>The largest side of a box.</summary>

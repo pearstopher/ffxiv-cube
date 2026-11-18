@@ -622,6 +622,20 @@ internal PlayerSet Players { get; }
 
  [PlayerSet](Cube.Core.PlayerSet.md)
 
+### <a id="Cube_CubeWindow_ProbeDraw"></a> ProbeDraw
+
+Extra drawing a research probe asks the window to do on its own draw list, inside the frame, so real ImGui
+costs can be measured (#99). Null outside such a probe. Runs after the frame's cost is recorded, so it never
+counts against the draw budget. Debug builds only.
+
+```csharp
+internal Action<ImDrawListPtr>? ProbeDraw { get; set; }
+```
+
+#### Property Value
+
+ [Action](https://learn.microsoft.com/dotnet/api/system.action\-1)<[ImDrawListPtr](https://github.com/goatcorp/Dalamud/blob/master/imgui/Dalamud.Bindings.ImGui/Custom/Generated/Generated/Structs.gen.cs)\>?
+
 ### <a id="Cube_CubeWindow_Settings"></a> Settings
 
 The user's settings (PROJECT.md, "Features": settings window). The bridge changes them in memory to test them.

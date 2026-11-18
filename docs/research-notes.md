@@ -279,3 +279,60 @@ The draw cost with all three caps (0.38–0.40 ms) is in the same range as #74's
 ### Still to measure
 
 - **Outdoors and in a city** (carried over from #28): every number above is from the same housing interior. The probe and these checks run on every bridge run, so the first run outdoors records terrain numbers without a code change.
+
+## Drawing the real collision triangles (#99)
+
+Measured 2026-11-18 in game with the Debug-only bridge check `probe-triangles` (`TriangleProbeCheck`, logs a `Probe #99` line and records every number below as a metric). It reads triangles the way #29–#30 read boxes (collider walk, node tree cull, then each triangle through the mesh's world matrix), clips them to a box turned 30° (#93: clipping in box space), deduplicates shared edges, projects and depth-sorts them, then issues real ImGui calls on the cube window's own draw list through `CubeWindow.ProbeDraw`. Read-only as before: memory reads only, no hooks, nothing sent.
+
+### The sample
+
+One place only: a closed area with the player at about (7, 0.5, 0), **563 colliders, 1,047 leaf nodes, 95,786 triangles** (95,630 from meshes, 600 from primitives turned into triangles: box 12, plane 2, 8-sided cylinder 32, icosahedron sphere 20). All of it lies inside the 100-yalm cube and nearly all inside the 40-yalm one (96,230 kept near the cube; at 40 yalms 86,024 wholly inside, 8,473 wholly outside, 1,733 cut, giving 88,714 triangles after clipping). The earlier #28 house interior had 15,038. No outdoor zone was sampled (the game can't be moved from here); the probe runs on every bridge run, so a run outdoors adds a `Probe #99` line without code changes.
+
+### Cost of each step (96k triangles, 0 bytes allocated in every step)
+
+| Step | 100-yalm cube | 40-yalm cube | Per triangle |
+| --- | --- | --- | --- |
+| Read (cull, transform to world) | 8.5 ms | 8.5 ms | about 88 ns |
+| Clip to the turned box | 9.3 ms | 9.8 ms | about 100 ns |
+| Deduplicate edges (hash table) | 31.5 ms | 26.9 ms | about 330 ns |
+| Project, shade, depth sort | 16.0 ms | 14.8 ms | about 170 ns |
+| **Whole rebuild** | **about 65 ms** | **about 60 ms** | |
+
+The node-box walk of #28 read the same scene in 0.32 ms: the triangles are what cost, not the walk. Edges: 145,784 unique (134,944 at 40 yalms) from 142,886 shared. 38,907 shared edges (27%) lie between coplanar triangles and would vanish from a wireframe if coplanar triangles were merged.
+
+### Cost of drawing in ImGui (60,000 primitives, the probe's cap; 0 bytes in every cell)
+
+| Mode | View idle (cached projection) | View turning (project + sort + draw) | Per primitive, idle / turning |
+| --- | --- | --- | --- |
+| (a) Wireframe, unique edges | 2.2 ms | 6.6 ms | 37 / 111 ns |
+| (b) Filled, flat shaded, sorted | 3.9 ms | 14.4–14.7 ms | 66 / 246 ns |
+| (c) Both | at the cap before any edge was drawn: same as (b), 3.9 / 18.7 ms | | |
+
+Both cube sizes gave the same numbers because both hit the 60,000 cap. Extrapolated linearly, drawing all 96k triangles filled would cost about 6.3 ms idle and 23 ms turning; all 145k edges about 5.3 ms idle. These are the CPU cost of filling ImGui's draw list; GPU cost is on top and wasn't measured. ImGui rebuilds its draw list every frame, so the "idle" cost is paid every frame, not only when the view changes.
+
+### What fits the 0.5 ms frame budget
+
+Phase 2's budget is 0.5 ms for the whole frame, and the frame already uses 0.39 ms with 101 players, 50 NPCs and 945 collision boxes (`draw-within-budget` in the same run). Taking the whole 0.5 ms for triangles alone, with nothing else drawn:
+
+| Mode | Triangles or edges that fit |
+| --- | --- |
+| Wireframe, view idle | about 13,000 edges |
+| Filled, view idle | about 7,500 triangles |
+| Wireframe, view turning | about 4,500 edges |
+| Filled, view turning | about 2,000 triangles |
+
+The sample has 96,000 triangles, and #28's house interior 15,000. So **real triangles don't fit the budget in common places**, even at 40 yalms (88,714 after clipping), and a view that is being turned is far worse than an idle one.
+
+### Reducing the load
+
+- **Skip tiny triangles:** under 1 px at 300 px across, that is 1,922 of 88,714 (2%) at 40 yalms but **43,226 of 96,230 (45%)** at 100 yalms. Worth doing for the largest cube; not enough alone.
+- **Merge coplanar triangles** would remove about 27% of wireframe edges here; filled triangles would need real polygon merging, which wasn't measured.
+- **Cap with nearest first:** the only sure way to keep a bound. The caps in the table above are the most that fits; beyond them boxes (as now) or nothing.
+- **Spread the rebuild over frames:** the 60–65 ms rebuild is about 130 frames of 0.5 ms; fine for a cache that only changes when the player moves a set fraction of the cube (#29–#30 already work this way), not for a turning view, which needs the projection redone every frame.
+- **Memory:** about 108 bytes per triangle for the world, clipped and projected buffers plus 36 bytes per edge, plus a hash table for dedup (24 MB at the probe's size; a table for a 20,000-triangle cap would be about 1 MB). A cap of 20,000 triangles is roughly 3 MB, so memory isn't the problem; time is.
+
+### Recommendation
+
+- **Don't build "all the real triangles" inside PROJECT.md's 0.5 ms and 0 bytes budget.** Nothing allocates, but ImGui submission alone is 66 ns a filled triangle (idle) and 246 ns (turning), and the scene around the player has 15,000–96,000 of them.
+- Options for the owner to choose between (commented on #99 and #100): (1) keep boxes (the current approach); (2) real triangles only nearest the player up to a cap (about 2,000 filled or 4,500 lines, so that a turning view still fits) and boxes beyond; (3) loosen the collision budget, e.g. to about 2 ms for wireframe drawing of 20,000+ edges while idle, which makes the plugin's per-frame cost many times the current one; (4) draw the triangles into a cached texture and show that while idle (not measured here; it would need a render target, which is a new kind of dependency).
+- The probe code stays in the bridge (Debug only) so the numbers can be repeated after any change.

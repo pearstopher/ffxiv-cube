@@ -303,7 +303,7 @@ High corner.
 Whether two boxes overlap (touching counts).
 
 ```csharp
-private static bool Overlaps(Vector3 aMin, Vector3 aMax, Vector3 bMin, Vector3 bMax)
+internal static bool Overlaps(Vector3 aMin, Vector3 aMax, Vector3 bMin, Vector3 bMax)
 ```
 
 #### Parameters
@@ -394,7 +394,7 @@ Smallest world-aligned box around a local box after a world transform: the centr
 matrix, and each half-extent axis adds its absolute row to the world half-extent.
 
 ```csharp
-private static void TransformBox(in Matrix4x3 world, Vector3 localMin, Vector3 localMax, out Vector3 min, out Vector3 max)
+internal static void TransformBox(in Matrix4x3 world, Vector3 localMin, Vector3 localMax, out Vector3 min, out Vector3 max)
 ```
 
 #### Parameters
@@ -424,7 +424,7 @@ The world box's high corner.
 World box of a box, cylinder, sphere or plane collider: the unit shape (-1..1) through its world matrix.
 
 ```csharp
-private static void UnitShapeBounds(in Matrix4x3 world, out Vector3 min, out Vector3 max)
+internal static void UnitShapeBounds(in Matrix4x3 world, out Vector3 min, out Vector3 max)
 ```
 
 #### Parameters
