@@ -44,8 +44,8 @@ public sealed class CollisionBoxSet
     public const float MergeTolerance = 0.01f;
 
     /// <summary>
-    /// The cube's horizontal half-diagonal per unit of half-edge (√2): the furthest a corner of the cube reaches
-    /// sideways from the centre at any yaw.
+    /// The cube's horizontal half-diagonal per unit of half-edge (√2, rounded up so a corner is never missed): the
+    /// furthest a corner of the cube reaches sideways from the centre at any yaw.
     /// </summary>
     private const float Diagonal = 1.41422f;
 
@@ -125,8 +125,9 @@ public sealed class CollisionBoxSet
     /// <param name="playerPosition">The cube's centre now.</param>
     /// <param name="edge">The cube's edge now.</param>
     /// <param name="sceneStamp">
-    /// Whatever identifies the loaded collision to the reader (for example the zone, collider count and first collider
-    /// address combined, as #28 suggests). Core only compares it.
+    /// Whatever identifies the loaded collision to the reader (in the plugin, the first collider's address and the
+    /// collider count, as #28 suggests, with the detail level folded in by <see cref="CollisionDetails.Stamp"/>). Core
+    /// only compares it; zone changes are handled separately by <see cref="CollisionCache"/>.
     /// </param>
     public bool NeedsRefresh(Vector3 playerPosition, float edge, ulong sceneStamp)
     {

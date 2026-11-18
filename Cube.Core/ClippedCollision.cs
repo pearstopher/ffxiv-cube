@@ -75,12 +75,4 @@ public sealed class ClippedCollision
         this.Clips++;
         return true;
     }
-
-    /// <summary>Empties the list, so the next <see cref="Update"/> clips again.</summary>
-    public void Clear()
-    {
-        this.Count = 0;
-        this.set = null;
-        this.completed = -1;
-    }
 }

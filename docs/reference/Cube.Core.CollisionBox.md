@@ -20,7 +20,7 @@ one box per primitive collider (a unit shape placed by its matrix). Those follow
 navigate by, cost one memory read each, and need no triangles.
 </p>
 <p>
-World-axis-aligned, like the player cubes ([AddSolidCube](Cube.Core.CubeGeometry.md#Cube_Core_CubeGeometry_AddSolidCube)), so a box turns with the rest
+World-axis-aligned, like the player cubes (both drawn by [BoxProjector](Cube.Core.BoxProjector.md#Cube_Core_BoxProjector)), so a box turns with the rest
 of the cube's contents when the camera turns and the cached list never has to be rebuilt for a yaw change. Two
 `System.Numerics.Vector3`s, 24 bytes, so the bounded cache in [CollisionBoxSet](Cube.Core.CollisionBoxSet.md#Cube_Core_CollisionBoxSet) stays small.
 </p>
