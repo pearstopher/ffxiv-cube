@@ -4,8 +4,9 @@ Namespace: [Cube.TestBridge.Checks](Cube.TestBridge.Checks.md)
 Assembly: Cube.dll  
 
 Checks fake players reach the cube like real ones (PROJECT.md, "Automated testing": synthetic players so rendering
-checks work with nobody nearby; "Players": inside shown, outside not at all): with the standard fakes enabled, every
-fake inside the cube is in the window's player set with its relation, and the one outside isn't.
+checks work with nobody nearby; "Players" and "NPCs": inside shown, outside not at all): with the standard fakes
+enabled, every fake inside the cube, including the fake NPC, is in the window's player set with its relation, and
+the ones outside aren't.
 
 ```csharp
 internal sealed class FakePlayersCheck : BridgeCheck

@@ -3,8 +3,8 @@
 Namespace: [Cube.Core](Cube.Core.md)  
 Assembly: Cube.Core.dll  
 
-How a player relates to the local player, which picks their colour (PROJECT.md, "Colours": self,
-party/alliance members, everyone else; one colour each).
+How someone in the cube relates to the local player, which picks their colour (PROJECT.md, "Colours": self,
+party/alliance members, everyone else, NPCs; one colour each).
 
 ```csharp
 public enum PlayerRelation : byte
@@ -14,7 +14,7 @@ public enum PlayerRelation : byte
 
 `Other = 0` 
 
-Everyone else.
+Every other player.
 
 
 
@@ -27,3 +27,10 @@ A member of the local player's party or alliance.
 `Self = 2` 
 
 The local player, at the centre of the cube.
+
+
+
+`Npc = 3` 
+
+A named NPC (PROJECT.md, "NPCs"): drawn like a player, in its own colour. Never self or party, even when the NPC
+fights alongside the player.

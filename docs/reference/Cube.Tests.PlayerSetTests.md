@@ -3,8 +3,9 @@
 Namespace: [Cube.Tests](Cube.Tests.md)  
 Assembly: Cube.Tests.dll  
 
-Checks which players are kept and how they're classified and named (PROJECT.md, "Players": only players inside
-the cube are shown; "Colours": self, party/alliance, everyone else; "Efficiency and memory": name labels cached
+Checks which players and NPCs are kept and how they're classified and named (PROJECT.md, "Players": only players
+inside the cube are shown; "NPCs": named, unowned NPCs inside the cube are shown, with an on/off setting; "Colours":
+self, party/alliance, everyone else, NPCs; "Efficiency and memory": name labels cached
 and only rebuilt when a name changes, no per-frame allocations, bounded memory; "Privacy": names stay in memory).
 
 ```csharp
@@ -86,19 +87,49 @@ private static PlayerSet Begin(PlayerSet set)
 public void Name_stops_at_the_first_zero_byte()
 ```
 
-### <a id="Cube_Tests_PlayerSetTests_NewSet_System_Int32_"></a> NewSet\(int\)
+### <a id="Cube_Tests_PlayerSetTests_Nameless_npc_is_not_a_named_npc"></a> Nameless\_npc\_is\_not\_a\_named\_npc\(\)
 
 ```csharp
-private static PlayerSet NewSet(int capacity = 16)
+[Fact]
+public void Nameless_npc_is_not_a_named_npc()
+```
+
+### <a id="Cube_Tests_PlayerSetTests_NewSet_System_Int32_System_Int32_"></a> NewSet\(int, int\)
+
+```csharp
+private static PlayerSet NewSet(int capacity = 16, int npcCapacity = 0)
 ```
 
 #### Parameters
 
 `capacity` [int](https://learn.microsoft.com/dotnet/api/system.int32)
 
+`npcCapacity` [int](https://learn.microsoft.com/dotnet/api/system.int32)
+
 #### Returns
 
  [PlayerSet](Cube.Core.PlayerSet.md)
+
+### <a id="Cube_Tests_PlayerSetTests_Npc_cap_drops_extra_npcs_without_pushing_out_players"></a> Npc\_cap\_drops\_extra\_npcs\_without\_pushing\_out\_players\(\)
+
+```csharp
+[Fact]
+public void Npc_cap_drops_extra_npcs_without_pushing_out_players()
+```
+
+### <a id="Cube_Tests_PlayerSetTests_Npc_inside_the_cube_is_kept_as_an_npc_with_its_name"></a> Npc\_inside\_the\_cube\_is\_kept\_as\_an\_npc\_with\_its\_name\(\)
+
+```csharp
+[Fact]
+public void Npc_inside_the_cube_is_kept_as_an_npc_with_its_name()
+```
+
+### <a id="Cube_Tests_PlayerSetTests_Npc_outside_the_cube_is_not_kept"></a> Npc\_outside\_the\_cube\_is\_not\_kept\(\)
+
+```csharp
+[Fact]
+public void Npc_outside_the_cube_is_not_kept()
+```
 
 ### <a id="Cube_Tests_PlayerSetTests_Player_inside_the_cube_is_kept_with_its_position_and_name"></a> Player\_inside\_the\_cube\_is\_kept\_with\_its\_position\_and\_name\(\)
 
@@ -119,6 +150,20 @@ public void Player_outside_the_cube_is_not_kept()
 ```csharp
 [Fact]
 public void Player_outside_the_cube_is_rejected_before_its_name_is_read()
+```
+
+### <a id="Cube_Tests_PlayerSetTests_Player_owned_pet_is_not_treated_as_an_npc"></a> Player\_owned\_pet\_is\_not\_treated\_as\_an\_npc\(\)
+
+```csharp
+[Fact]
+public void Player_owned_pet_is_not_treated_as_an_npc()
+```
+
+### <a id="Cube_Tests_PlayerSetTests_Reading_the_same_npcs_every_frame_does_not_allocate"></a> Reading\_the\_same\_npcs\_every\_frame\_does\_not\_allocate\(\)
+
+```csharp
+[Fact]
+public void Reading_the_same_npcs_every_frame_does_not_allocate()
 ```
 
 ### <a id="Cube_Tests_PlayerSetTests_Reading_the_same_players_every_frame_does_not_allocate"></a> Reading\_the\_same\_players\_every\_frame\_does\_not\_allocate\(\)
@@ -169,4 +214,18 @@ public void Slot_beyond_the_name_cache_is_ignored()
 ```csharp
 [Fact]
 public void Slot_reused_by_another_player_gets_the_new_name()
+```
+
+### <a id="Cube_Tests_PlayerSetTests_Unowned_npc_with_a_name_is_a_named_npc"></a> Unowned\_npc\_with\_a\_name\_is\_a\_named\_npc\(\)
+
+```csharp
+[Fact]
+public void Unowned_npc_with_a_name_is_a_named_npc()
+```
+
+### <a id="Cube_Tests_PlayerSetTests_With_npcs_off_no_npc_is_kept_but_players_still_are"></a> With\_npcs\_off\_no\_npc\_is\_kept\_but\_players\_still\_are\(\)
+
+```csharp
+[Fact]
+public void With_npcs_off_no_npc_is_kept_but_players_still_are()
 ```

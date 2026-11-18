@@ -4,8 +4,9 @@ namespace Cube.TestBridge.Checks;
 
 /// <summary>
 /// Checks fake players reach the cube like real ones (PROJECT.md, "Automated testing": synthetic players so rendering
-/// checks work with nobody nearby; "Players": inside shown, outside not at all): with the standard fakes enabled, every
-/// fake inside the cube is in the window's player set with its relation, and the one outside isn't.
+/// checks work with nobody nearby; "Players" and "NPCs": inside shown, outside not at all): with the standard fakes
+/// enabled, every fake inside the cube, including the fake NPC, is in the window's player set with its relation, and
+/// the ones outside aren't.
 /// </summary>
 internal sealed class FakePlayersCheck : BridgeCheck
 {
@@ -49,9 +50,9 @@ internal sealed class FakePlayersCheck : BridgeCheck
 
             var index = player.Slot - FakePlayers.FirstSlot;
             var (name, _, relation) = FakePlayers.Standard[index];
-            if (name == "Fake Outside")
+            if (FakePlayers.IsOutside(name))
             {
-                yield return CheckStep.Fail("The fake player outside the cube is in the window's players.");
+                yield return CheckStep.Fail($"'{name}', outside the cube, is in the window's players.");
                 yield break;
             }
 
@@ -64,10 +65,11 @@ internal sealed class FakePlayersCheck : BridgeCheck
             found++;
         }
 
+        var expected = FakePlayers.StandardArriving(window.Settings.ShowNpcs);
         context.Metric("fakesInside", found);
-        yield return found == FakePlayers.StandardInside
-            ? CheckStep.Pass($"All {found} fakes inside the cube arrived with the right relation and name; the outside one didn't.")
-            : CheckStep.Fail($"{found} of {FakePlayers.StandardInside} fakes inside the cube arrived.");
+        yield return found == expected
+            ? CheckStep.Pass($"All {found} fakes inside the cube arrived with the right relation and name; the outside ones didn't.")
+            : CheckStep.Fail($"{found} of {expected} fakes inside the cube arrived.");
     }
 
     /// <inheritdoc/>

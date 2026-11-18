@@ -3,8 +3,9 @@
 Namespace: [Cube.Core](Cube.Core.md)  
 Assembly: Cube.Core.dll  
 
-One player inside the cube this frame: where they are, how they relate to the local player, and their
-(cached) name for the label.
+One player or named NPC inside the cube this frame: where they are, how they relate to the local player, and
+their (cached) name for the label. NPCs use the same record so they share the players' culling, draw order and
+label code (PROJECT.md, "NPCs": shown the same way as players).
 
 ```csharp
 public readonly record struct NearbyPlayer : IEquatable<NearbyPlayer>
@@ -19,8 +20,9 @@ public readonly record struct NearbyPlayer : IEquatable<NearbyPlayer>
 
 ### <a id="Cube_Core_NearbyPlayer__ctor_System_Int32_System_UInt32_System_Numerics_Vector3_Cube_Core_PlayerRelation_System_String_"></a> NearbyPlayer\(int, uint, Vector3, PlayerRelation, string\)
 
-One player inside the cube this frame: where they are, how they relate to the local player, and their
-(cached) name for the label.
+One player or named NPC inside the cube this frame: where they are, how they relate to the local player, and
+their (cached) name for the label. NPCs use the same record so they share the players' culling, draw order and
+label code (PROJECT.md, "NPCs": shown the same way as players).
 
 ```csharp
 public NearbyPlayer(int Slot, uint EntityId, Vector3 Position, PlayerRelation Relation, string Name)
@@ -42,11 +44,11 @@ World position in yalms.
 
 `Relation` [PlayerRelation](Cube.Core.PlayerRelation.md)
 
-Self, party/alliance or other.
+Self, party/alliance, other or NPC.
 
 `Name` [string](https://learn.microsoft.com/dotnet/api/system.string)
 
-The player's name, shared from [NameCache](Cube.Core.NameCache.md#Cube_Core_NameCache): only drawn on screen, never stored or sent (PROJECT.md, "Privacy").
+The name, shared from [NameCache](Cube.Core.NameCache.md#Cube_Core_NameCache): only drawn on screen, never stored or sent (PROJECT.md, "Privacy").
 
 ## Properties
 
@@ -64,7 +66,7 @@ public uint EntityId { get; init; }
 
 ### <a id="Cube_Core_NearbyPlayer_Name"></a> Name
 
-The player's name, shared from [NameCache](Cube.Core.NameCache.md#Cube_Core_NameCache): only drawn on screen, never stored or sent (PROJECT.md, "Privacy").
+The name, shared from [NameCache](Cube.Core.NameCache.md#Cube_Core_NameCache): only drawn on screen, never stored or sent (PROJECT.md, "Privacy").
 
 ```csharp
 public string Name { get; init; }
@@ -88,7 +90,7 @@ public Vector3 Position { get; init; }
 
 ### <a id="Cube_Core_NearbyPlayer_Relation"></a> Relation
 
-Self, party/alliance or other.
+Self, party/alliance, other or NPC.
 
 ```csharp
 public PlayerRelation Relation { get; init; }

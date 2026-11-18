@@ -5,7 +5,8 @@ Assembly: Cube.dll
 
 Checks the players the window found match an independent read of Dalamud's object table (PROJECT.md,
 "Automated testing": the players drawn match an independent read of the object table; "Players": every player
-character inside the cube, nobody outside; "Colours": self, party/alliance, other).
+character inside the cube, nobody outside; "NPCs": every named, unowned NPC inside the cube when the setting is on;
+"Colours": self, party/alliance, other).
 
 ```csharp
 internal sealed class PlayersMatchObjectTableCheck : BridgeCheck
@@ -31,7 +32,8 @@ in between; they are ignored. Fake players (Debug, #16) are left out of the comp
 
 Checks the players the window found match an independent read of Dalamud's object table (PROJECT.md,
 "Automated testing": the players drawn match an independent read of the object table; "Players": every player
-character inside the cube, nobody outside; "Colours": self, party/alliance, other).
+character inside the cube, nobody outside; "NPCs": every named, unowned NPC inside the cube when the setting is on;
+"Colours": self, party/alliance, other).
 
 ```csharp
 public PlayersMatchObjectTableCheck(IObjectTable objects)
@@ -140,6 +142,40 @@ The cube window.
 #### Returns
 
  [CheckStep](Cube.TestBridge.CheckStep.md)
+
+### <a id="Cube_TestBridge_Checks_PlayersMatchObjectTableCheck_CompareNpcs_Cube_CubeWindow_Cube_Core_CubeSpace__System_Collections_Generic_HashSet_System_Int32__System_Int32__"></a> CompareNpcs\(CubeWindow, in CubeSpace, HashSet<int\>, out int\)
+
+Compares the window's NPCs with the named NPCs Dalamud's object table shows inside the cube (PROJECT.md, "NPCs":
+every named, unowned event or battle NPC inside the cube; none when the setting is off). Matched by object
+table slot, since event NPCs don't have unique entity ids.
+
+```csharp
+private string? CompareNpcs(CubeWindow window, in CubeSpace space, HashSet<int> drawn, out int expected)
+```
+
+#### Parameters
+
+`window` [CubeWindow](Cube.CubeWindow.md)
+
+The cube window.
+
+`space` [CubeSpace](Cube.Core.CubeSpace.md)
+
+The last frame's cube.
+
+`drawn` [HashSet](https://learn.microsoft.com/dotnet/api/system.collections.generic.hashset\-1)<[int](https://learn.microsoft.com/dotnet/api/system.int32)\>
+
+Slots of the real NPCs the window kept.
+
+`expected` [int](https://learn.microsoft.com/dotnet/api/system.int32)
+
+How many named NPCs the object table has well inside the cube.
+
+#### Returns
+
+ [string](https://learn.microsoft.com/dotnet/api/system.string)?
+
+What was wrong, or null if they match.
 
 ### <a id="Cube_TestBridge_Checks_PlayersMatchObjectTableCheck_Run_Cube_TestBridge_BridgeContext_"></a> Run\(BridgeContext\)
 

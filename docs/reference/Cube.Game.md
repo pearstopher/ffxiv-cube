@@ -18,6 +18,7 @@ condition flags.
 
  [PlayerReader](Cube.Game.PlayerReader.md)
 
-Reads the local player and the players around them straight from the game's object manager and offers each to
-[PlayerSet](Cube.Core.PlayerSet.md#Cube_Core_PlayerSet) (PROJECT.md, "Players"). The approach chosen in #10 (<code>docs/research-notes.md</code>):
-FFXIVClientStructs, not Dalamud's object table, because it allocates nothing per frame.
+Reads the local player, the players around them and the named NPCs straight from the game's object manager and
+offers each to [PlayerSet](Cube.Core.PlayerSet.md#Cube_Core_PlayerSet) (PROJECT.md, "Players" and "NPCs"). The approach chosen in #10
+(<code>docs/research-notes.md</code>): FFXIVClientStructs, not Dalamud's object table, because it allocates nothing per
+frame.

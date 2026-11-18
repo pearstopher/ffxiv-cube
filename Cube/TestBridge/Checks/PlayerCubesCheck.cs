@@ -4,8 +4,9 @@ using Cube.Core;
 namespace Cube.TestBridge.Checks;
 
 /// <summary>
-/// Checks every player in the cube is drawn as a cube in their relation's colour (PROJECT.md, "Players" and "Colours";
-/// "Draw order": far first), using the standard fake players (#16) so it works with nobody around.
+/// Checks every player and named NPC in the cube is drawn as a cube in their relation's colour (PROJECT.md, "Players",
+/// "NPCs" and "Colours"; "Draw order": far first), using the standard fake players and fake NPC (#16, #74) so it works
+/// with nobody around.
 /// </summary>
 /// <remarks>
 /// Each player's faces carry the player's index + 1 as their <see cref="DrawPrimitive.Tag"/>. For each player the
@@ -108,11 +109,26 @@ internal sealed class PlayerCubesCheck : BridgeCheck
             }
         }
 
+        // NPCs (#74) go through the same faces check above, in the NPC colour; make sure the fake NPC was among them.
+        var npcs = 0;
+        foreach (ref readonly var player in players)
+        {
+            npcs += player.Relation == PlayerRelation.Npc ? 1 : 0;
+        }
+
+        var showNpcs = window.Settings.ShowNpcs;
+        var expected = FakePlayers.StandardArriving(showNpcs);
         context.Metric("players", players.Length);
+        context.Metric("npcs", npcs);
         context.Metric("primitives", items.Length);
         context.Metric("halfSizeYalms", PlayerCubes.HalfSize(window.LastSpace, window.LastProjection));
-        return players.Length >= FakePlayers.StandardInside
-            ? CheckStep.Pass($"{players.Length} player cubes drawn, each 1-3 faces in its relation's colour, far to near.")
-            : CheckStep.Fail($"Only {players.Length} players in the cube; expected at least the {FakePlayers.StandardInside} fakes.");
+        if (showNpcs && npcs < FakePlayers.StandardNpcsInside)
+        {
+            return CheckStep.Fail($"NPCs are on but {npcs} NPC cubes were drawn; expected at least the fake NPC.");
+        }
+
+        return players.Length >= expected
+            ? CheckStep.Pass($"{players.Length} player and NPC cubes drawn ({npcs} NPCs), each 1-3 faces in its relation's colour, far to near.")
+            : CheckStep.Fail($"Only {players.Length} players in the cube; expected at least the {expected} fakes.");
     }
 }

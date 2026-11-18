@@ -34,7 +34,8 @@ only the visible faces of a cube).
 
  [CubeSettings](Cube.Core.CubeSettings.md)
 
-The user's settings (PROJECT.md, "Features": cube size, orientation mode, labels on/off, colours and opacity; "View
+The user's settings (PROJECT.md, "Features": cube size, orientation mode, labels on/off, colours and opacity; "NPCs":
+NPCs on/off; "View
 orientation control": the saved view orientation and the control's corner),
 with their defaults and the rules for valid values. The plugin's saved configuration derives from this, so the
 rules are unit tested without Dalamud.
@@ -68,13 +69,15 @@ changes). Reading the same names every frame allocates nothing.
 Draws each player in the cube as a small solid cube in their relation's colour, with a name label for other
 players (PROJECT.md, "Players": player cube size fixed relative to the big cube, about 1/40 of its edge, minimum a
 few pixels; "Features": the local player is a cube at the centre in its own colour, other players are labelled
-with their names; "Labels": the name drawn next to the cube, overlaps are fine).
+with their names; "Labels": the name drawn next to the cube, overlaps are fine; "NPCs": named NPCs are shown the
+same way, in the NPC colour).
 
  [PlayerSet](Cube.Core.PlayerSet.md)
 
-The players inside the cube this frame (PROJECT.md, "Players": every player character in the object table whose
-position is inside the cube; players outside are not shown at all). The game reader offers every player it
-finds; this class culls, classifies and names them.
+The players and named NPCs inside the cube this frame (PROJECT.md, "Players": every player character in the
+object table whose position is inside the cube; "NPCs": every named NPC inside the cube, shown the same way;
+anyone outside is not shown at all). The game reader offers everyone it finds; this class culls, classifies and
+names them.
 
  [ViewWidget](Cube.Core.ViewWidget.md)
 
@@ -112,12 +115,13 @@ plugin from Dalamud's client state and condition flags (<code>docs/research-note
 
  [NearbyPlayer](Cube.Core.NearbyPlayer.md)
 
-One player inside the cube this frame: where they are, how they relate to the local player, and their
-(cached) name for the label.
+One player or named NPC inside the cube this frame: where they are, how they relate to the local player, and
+their (cached) name for the label. NPCs use the same record so they share the players' culling, draw order and
+label code (PROJECT.md, "NPCs": shown the same way as players).
 
  [PlayerPalette](Cube.Core.PlayerPalette.md)
 
-One colour per player relation (PROJECT.md, "Colours": self, party/alliance members, everyone else; one colour
+One colour per relation (PROJECT.md, "Colours": self, party/alliance members, everyone else, NPCs; one colour
 each). Built from the user's [CubeSettings](Cube.Core.CubeSettings.md#Cube_Core_CubeSettings).
 
  [ViewOrientation](Cube.Core.ViewOrientation.md)
@@ -140,8 +144,8 @@ cube's frame stays still on screen in both modes.
 
  [PlayerRelation](Cube.Core.PlayerRelation.md)
 
-How a player relates to the local player, which picks their colour (PROJECT.md, "Colours": self,
-party/alliance members, everyone else; one colour each).
+How someone in the cube relates to the local player, which picks their colour (PROJECT.md, "Colours": self,
+party/alliance members, everyone else, NPCs; one colour each).
 
  [PrimitiveKind](Cube.Core.PrimitiveKind.md)
 

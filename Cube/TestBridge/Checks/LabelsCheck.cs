@@ -120,7 +120,7 @@ internal sealed class LabelsCheck : BridgeCheck
 
         context.Metric("players", players.Length);
         context.Metric("labels", drawn);
-        return others >= FakePlayers.StandardInside
+        return others >= FakePlayers.StandardArriving(window.Settings.ShowNpcs)
             ? CheckStep.Pass($"{drawn} labels, one per other player, each with that player's name, beside and above their cube; none on self.")
             : CheckStep.Fail($"Only {others} other players in the cube; expected the standard fakes.");
     }

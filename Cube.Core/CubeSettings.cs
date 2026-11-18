@@ -3,7 +3,8 @@ using System.Numerics;
 namespace Cube.Core;
 
 /// <summary>
-/// The user's settings (PROJECT.md, "Features": cube size, orientation mode, labels on/off, colours and opacity; "View
+/// The user's settings (PROJECT.md, "Features": cube size, orientation mode, labels on/off, colours and opacity; "NPCs":
+/// NPCs on/off; "View
 /// orientation control": the saved view orientation and the control's corner),
 /// with their defaults and the rules for valid values. The plugin's saved configuration derives from this, so the
 /// rules are unit tested without Dalamud.
@@ -23,6 +24,9 @@ public class CubeSettings
 
     /// <summary>Default colour for everyone else.</summary>
     public static readonly Vector3 DefaultOtherColour = new(1f, 0.6f, 0.2f);
+
+    /// <summary>Default NPC colour: purple, so NPCs stand apart from players (PROJECT.md, "Colours").</summary>
+    public static readonly Vector3 DefaultNpcColour = new(0.8f, 0.4f, 1f);
 
     /// <summary>Lowest opacity allowed, so the cubes can be made faint but never vanish entirely.</summary>
     public const float MinOpacity = 0.1f;
@@ -44,6 +48,15 @@ public class CubeSettings
 
     /// <summary>Everyone else's colour.</summary>
     public Vector3 OtherColour = DefaultOtherColour;
+
+    /// <summary>
+    /// Whether named NPCs are shown (PROJECT.md, "NPCs": a setting turns them on or off, default on). When off, the
+    /// game reader doesn't even look at NPCs. A config file saved before this setting existed loads it as on.
+    /// </summary>
+    public bool ShowNpcs = true;
+
+    /// <summary>Named NPCs' colour.</summary>
+    public Vector3 NpcColour = DefaultNpcColour;
 
     /// <summary>Opacity of everything drawn except labels (which stay readable), <see cref="MinOpacity"/>–1.</summary>
     public float Opacity = 1f;
@@ -87,6 +100,7 @@ public class CubeSettings
         this.SelfColour = ValidColour(this.SelfColour, DefaultSelfColour);
         this.PartyColour = ValidColour(this.PartyColour, DefaultPartyColour);
         this.OtherColour = ValidColour(this.OtherColour, DefaultOtherColour);
+        this.NpcColour = ValidColour(this.NpcColour, DefaultNpcColour);
         this.Opacity = float.IsNaN(this.Opacity) ? 1f : Math.Clamp(this.Opacity, MinOpacity, 1f);
         if (!float.IsFinite(this.ViewYawDegrees) || !float.IsFinite(this.ViewPitchDegrees))
         {
@@ -131,6 +145,8 @@ public class CubeSettings
         this.SelfColour = other.SelfColour;
         this.PartyColour = other.PartyColour;
         this.OtherColour = other.OtherColour;
+        this.ShowNpcs = other.ShowNpcs;
+        this.NpcColour = other.NpcColour;
         this.Opacity = other.Opacity;
         this.ViewYawDegrees = other.ViewYawDegrees;
         this.ViewPitchDegrees = other.ViewPitchDegrees;
@@ -138,11 +154,12 @@ public class CubeSettings
         this.Changed();
     }
 
-    /// <summary>The player colours at the chosen opacity, packed for drawing.</summary>
+    /// <summary>The player and NPC colours at the chosen opacity, packed for drawing.</summary>
     public PlayerPalette Palette() => new(
         Pack(this.SelfColour, this.Opacity),
         Pack(this.PartyColour, this.Opacity),
-        Pack(this.OtherColour, this.Opacity));
+        Pack(this.OtherColour, this.Opacity),
+        Pack(this.NpcColour, this.Opacity));
 
     /// <summary>A colour at the chosen opacity, packed for drawing; used for the wireframe.</summary>
     /// <param name="rgb">Red, green and blue, 0–1.</param>

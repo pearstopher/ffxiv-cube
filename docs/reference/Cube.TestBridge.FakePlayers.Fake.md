@@ -3,7 +3,7 @@
 Namespace: [Cube.TestBridge](Cube.TestBridge.md)  
 Assembly: Cube.dll  
 
-One fake player.
+One fake player or NPC.
 
 ```csharp
 private readonly record struct FakePlayers.Fake : IEquatable<FakePlayers.Fake>
@@ -16,12 +16,12 @@ private readonly record struct FakePlayers.Fake : IEquatable<FakePlayers.Fake>
 
 ## Constructors
 
-### <a id="Cube_TestBridge_FakePlayers_Fake__ctor_System_Byte___System_Numerics_Vector3_System_Boolean_System_Boolean_"></a> Fake\(byte\[\], Vector3, bool, bool\)
+### <a id="Cube_TestBridge_FakePlayers_Fake__ctor_System_Byte___System_Numerics_Vector3_Cube_Core_PlayerRelation_System_Boolean_"></a> Fake\(byte\[\], Vector3, PlayerRelation, bool\)
 
-One fake player.
+One fake player or NPC.
 
 ```csharp
-public Fake(byte[] Name, Vector3 Offset, bool IsParty, bool IsWorld)
+public Fake(byte[] Name, Vector3 Offset, PlayerRelation Relation, bool IsWorld)
 ```
 
 #### Parameters
@@ -34,27 +34,15 @@ UTF-8 name bytes, encoded once.
 
 Position as fractions of the half-edge in cube-local coordinates, or a world position if <code class="paramref">IsWorld</code>.
 
-`IsParty` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+`Relation` [PlayerRelation](Cube.Core.PlayerRelation.md)
 
-Whether it is flagged as a party member.
+Party, other or NPC.
 
 `IsWorld` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
 Whether <code class="paramref">Offset</code> is a fixed world position.
 
 ## Properties
-
-### <a id="Cube_TestBridge_FakePlayers_Fake_IsParty"></a> IsParty
-
-Whether it is flagged as a party member.
-
-```csharp
-public bool IsParty { get; init; }
-```
-
-#### Property Value
-
- [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
 ### <a id="Cube_TestBridge_FakePlayers_Fake_IsWorld"></a> IsWorld
 
@@ -91,3 +79,15 @@ public Vector3 Offset { get; init; }
 #### Property Value
 
  [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
+
+### <a id="Cube_TestBridge_FakePlayers_Fake_Relation"></a> Relation
+
+Party, other or NPC.
+
+```csharp
+public PlayerRelation Relation { get; init; }
+```
+
+#### Property Value
+
+ [PlayerRelation](Cube.Core.PlayerRelation.md)

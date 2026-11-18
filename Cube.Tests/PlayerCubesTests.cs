@@ -5,8 +5,8 @@ namespace Cube.Tests;
 
 /// <summary>
 /// Checks players are drawn as small coloured cubes (PROJECT.md, "Players": about 1/40 of the big cube's edge, minimum
-/// a few pixels; "Colours": one colour each for self, party/alliance and others; "Draw order": near cubes cover far
-/// ones; "Efficiency and memory": no per-frame allocations).
+/// a few pixels; "Colours": one colour each for self, party/alliance, others and NPCs; "NPCs": drawn like players, in
+/// the NPC colour; "Draw order": near cubes cover far ones; "Efficiency and memory": no per-frame allocations).
 /// </summary>
 public class PlayerCubesTests
 {
@@ -46,12 +46,35 @@ public class PlayerCubesTests
     [InlineData(PlayerRelation.Self)]
     [InlineData(PlayerRelation.Party)]
     [InlineData(PlayerRelation.Other)]
+    [InlineData(PlayerRelation.Npc)]
     public void Each_relation_has_its_own_colour(PlayerRelation relation)
     {
         var palette = PlayerPalette.Default;
-        var colours = new[] { palette.Self, palette.Party, palette.Other };
+        var colours = new[] { palette.Self, palette.Party, palette.Other, palette.Npc };
 
         Assert.Single(colours, c => c == palette.For(relation));
+    }
+
+    [Fact]
+    public void Npc_inside_the_cube_is_drawn_in_the_npc_colour_with_a_label()
+    {
+        var space = Space();
+        var projection = ViewProjection.Fit(Vector2.Zero, new Vector2(400, 400), space.HalfEdge, View);
+        var list = new DrawList(64);
+
+        PlayerCubes.Add(list, space, projection, [Player(new Vector3(4, 0, -6), PlayerRelation.Npc)], PlayerPalette.Default);
+
+        var items = list.Items.ToArray();
+        var faces = items.Where(p => p.Kind == PrimitiveKind.Quad).ToArray();
+        Assert.InRange(faces.Length, 1, 3);
+        Assert.Contains(faces, p => p.Colour == PlayerPalette.Default.Npc);
+        Assert.Single(items, p => p.Kind == PrimitiveKind.Label && p.Tag == 1);
+    }
+
+    [Fact]
+    public void Default_npc_colour_is_purple()
+    {
+        Assert.Equal(Colour.Pack(0.8f, 0.4f, 1f, 1f), PlayerPalette.Default.Npc);
     }
 
     [Fact]
@@ -111,7 +134,7 @@ public class PlayerCubesTests
         var players = new NearbyPlayer[60];
         for (var i = 0; i < players.Length; i++)
         {
-            players[i] = Player(new Vector3(i % 20 - 10, 0, i / 3 - 10), (PlayerRelation)(i % 3));
+            players[i] = Player(new Vector3(i % 20 - 10, 0, i / 3 - 10), (PlayerRelation)(i % 4));
         }
 
         Allocations.AssertNone(() =>

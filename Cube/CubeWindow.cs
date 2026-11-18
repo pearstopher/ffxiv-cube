@@ -24,10 +24,10 @@ namespace Cube;
 internal sealed class CubeWindow : Window
 {
     /// <summary>
-    /// Most primitives a frame can hold: the 12 cube edges plus three faces and a label for every character slot in
-    /// the object table (200), with room to spare. Fixed, so memory never grows (PROJECT.md: bounded memory).
+    /// Most primitives a frame can hold: the 12 cube edges plus three faces and a label for every player the set can
+    /// hold (200) and every NPC (50), with room to spare. Fixed, so memory never grows (PROJECT.md: bounded memory).
     /// </summary>
-    internal const int DrawListCapacity = 1024;
+    internal const int DrawListCapacity = 1280;
 
     /// <summary>Colour of the big cube's edges: light grey.</summary>
     private static readonly Vector3 WireRgb = new(0.85f, 0.85f, 0.85f);
@@ -96,20 +96,32 @@ internal sealed class CubeWindow : Window
 
 #if DEBUG
     /// <summary>
-    /// Name cache slots: the 200 character slots, plus room above them for a full crowd of Debug-only fake players
-    /// (#16, #23), so checks can measure at the player cap.
+    /// Name cache slots: one per object table index (players and NPCs are both keyed by slot), plus room above them
+    /// for a full crowd of Debug-only fake players and fake NPCs (#16, #23, #74), so checks can measure at the caps.
     /// </summary>
-    internal const int NameSlots = PlayerReader.CharacterSlots + PlayerReader.MaxPlayers;
+    internal const int NameSlots = PlayerReader.ObjectSlots + PlayerReader.MaxPlayers + PlayerReader.MaxNpcs;
 #else
-    /// <summary>Name cache slots: one per character slot. Fixed, so memory never grows (PROJECT.md: bounded memory).</summary>
-    internal const int NameSlots = PlayerReader.CharacterSlots;
+    /// <summary>
+    /// Name cache slots: one per object table index, since NPCs live above the character slots (#73). Fixed, so memory
+    /// never grows (PROJECT.md: bounded memory); about 52 KB of name bytes.
+    /// </summary>
+    internal const int NameSlots = PlayerReader.ObjectSlots;
 #endif
+
+    /// <summary>
+    /// Most players kept per frame: every character slot, which covers the 100 real players the game can hold plus,
+    /// in Debug builds, a full crowd of fakes on top.
+    /// </summary>
+    internal const int PlayerCapacity = PlayerReader.CharacterSlots;
 
     /// <summary>This frame's primitives, in drawing order. Read by the test bridge.</summary>
     internal DrawList DrawList { get; } = new(DrawListCapacity);
 
-    /// <summary>The players inside the cube this frame (PROJECT.md, "Players"). Read by the test bridge.</summary>
-    internal PlayerSet Players { get; } = new(NameSlots, new NameCache(NameSlots));
+    /// <summary>
+    /// The players and named NPCs inside the cube this frame (PROJECT.md, "Players" and "NPCs"), NPCs capped at
+    /// <see cref="PlayerReader.MaxNpcs"/>. Read by the test bridge.
+    /// </summary>
+    internal PlayerSet Players { get; } = new(PlayerCapacity, new NameCache(NameSlots), PlayerReader.MaxNpcs);
 
     /// <summary>Whether the last frame found a local player to centre the cube on.</summary>
     internal bool LastHadLocalPlayer { get; private set; }
@@ -218,7 +230,7 @@ internal sealed class CubeWindow : Window
     /// The text of each label the last frame drew, in drawing order, so the bridge can check it against the player
     /// set. Holds references to the cached name strings, so recording allocates nothing. Debug builds only.
     /// </summary>
-    internal string[] LastLabelText { get; } = new string[NameSlots];
+    internal string[] LastLabelText { get; } = new string[PlayerCapacity + PlayerReader.MaxNpcs];
 
     /// <summary>How many entries of <see cref="LastLabelText"/> the last frame filled.</summary>
     internal int LastLabelCount { get; private set; }
@@ -333,7 +345,7 @@ internal sealed class CubeWindow : Window
         this.hasSpace = true;
         var projection = ViewProjection.Fit(regionMin, regionSize, space.HalfEdge, this.view);
 
-        this.Players.Begin(space);
+        this.Players.Begin(space, settings.ShowNpcs);
         PlayerReader.Read(this.Players);
 
 #if DEBUG

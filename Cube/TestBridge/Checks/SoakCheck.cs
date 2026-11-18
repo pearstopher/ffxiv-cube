@@ -35,6 +35,9 @@ internal sealed class SoakCheck : BridgeCheck
     /// <summary>The window's open state before the check.</summary>
     private bool wasOpen;
 
+    /// <summary>The user's NPC setting before the check.</summary>
+    private bool showedNpcs;
+
     /// <inheritdoc/>
     public override string Name => "soak-ten-minutes-at-the-cap";
 
@@ -51,6 +54,10 @@ internal sealed class SoakCheck : BridgeCheck
         var sampler = window.DrawCost;
         this.wasOpen = window.IsOpen;
         window.IsOpen = true;
+
+        // Players and NPCs at their caps (#74), whatever the user's NPC setting.
+        this.showedNpcs = window.Settings.ShowNpcs;
+        window.Settings.ShowNpcs = true;
         window.Fakes.UseCrowd();
 
         var warm = sampler.TotalRecorded;
@@ -78,7 +85,8 @@ internal sealed class SoakCheck : BridgeCheck
         var average = frames == 0 ? 0 : sampler.ToMilliseconds(sampler.LifetimeTicks - startTicks) / frames;
         var nameFrames = window.NameBuildFrames - startNameFrames;
         context.Metric("frames", frames);
-        context.Metric("players", window.Players.Count);
+        context.Metric("players", window.Players.Count - window.Players.NpcCount);
+        context.Metric("npcs", window.Players.NpcCount);
         context.Metric("allocatedBytes", bytes);
         context.Metric("averageMs", average);
         context.Metric("nameBuildFrames", nameFrames);
@@ -89,8 +97,8 @@ internal sealed class SoakCheck : BridgeCheck
 
         var summary = string.Create(
             CultureInfo.InvariantCulture,
-            $"{frames} frames over {Duration.TotalMinutes:0} min with {window.Players.Count} players: {bytes} bytes allocated in steady state ({nameFrames} frames built a new name), average {average:0.0000} ms.");
-        yield return frames > 0 && bytes == 0 && average < DrawBudgetCheck.BudgetMilliseconds
+            $"{frames} frames over {Duration.TotalMinutes:0} min with {window.Players.Count - window.Players.NpcCount} players and {window.Players.NpcCount} NPCs: {bytes} bytes allocated in steady state ({nameFrames} frames built a new name), average {average:0.0000} ms.");
+        yield return frames > 0 && bytes == 0 && average < DrawBudgetCheck.BudgetMilliseconds && DrawBudgetCheck.AtCaps(window.Players)
             ? CheckStep.Pass(summary)
             : CheckStep.Fail(summary);
     }
@@ -99,6 +107,7 @@ internal sealed class SoakCheck : BridgeCheck
     public override void Cleanup(BridgeContext context)
     {
         context.Window.Fakes.Clear();
+        context.Window.Settings.ShowNpcs = this.showedNpcs;
         context.Window.IsOpen = this.wasOpen;
     }
 }

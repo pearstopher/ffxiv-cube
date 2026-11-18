@@ -9,8 +9,8 @@ namespace Cube.TestBridge.Checks;
 /// A budget failure is a failed test, not a note (CLAUDE.md).
 /// </summary>
 /// <remarks>
-/// Opens the window with <see cref="FakePlayers.UseCrowd"/> (the most players the game can have around, each with a
-/// cube and a full-length label), lets it warm up (first-use caches, JIT, name strings) and then measures
+/// Opens the window with <see cref="FakePlayers.UseCrowd"/> (the most players the game can have around plus the NPC
+/// cap, each with a cube and a full-length label), lets it warm up (first-use caches, JIT, name strings) and then measures
 /// <see cref="FramesToMeasure"/> frames with the window's <see cref="Core.DrawCostSampler"/>.
 /// </remarks>
 internal sealed class DrawBudgetCheck : BridgeCheck
@@ -27,6 +27,9 @@ internal sealed class DrawBudgetCheck : BridgeCheck
     /// <summary>The window's open state before the check, restored by <see cref="Cleanup"/>.</summary>
     private bool wasOpen;
 
+    /// <summary>The user's NPC setting before the check, restored by <see cref="Cleanup"/>.</summary>
+    private bool showedNpcs;
+
     /// <inheritdoc/>
     public override string Name => "draw-within-budget";
 
@@ -37,7 +40,10 @@ internal sealed class DrawBudgetCheck : BridgeCheck
         this.wasOpen = context.Window.IsOpen;
         context.Window.IsOpen = true;
 
-        // Measure the worst case even when nobody is around: a full crowd of fakes, all labelled (#23).
+        // Measure the worst case even when nobody is around: a full crowd of fake players and NPCs, all labelled
+        // (#23, #74). NPCs are turned on for the check so the NPC cap is measured whatever the user chose.
+        this.showedNpcs = context.Window.Settings.ShowNpcs;
+        context.Window.Settings.ShowNpcs = true;
         context.Window.Fakes.UseCrowd();
 
         var start = sampler.TotalRecorded;
@@ -55,7 +61,10 @@ internal sealed class DrawBudgetCheck : BridgeCheck
         var average = sampler.AverageMilliseconds;
         var bytes = sampler.TotalAllocatedBytes;
         var allocatingFrames = sampler.FramesWithAllocations;
-        context.Metric("players", context.Window.Players.Count);
+        var set = context.Window.Players;
+        var players = set.Count - set.NpcCount;
+        context.Metric("players", players);
+        context.Metric("npcs", set.NpcCount);
         context.Metric("primitives", context.Window.DrawList.Count);
         context.Metric("frames", sampler.Count);
         context.Metric("averageMs", average);
@@ -65,10 +74,10 @@ internal sealed class DrawBudgetCheck : BridgeCheck
 
         var summary = string.Create(
             CultureInfo.InvariantCulture,
-            $"{context.Window.Players.Count} players, {sampler.Count} frames: average {average:0.0000} ms (budget {BudgetMilliseconds} ms), {bytes} bytes allocated in {allocatingFrames} frame(s) (budget 0).");
+            $"{players} players and {set.NpcCount} NPCs, {sampler.Count} frames: average {average:0.0000} ms (budget {BudgetMilliseconds} ms), {bytes} bytes allocated in {allocatingFrames} frame(s) (budget 0).");
 
-        // Fewer players than the crowd would mean the worst case wasn't measured.
-        yield return average < BudgetMilliseconds && bytes == 0 && context.Window.Players.Count >= Game.PlayerReader.MaxPlayers
+        // Fewer than the caps would mean the worst case wasn't measured.
+        yield return average < BudgetMilliseconds && bytes == 0 && AtCaps(set)
             ? CheckStep.Pass(summary)
             : CheckStep.Fail(summary);
     }
@@ -77,6 +86,12 @@ internal sealed class DrawBudgetCheck : BridgeCheck
     public override void Cleanup(BridgeContext context)
     {
         context.Window.Fakes.Clear();
+        context.Window.Settings.ShowNpcs = this.showedNpcs;
         context.Window.IsOpen = this.wasOpen;
     }
+
+    /// <summary>Whether the set holds at least the player cap and exactly the NPC cap: the worst case (#23, #74).</summary>
+    /// <param name="set">The window's player set.</param>
+    internal static bool AtCaps(Core.PlayerSet set) =>
+        set.Count - set.NpcCount >= Game.PlayerReader.MaxPlayers && set.NpcCount >= Game.PlayerReader.MaxNpcs;
 }

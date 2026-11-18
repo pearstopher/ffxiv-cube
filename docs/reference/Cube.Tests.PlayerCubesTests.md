@@ -4,8 +4,8 @@ Namespace: [Cube.Tests](Cube.Tests.md)
 Assembly: Cube.Tests.dll  
 
 Checks players are drawn as small coloured cubes (PROJECT.md, "Players": about 1/40 of the big cube's edge, minimum
-a few pixels; "Colours": one colour each for self, party/alliance and others; "Draw order": near cubes cover far
-ones; "Efficiency and memory": no per-frame allocations).
+a few pixels; "Colours": one colour each for self, party/alliance, others and NPCs; "NPCs": drawn like players, in
+the NPC colour; "Draw order": near cubes cover far ones; "Efficiency and memory": no per-frame allocations).
 
 ```csharp
 public class PlayerCubesTests
@@ -31,6 +31,13 @@ private static readonly ViewOrientation View
 
 ## Methods
 
+### <a id="Cube_Tests_PlayerCubesTests_Default_npc_colour_is_purple"></a> Default\_npc\_colour\_is\_purple\(\)
+
+```csharp
+[Fact]
+public void Default_npc_colour_is_purple()
+```
+
 ### <a id="Cube_Tests_PlayerCubesTests_Drawing_players_does_not_allocate"></a> Drawing\_players\_does\_not\_allocate\(\)
 
 ```csharp
@@ -52,6 +59,7 @@ public void Each_player_gets_faces_in_their_colour_tagged_with_their_index()
 [InlineData(new object[] { PlayerRelation.Self })]
 [InlineData(new object[] { PlayerRelation.Party })]
 [InlineData(new object[] { PlayerRelation.Other })]
+[InlineData(new object[] { PlayerRelation.Npc })]
 public void Each_relation_has_its_own_colour(PlayerRelation relation)
 ```
 
@@ -71,6 +79,13 @@ public void Local_player_cube_is_at_the_centre_of_the_window()
 ```csharp
 [Fact]
 public void Nearer_player_is_drawn_after_farther_player()
+```
+
+### <a id="Cube_Tests_PlayerCubesTests_Npc_inside_the_cube_is_drawn_in_the_npc_colour_with_a_label"></a> Npc\_inside\_the\_cube\_is\_drawn\_in\_the\_npc\_colour\_with\_a\_label\(\)
+
+```csharp
+[Fact]
+public void Npc_inside_the_cube_is_drawn_in_the_npc_colour_with_a_label()
 ```
 
 ### <a id="Cube_Tests_PlayerCubesTests_Player_System_Numerics_Vector3_Cube_Core_PlayerRelation_"></a> Player\(Vector3, PlayerRelation\)

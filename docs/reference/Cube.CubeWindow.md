@@ -56,11 +56,11 @@ Writes the settings to disk, after the user turns the view with the view control
 
 ### <a id="Cube_CubeWindow_DrawListCapacity"></a> DrawListCapacity
 
-Most primitives a frame can hold: the 12 cube edges plus three faces and a label for every character slot in
-the object table (200), with room to spare. Fixed, so memory never grows (PROJECT.md: bounded memory).
+Most primitives a frame can hold: the 12 cube edges plus three faces and a label for every player the set can
+hold (200) and every NPC (50), with room to spare. Fixed, so memory never grows (PROJECT.md: bounded memory).
 
 ```csharp
-internal const int DrawListCapacity = 1024
+internal const int DrawListCapacity = 1280
 ```
 
 #### Field Value
@@ -107,11 +107,24 @@ private static readonly Matrix4x4 GizmoProjection
 
 ### <a id="Cube_CubeWindow_NameSlots"></a> NameSlots
 
-Name cache slots: the 200 character slots, plus room above them for a full crowd of Debug-only fake players
-(#16, #23), so checks can measure at the player cap.
+Name cache slots: one per object table index (players and NPCs are both keyed by slot), plus room above them
+for a full crowd of Debug-only fake players and fake NPCs (#16, #23, #74), so checks can measure at the caps.
 
 ```csharp
-internal const int NameSlots = 300
+internal const int NameSlots = 969
+```
+
+#### Field Value
+
+ [int](https://learn.microsoft.com/dotnet/api/system.int32)
+
+### <a id="Cube_CubeWindow_PlayerCapacity"></a> PlayerCapacity
+
+Most players kept per frame: every character slot, which covers the 100 real players the game can hold plus,
+in Debug builds, a full crowd of fakes on top.
+
+```csharp
+internal const int PlayerCapacity = 200
 ```
 
 #### Field Value
@@ -466,7 +479,8 @@ internal PlayerPalette Palette { get; private set; }
 
 ### <a id="Cube_CubeWindow_Players"></a> Players
 
-The players inside the cube this frame (PROJECT.md, "Players"). Read by the test bridge.
+The players and named NPCs inside the cube this frame (PROJECT.md, "Players" and "NPCs"), NPCs capped at
+[MaxNpcs](Cube.Game.PlayerReader.md#Cube_Game_PlayerReader_MaxNpcs). Read by the test bridge.
 
 ```csharp
 internal PlayerSet Players { get; }

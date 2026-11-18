@@ -3,13 +3,15 @@ using Cube.Core;
 using Dalamud.Game.ClientState.Objects.Enums;
 using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dalamud.Plugin.Services;
+using CsBattleNpcSubKind = FFXIVClientStructs.FFXIV.Client.Game.Object.BattleNpcSubKind;
 
 namespace Cube.TestBridge.Checks;
 
 /// <summary>
 /// Checks the players the window found match an independent read of Dalamud's object table (PROJECT.md,
 /// "Automated testing": the players drawn match an independent read of the object table; "Players": every player
-/// character inside the cube, nobody outside; "Colours": self, party/alliance, other).
+/// character inside the cube, nobody outside; "NPCs": every named, unowned NPC inside the cube when the setting is on;
+/// "Colours": self, party/alliance, other).
 /// </summary>
 /// <remarks>
 /// The window reads FFXIVClientStructs directly (allocation-free); this check reads Dalamud's
@@ -83,12 +85,28 @@ internal sealed class PlayersMatchObjectTableCheck(IObjectTable objects) : Bridg
         var localId = objects.LocalPlayer!.EntityId;
 
         var drawn = new Dictionary<uint, PlayerRelation>();
+        var drawnNpcSlots = new HashSet<int>();
         foreach (var player in window.Players.Items)
         {
-            if (player.Slot < Game.PlayerReader.CharacterSlots)
+            if (player.Slot >= Game.PlayerReader.ObjectSlots)
+            {
+                continue;
+            }
+
+            if (player.Relation == PlayerRelation.Npc)
+            {
+                drawnNpcSlots.Add(player.Slot);
+            }
+            else
             {
                 drawn[player.EntityId] = player.Relation;
             }
+        }
+
+        var npcProblem = this.CompareNpcs(window, space, drawnNpcSlots, out var expectedNpcs);
+        if (npcProblem is not null)
+        {
+            return CheckStep.Fail(npcProblem);
         }
 
         var expected = 0;
@@ -137,12 +155,71 @@ internal sealed class PlayersMatchObjectTableCheck(IObjectTable objects) : Bridg
         context.Metric("offered", window.Players.Offered);
         context.Metric("dropped", window.Players.Dropped);
         context.Metric("nameBuilds", window.Players.Names.Builds);
+        context.Metric("npcsInCube", drawnNpcSlots.Count);
+        context.Metric("expectedNpcsInCube", expectedNpcs);
 
         if (self != 1)
         {
             return CheckStep.Fail($"Expected exactly one Self player, found {self}.");
         }
 
-        return CheckStep.Pass($"{drawn.Count} player(s) in the cube match the object table ({party} party/alliance, 1 self).");
+        return CheckStep.Pass($"{drawn.Count} player(s) in the cube match the object table ({party} party/alliance, 1 self); {drawnNpcSlots.Count} named NPC(s) match too.");
+    }
+
+    /// <summary>
+    /// Compares the window's NPCs with the named NPCs Dalamud's object table shows inside the cube (PROJECT.md, "NPCs":
+    /// every named, unowned event or battle NPC inside the cube; none when the setting is off). Matched by object
+    /// table slot, since event NPCs don't have unique entity ids.
+    /// </summary>
+    /// <param name="window">The cube window.</param>
+    /// <param name="space">The last frame's cube.</param>
+    /// <param name="drawn">Slots of the real NPCs the window kept.</param>
+    /// <param name="expected">How many named NPCs the object table has well inside the cube.</param>
+    /// <returns>What was wrong, or null if they match.</returns>
+    private string? CompareNpcs(CubeWindow window, in CubeSpace space, HashSet<int> drawn, out int expected)
+    {
+        expected = 0;
+        var showNpcs = window.Settings.ShowNpcs;
+        if (!showNpcs)
+        {
+            return drawn.Count == 0 ? null : $"NPCs are turned off but {drawn.Count} were kept.";
+        }
+
+        // At the cap, which NPCs are kept depends on table order, so only the count can be checked.
+        var full = window.Players.NpcCount >= Game.PlayerReader.MaxNpcs;
+        foreach (var obj in objects)
+        {
+            var kind = obj.ObjectKind;
+            if (kind is not (ObjectKind.EventNpc or ObjectKind.BattleNpc) || obj.ObjectIndex >= Game.PlayerReader.ObjectSlots)
+            {
+                continue;
+            }
+
+            var petOrBuddy = kind == ObjectKind.BattleNpc && obj.SubKind is (byte)CsBattleNpcSubKind.Pet or (byte)CsBattleNpcSubKind.Buddy;
+            if (obj.OwnerId != PlayerSet.NoOwner || petOrBuddy || obj.Name.TextValue.Length == 0)
+            {
+                if (drawn.Contains(obj.ObjectIndex))
+                {
+                    return $"Object {obj.ObjectIndex} ({kind}) is owned or nameless but was kept as an NPC.";
+                }
+
+                continue;
+            }
+
+            if (Within(space, obj.Position, space.HalfEdge - BoundaryTolerance))
+            {
+                expected++;
+                if (!full && !drawn.Contains(obj.ObjectIndex))
+                {
+                    return $"A named NPC inside the cube (slot {obj.ObjectIndex}, {kind}) is missing from the window's NPCs.";
+                }
+            }
+            else if (!Within(space, obj.Position, space.HalfEdge + BoundaryTolerance) && drawn.Contains(obj.ObjectIndex))
+            {
+                return $"A named NPC outside the cube (slot {obj.ObjectIndex}) is in the window's NPCs.";
+            }
+        }
+
+        return null;
     }
 }

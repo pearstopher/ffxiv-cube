@@ -134,6 +134,7 @@ Not yet measured: whether `BNpcPart` (weak spots) carry a name (if not, rule 2 d
 - **Recommended NPC cap: 50**, filled in object table order (battle NPCs first, since they sit in the lower slots), with the overflow counted like `PlayerSet.Dropped`. The live sample needed 22 in the largest cube.
 - **Why not more:** draw cost is about linear in drawn entries. At the player cap (101) `draw-within-budget` measures 0.22–0.29 ms; 151 entries is about 0.43 ms, inside the 0.5 ms budget. 200 entries would be about 0.55 ms, over it. #74's budget and soak checks run players and NPCs at their caps together, so the real number decides; lower the cap if they fail.
 - **Name cache:** keyed by object table slot, so it needs one slot per table index: 819 (plus the Debug fake slots), fixed at load. At 64 bytes of name per slot that is about 52 KB.
+- **Measured in #74** (Debug build, city, 101 players and 50 NPCs, all labelled): `draw-within-budget` 0.443 ms and 0.467 ms on two runs, 0 bytes. Inside the budget but with little room; if a later change pushes it over, lower `PlayerReader.MaxNpcs` first.
 
 ### Name changes
 

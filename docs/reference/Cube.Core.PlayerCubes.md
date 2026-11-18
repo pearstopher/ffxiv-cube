@@ -6,7 +6,8 @@ Assembly: Cube.Core.dll
 Draws each player in the cube as a small solid cube in their relation's colour, with a name label for other
 players (PROJECT.md, "Players": player cube size fixed relative to the big cube, about 1/40 of its edge, minimum a
 few pixels; "Features": the local player is a cube at the centre in its own colour, other players are labelled
-with their names; "Labels": the name drawn next to the cube, overlaps are fine).
+with their names; "Labels": the name drawn next to the cube, overlaps are fine; "NPCs": named NPCs are shown the
+same way, in the NPC colour).
 
 ```csharp
 public static class PlayerCubes
