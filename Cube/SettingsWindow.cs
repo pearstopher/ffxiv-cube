@@ -1,5 +1,4 @@
 using System;
-using System.Numerics;
 using Cube.Core;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Windowing;

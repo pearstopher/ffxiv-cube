@@ -35,10 +35,9 @@ only the visible faces of a cube).
  [CubeSettings](Cube.Core.CubeSettings.md)
 
 The user's settings (PROJECT.md, "Features": cube size, orientation mode, labels on/off, colours and opacity; "NPCs":
-NPCs on/off; "View
-orientation control": the saved view orientation and the control's corner),
-with their defaults and the rules for valid values. The plugin's saved configuration derives from this, so the
-rules are unit tested without Dalamud.
+NPCs on/off; "View orientation control": the saved view orientation and the control's corner), with their defaults
+and the rules for valid values. The plugin's saved configuration derives from this, so the rules are unit tested
+without Dalamud.
 
  [DrawCostSampler](Cube.Core.DrawCostSampler.md)
 

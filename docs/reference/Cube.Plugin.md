@@ -3,7 +3,7 @@
 Namespace: [Cube](Cube.md)  
 Assembly: Cube.dll  
 
-Entry point. Registers the <code>/cube</code> command and the cube window, and logs which build loaded.
+Entry point. Registers the <code>/cube</code> command, the cube and settings windows, and logs which build loaded.
 
 ```csharp
 public sealed class Plugin : IDalamudPlugin, IDisposable
@@ -23,7 +23,7 @@ public sealed class Plugin : IDalamudPlugin, IDisposable
 ## Remarks
 
 The plugin only reads game state and draws it in its own window (PROJECT.md, "Goal"):
-it never changes the game, hooks nothing it doesn't need, and sends nothing.
+it never changes the game, hooks nothing, and sends nothing.
 Everything registered here is released in [Dispose](Cube.Plugin.md#Cube_Plugin_Dispose).
 
 ## Constructors
@@ -150,7 +150,7 @@ private readonly WindowSystem windowSystem
 
 ### <a id="Cube_Plugin_ClientState"></a> ClientState
 
-Login and GPose state: the cube is hidden when logged out or in GPose (PROJECT.md, "When hidden").
+Login, GPose and PvP state: the cube is hidden when logged out, in GPose or in PvP (PROJECT.md, "When hidden").
 
 ```csharp
 [PluginService]
@@ -215,7 +215,8 @@ internal static IPluginLog Log { get; private set; }
 
 ### <a id="Cube_Plugin_ObjectTable"></a> ObjectTable
 
-The object table, read by the bridge's probe as an independent source. Debug builds only, for now.
+The object table, read by the bridge's checks and probe as a second, independent source to compare the direct
+read in [PlayerReader](Cube.Game.PlayerReader.md#Cube_Game_PlayerReader) against. Debug builds only: the plugin itself never uses it (#10).
 
 ```csharp
 [PluginService]

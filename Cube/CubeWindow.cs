@@ -84,7 +84,7 @@ internal sealed class CubeWindow : Window
 
     /// <summary>Creates the window, closed, with a sensible minimum size.</summary>
     /// <param name="settings">The user's settings, read every frame; changes apply on the next frame.</param>
-    /// <param name="gameState">Reads login, loading, cutscene and GPose state.</param>
+    /// <param name="gameState">Reads login, loading, cutscene, GPose and PvP state.</param>
     /// <param name="save">Writes the settings to disk, after the user turns the view with the view control.</param>
     public CubeWindow(CubeSettings settings, GameStateReader gameState, Action save)
         : base("Cube###CubeMain")

@@ -46,7 +46,7 @@ The user's settings, read every frame; changes apply on the next frame.
 
 `gameState` [GameStateReader](Cube.Game.GameStateReader.md)
 
-Reads login, loading, cutscene and GPose state.
+Reads login, loading, cutscene, GPose and PvP state.
 
 `save` [Action](https://learn.microsoft.com/dotnet/api/system.action)
 
