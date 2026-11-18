@@ -20,8 +20,8 @@ internal sealed class SettingsWindowCheck : BridgeCheck
 ## Remarks
 
 Opens the settings window for a couple of frames (an exception in its controls would stop it drawing), then
-saves the user's current, unchanged settings and reads the file back: it must hold the current cube size and
-file version, and not the in-memory-only revision counter.
+saves the user's current, unchanged settings and reads the file back: it must hold the current cube size,
+collision settings (#32) and file version, and not the in-memory-only revision counter.
 
 ## Constructors
 
@@ -55,8 +55,8 @@ Where Dalamud stores the settings.
 #### Remarks
 
 Opens the settings window for a couple of frames (an exception in its controls would stop it drawing), then
-saves the user's current, unchanged settings and reads the file back: it must hold the current cube size and
-file version, and not the in-memory-only revision counter.
+saves the user's current, unchanged settings and reads the file back: it must hold the current cube size,
+collision settings (#32) and file version, and not the in-memory-only revision counter.
 
 ## Fields
 

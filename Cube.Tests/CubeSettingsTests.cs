@@ -7,7 +7,7 @@ namespace Cube.Tests;
 /// <summary>
 /// Checks the settings' defaults and repair rules (PROJECT.md, "Features": settings for cube size, orientation mode,
 /// labels on/off, colours and opacity; "NPCs": on by default, purple; "Cube": edge 10–100, default 40; "View": Camera
-/// mode by default; saved files from older versions still load) and the
+/// mode by default; #32: collision on, full detail by default; saved files from older versions still load) and the
 /// <c>/cube config</c> command.
 /// </summary>
 public class CubeSettingsTests
@@ -28,6 +28,41 @@ public class CubeSettingsTests
         Assert.True(settings.ShowNpcs);
         Assert.Equal(new Vector3(0.8f, 0.4f, 1f), settings.NpcColour);
         Assert.Equal(1f, settings.Opacity);
+        Assert.True(settings.ShowCollision);
+        Assert.Equal(CollisionDetail.Full, settings.CollisionDetail);
+    }
+
+    [Fact]
+    public void Config_saved_before_collision_settings_existed_loads_with_full_collision_on()
+    {
+        const string old = """{ "CubeEdge": 60, "ShowNpcs": false }""";
+
+        var settings = JsonSerializer.Deserialize<CubeSettings>(old, JsonOptions)!;
+        settings.Changed();
+
+        Assert.True(settings.ShowCollision);
+        Assert.Equal(CollisionDetail.Full, settings.CollisionDetail);
+    }
+
+    [Fact]
+    public void Collision_settings_survive_a_save_and_load()
+    {
+        var saved = new CubeSettings { ShowCollision = false, CollisionDetail = CollisionDetail.Coarse };
+
+        var loaded = JsonSerializer.Deserialize<CubeSettings>(JsonSerializer.Serialize(saved, JsonOptions), JsonOptions)!;
+
+        Assert.False(loaded.ShowCollision);
+        Assert.Equal(CollisionDetail.Coarse, loaded.CollisionDetail);
+    }
+
+    [Fact]
+    public void Unknown_collision_detail_falls_back_to_full()
+    {
+        var settings = new CubeSettings { CollisionDetail = (CollisionDetail)9 };
+
+        settings.Changed();
+
+        Assert.Equal(CollisionDetail.Full, settings.CollisionDetail);
     }
 
     [Fact]
@@ -162,7 +197,7 @@ public class CubeSettingsTests
         {
             CubeEdge = 70, Orientation = OrientationMode.NorthUp, ShowLabels = false,
             SelfColour = Vector3.One, PartyColour = Vector3.Zero, OtherColour = new Vector3(0.5f), Opacity = 0.3f,
-            ShowNpcs = false, NpcColour = new Vector3(0.2f),
+            ShowNpcs = false, NpcColour = new Vector3(0.2f), ShowCollision = false, CollisionDetail = CollisionDetail.Medium,
         };
         var target = new CubeSettings();
         var before = target.Revision;
@@ -178,6 +213,8 @@ public class CubeSettingsTests
         Assert.Equal(source.Opacity, target.Opacity);
         Assert.Equal(source.ShowNpcs, target.ShowNpcs);
         Assert.Equal(source.NpcColour, target.NpcColour);
+        Assert.Equal(source.ShowCollision, target.ShowCollision);
+        Assert.Equal(source.CollisionDetail, target.CollisionDetail);
         Assert.True(target.Revision > before);
     }
 

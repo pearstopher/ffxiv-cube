@@ -11,8 +11,8 @@ namespace Cube.TestBridge.Checks;
 /// </summary>
 /// <remarks>
 /// Opens the settings window for a couple of frames (an exception in its controls would stop it drawing), then
-/// saves the user's current, unchanged settings and reads the file back: it must hold the current cube size and
-/// file version, and not the in-memory-only revision counter.
+/// saves the user's current, unchanged settings and reads the file back: it must hold the current cube size,
+/// collision settings (#32) and file version, and not the in-memory-only revision counter.
 /// </remarks>
 /// <param name="window">The settings window.</param>
 /// <param name="config">The live settings.</param>
@@ -68,6 +68,13 @@ internal sealed class SettingsWindowCheck(SettingsWindow window, Configuration c
         if (!root.TryGetProperty("CubeEdge", out var edge) || edge.GetSingle() != config.CubeEdge)
         {
             return CheckStep.Fail("The saved file doesn't hold the current cube size.");
+        }
+
+        // The collision settings (#32) are saved with the rest.
+        if (!root.TryGetProperty("ShowCollision", out var showCollision) || showCollision.GetBoolean() != config.ShowCollision ||
+            !root.TryGetProperty("CollisionDetail", out var detail) || detail.GetInt32() != (int)config.CollisionDetail)
+        {
+            return CheckStep.Fail("The saved file doesn't hold the current collision settings.");
         }
 
         if (!root.TryGetProperty("Version", out var version) || version.GetInt32() != Configuration.CurrentVersion)

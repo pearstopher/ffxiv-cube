@@ -17,13 +17,13 @@ private struct CollisionReader.SceneSource : ICollisionSource
 
 ## Constructors
 
-### <a id="Cube_Game_CollisionReader_SceneSource__ctor_FFXIVClientStructs_FFXIV_Common_Component_BGCollision_Scene__"></a> SceneSource\(Scene\*\)
+### <a id="Cube_Game_CollisionReader_SceneSource__ctor_FFXIVClientStructs_FFXIV_Common_Component_BGCollision_Scene__System_Int32_"></a> SceneSource\(Scene\*, int\)
 
 The game's collision scene as an [ICollisionSource](Cube.Core.ICollisionSource.md#Cube_Core_ICollisionSource). Lives for one frame only (made fresh in
 [Update](Cube.Game.CollisionReader.md#Cube_Game_CollisionReader_Update)), so the collider pointer it holds is never carried into a later frame.
 
 ```csharp
-public SceneSource(Scene* scene)
+public SceneSource(Scene* scene, int detailDepth)
 ```
 
 #### Parameters
@@ -31,6 +31,10 @@ public SceneSource(Scene* scene)
 `scene` Scene\*
 
 The collision scene.
+
+`detailDepth` [int](https://learn.microsoft.com/dotnet/api/system.int32)
+
+The deepest node-tree level offered ([MaxNodeDepth](Cube.Core.CollisionDetails.md#Cube_Core_CollisionDetails_MaxNodeDepth), from the detail setting).
 
 ## Fields
 
@@ -123,13 +127,13 @@ private static Vector3 UnitMin { get; }
 
 ## Methods
 
-### <a id="Cube_Game_CollisionReader_SceneSource_OfferMesh_FFXIVClientStructs_FFXIV_Common_Component_BGCollision_ColliderMesh__Cube_Core_CollisionBoxSet_"></a> OfferMesh\(ColliderMesh\*, CollisionBoxSet\)
+### <a id="Cube_Game_CollisionReader_SceneSource_OfferMesh_FFXIVClientStructs_FFXIV_Common_Component_BGCollision_ColliderMesh__Cube_Core_CollisionBoxSet_System_Int32_"></a> OfferMesh\(ColliderMesh\*, CollisionBoxSet, int\)
 
 Offers a mesh collider: skipped whole if its world box misses the region (the cheap first cull), otherwise
-one box per node holding triangles, through the collider's world matrix.
+one box per node holding triangles, down to the detail setting's depth, through the collider's world matrix.
 
 ```csharp
-private static void OfferMesh(ColliderMesh* mesh, CollisionBoxSet set)
+private static void OfferMesh(ColliderMesh* mesh, CollisionBoxSet set, int detailDepth)
 ```
 
 #### Parameters
@@ -141,6 +145,10 @@ The mesh collider.
 `set` [CollisionBoxSet](Cube.Core.CollisionBoxSet.md)
 
 The set being gathered.
+
+`detailDepth` [int](https://learn.microsoft.com/dotnet/api/system.int32)
+
+The deepest tree level offered.
 
 ### <a id="Cube_Game_CollisionReader_SceneSource_OfferNext_Cube_Core_CollisionBoxSet_"></a> OfferNext\(CollisionBoxSet\)
 
@@ -169,13 +177,14 @@ Colliders the game's raycasts ignore (`FFXIVClientStructs.FFXIV.Common.Component
 game ignores them too, so the player can't bump into them (#28). Streamed colliders only load and unload
 terrain meshes, which are in the list themselves, so they add no box.
 
-### <a id="Cube_Game_CollisionReader_SceneSource_OfferNode_FFXIVClientStructs_FFXIV_Common_Component_BGCollision_MeshPCB_FileNode__System_Numerics_Matrix4x4__Cube_Core_CollisionBoxSet_System_Int32_"></a> OfferNode\(FileNode\*, in Matrix4x4, CollisionBoxSet, int\)
+### <a id="Cube_Game_CollisionReader_SceneSource_OfferNode_FFXIVClientStructs_FFXIV_Common_Component_BGCollision_MeshPCB_FileNode__System_Numerics_Matrix4x4__Cube_Core_CollisionBoxSet_System_Int32_System_Int32_"></a> OfferNode\(FileNode\*, in Matrix4x4, CollisionBoxSet, int, int\)
 
 Offers one mesh node's box if it holds triangles, then its children, skipping any subtree whose box misses
-the region (#28: that is what keeps the walk to a few hundred nodes).
+the region (#28: that is what keeps the walk to a few hundred nodes). At the detail setting's depth the
+node's box stands for its whole subtree (it holds its children's boxes), so the walk stops there.
 
 ```csharp
-private static void OfferNode(MeshPCB.FileNode* node, in Matrix4x4 world, CollisionBoxSet set, int depth)
+private static void OfferNode(MeshPCB.FileNode* node, in Matrix4x4 world, CollisionBoxSet set, int depth, int detailDepth)
 ```
 
 #### Parameters
@@ -195,6 +204,10 @@ The set being gathered.
 `depth` [int](https://learn.microsoft.com/dotnet/api/system.int32)
 
 How deep in the tree; capped at [MaxDepth](Cube.Game.CollisionReader.SceneSource.md#Cube_Game_CollisionReader_SceneSource_MaxDepth).
+
+`detailDepth` [int](https://learn.microsoft.com/dotnet/api/system.int32)
+
+The deepest tree level offered (#32).
 
 ### <a id="Cube_Game_CollisionReader_SceneSource_OfferUnit_FFXIVClientStructs_FFXIV_Common_Component_BGCollision_Math_Matrix4x3__System_Numerics_Vector3_System_Numerics_Vector3_Cube_Core_CollisionBoxSet_"></a> OfferUnit\(in Matrix4x3, Vector3, Vector3, CollisionBoxSet\)
 

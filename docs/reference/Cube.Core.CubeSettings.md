@@ -4,7 +4,8 @@ Namespace: [Cube.Core](Cube.Core.md)
 Assembly: Cube.Core.dll  
 
 The user's settings (PROJECT.md, "Features": cube size, orientation mode, labels on/off, colours and opacity; "NPCs":
-NPCs on/off; "View orientation control": the saved view orientation and the control's corner), with their defaults
+NPCs on/off; "View orientation control": the saved view orientation and the control's corner; #32: collision on/off
+and detail), with their defaults
 and the rules for valid values. The plugin's saved configuration derives from this, so the rules are unit tested
 without Dalamud.
 
@@ -29,6 +30,18 @@ change, call [Changed](Cube.Core.CubeSettings.md#Cube_Core_CubeSettings_Changed)
 to rebuild its cached colours (PROJECT.md, "Efficiency and memory": recompute only when inputs change).
 
 ## Fields
+
+### <a id="Cube_Core_CubeSettings_CollisionDetail"></a> CollisionDetail
+
+How finely collision is drawn (#32); [Full](Cube.Core.CollisionDetail.md#Cube_Core_CollisionDetail_Full) by default.
+
+```csharp
+public CollisionDetail CollisionDetail
+```
+
+#### Field Value
+
+ [CollisionDetail](Cube.Core.CollisionDetail.md)
 
 ### <a id="Cube_Core_CubeSettings_CubeEdge"></a> CubeEdge
 
@@ -186,6 +199,20 @@ public Vector3 SelfColour
 #### Field Value
 
  [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
+
+### <a id="Cube_Core_CubeSettings_ShowCollision"></a> ShowCollision
+
+Whether collision is shown (#32; PROJECT.md, "Collision (phase 2)"), default on. When off, the collision scene
+isn't read at all and the gathered boxes are dropped, like NPCs off. A config file saved before this setting
+existed loads it as on.
+
+```csharp
+public bool ShowCollision
+```
+
+#### Field Value
+
+ [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
 ### <a id="Cube_Core_CubeSettings_ShowLabels"></a> ShowLabels
 

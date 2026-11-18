@@ -5,7 +5,7 @@ Assembly: Cube.Tests.dll
 
 Checks the settings' defaults and repair rules (PROJECT.md, "Features": settings for cube size, orientation mode,
 labels on/off, colours and opacity; "NPCs": on by default, purple; "Cube": edge 10–100, default 40; "View": Camera
-mode by default; saved files from older versions still load) and the
+mode by default; #32: collision on, full detail by default; saved files from older versions still load) and the
 <code>/cube config</code> command.
 
 ```csharp
@@ -39,6 +39,20 @@ private static readonly JsonSerializerOptions JsonOptions
 ```csharp
 [Fact]
 public void Chosen_colour_is_used_for_its_relation()
+```
+
+### <a id="Cube_Tests_CubeSettingsTests_Collision_settings_survive_a_save_and_load"></a> Collision\_settings\_survive\_a\_save\_and\_load\(\)
+
+```csharp
+[Fact]
+public void Collision_settings_survive_a_save_and_load()
+```
+
+### <a id="Cube_Tests_CubeSettingsTests_Config_saved_before_collision_settings_existed_loads_with_full_collision_on"></a> Config\_saved\_before\_collision\_settings\_existed\_loads\_with\_full\_collision\_on\(\)
+
+```csharp
+[Fact]
+public void Config_saved_before_collision_settings_existed_loads_with_full_collision_on()
 ```
 
 ### <a id="Cube_Tests_CubeSettingsTests_Config_saved_before_npc_settings_existed_loads_with_npcs_on_in_purple"></a> Config\_saved\_before\_npc\_settings\_existed\_loads\_with\_npcs\_on\_in\_purple\(\)
@@ -154,6 +168,13 @@ public void Opacity_is_kept_visible_and_at_most_full(float stored, float expecte
 `stored` [float](https://learn.microsoft.com/dotnet/api/system.single)
 
 `expected` [float](https://learn.microsoft.com/dotnet/api/system.single)
+
+### <a id="Cube_Tests_CubeSettingsTests_Unknown_collision_detail_falls_back_to_full"></a> Unknown\_collision\_detail\_falls\_back\_to\_full\(\)
+
+```csharp
+[Fact]
+public void Unknown_collision_detail_falls_back_to_full()
+```
 
 ### <a id="Cube_Tests_CubeSettingsTests_Unknown_orientation_falls_back_to_camera"></a> Unknown\_orientation\_falls\_back\_to\_camera\(\)
 

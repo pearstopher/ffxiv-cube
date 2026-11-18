@@ -4,7 +4,8 @@ namespace Cube.Core;
 
 /// <summary>
 /// The user's settings (PROJECT.md, "Features": cube size, orientation mode, labels on/off, colours and opacity; "NPCs":
-/// NPCs on/off; "View orientation control": the saved view orientation and the control's corner), with their defaults
+/// NPCs on/off; "View orientation control": the saved view orientation and the control's corner; #32: collision on/off
+/// and detail), with their defaults
 /// and the rules for valid values. The plugin's saved configuration derives from this, so the rules are unit tested
 /// without Dalamud.
 /// </summary>
@@ -56,6 +57,16 @@ public class CubeSettings
 
     /// <summary>Named NPCs' colour.</summary>
     public Vector3 NpcColour = DefaultNpcColour;
+
+    /// <summary>
+    /// Whether collision is shown (#32; PROJECT.md, "Collision (phase 2)"), default on. When off, the collision scene
+    /// isn't read at all and the gathered boxes are dropped, like NPCs off. A config file saved before this setting
+    /// existed loads it as on.
+    /// </summary>
+    public bool ShowCollision = true;
+
+    /// <summary>How finely collision is drawn (#32); <see cref="CollisionDetail.Full"/> by default.</summary>
+    public CollisionDetail CollisionDetail = CollisionDetail.Full;
 
     /// <summary>Opacity of everything drawn except labels (which stay readable), <see cref="MinOpacity"/>–1.</summary>
     public float Opacity = 1f;
@@ -120,6 +131,11 @@ public class CubeSettings
             this.ViewWidgetCorner = WidgetCorner.BottomRight;
         }
 
+        if (!Enum.IsDefined(this.CollisionDetail))
+        {
+            this.CollisionDetail = CollisionDetail.Full;
+        }
+
         this.Revision++;
     }
 
@@ -180,6 +196,8 @@ public class CubeSettings
         this.OtherColour = other.OtherColour;
         this.ShowNpcs = other.ShowNpcs;
         this.NpcColour = other.NpcColour;
+        this.ShowCollision = other.ShowCollision;
+        this.CollisionDetail = other.CollisionDetail;
         this.Opacity = other.Opacity;
         this.ViewRotation = other.ViewRotation;
         this.ViewWidgetCorner = other.ViewWidgetCorner;
