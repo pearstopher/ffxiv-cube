@@ -3,7 +3,7 @@ using System.Numerics;
 namespace Cube.Core;
 
 /// <summary>
-/// The user's settings (PROJECT.md, "Features": cube size (width, height and depth since #90), orientation mode, labels on/off, colours and opacity; "NPCs":
+/// The user's settings (PROJECT.md, "Features": cube size (width, height and depth since #90), player height in the cube (#91), orientation mode, labels on/off, colours and opacity; "NPCs":
 /// NPCs on/off; "View orientation control": the saved view orientation and the control's corner; #32: collision on/off
 /// and detail), with their defaults
 /// and the rules for valid values. The plugin's saved configuration derives from this, so the rules are unit tested
@@ -43,6 +43,13 @@ public class CubeSettings
     /// size carries over as a cube with that edge; never written again.
     /// </summary>
     public float CubeEdge = BoxExtents.Default;
+
+    /// <summary>
+    /// Where the player sits vertically in the box, as a fraction of its height from the bottom face (PROJECT.md,
+    /// "Player height in cube", #91): 0–1, default 0.5 (centred). The settings window shows it as 0–100%. Files saved
+    /// before <see cref="PlayerHeightVersion"/> load it as 0.5.
+    /// </summary>
+    public float PlayerHeight = Core.PlayerHeight.Default;
 
     /// <summary>How the view turns (PROJECT.md, "View": Camera by default).</summary>
     public OrientationMode Orientation = OrientationMode.Camera;
@@ -94,6 +101,12 @@ public class CubeSettings
     public const int BoxSizeVersion = 3;
 
     /// <summary>
+    /// The settings file format that stores <see cref="PlayerHeight"/> (#91). Older files load it as centred (50%),
+    /// as PROJECT.md asks.
+    /// </summary>
+    public const int PlayerHeightVersion = 4;
+
+    /// <summary>
     /// The view control's rotation (PROJECT.md, "View orientation control": the chosen orientation is saved, any
     /// orientation including roll). Use <see cref="View"/> to read it.
     /// </summary>
@@ -130,6 +143,7 @@ public class CubeSettings
     public void Changed()
     {
         this.CubeSize = BoxExtents.Clamp(this.CubeSize);
+        this.PlayerHeight = Core.PlayerHeight.Clamp(this.PlayerHeight);
         if (!Enum.IsDefined(this.Orientation))
         {
             this.Orientation = OrientationMode.Camera;
@@ -201,7 +215,8 @@ public class CubeSettings
     /// Files before <see cref="RotationViewVersion"/> stored the view as a heading and tilt; they become the same
     /// orientation (PROJECT.md: orientations saved by the old control carry over). A file from before the view
     /// control existed has neither, so the old fields' defaults give the default view. Files before
-    /// <see cref="BoxSizeVersion"/> stored one cube edge; it becomes all three extents (#90).
+    /// <see cref="BoxSizeVersion"/> stored one cube edge; it becomes all three extents (#90). Files before
+    /// <see cref="PlayerHeightVersion"/> had no player height; it becomes 50%, the centred cube they showed (#91).
     /// </summary>
     /// <param name="fileVersion">The format version the settings were saved with.</param>
     public void Upgrade(int fileVersion)
@@ -216,6 +231,11 @@ public class CubeSettings
         if (fileVersion < BoxSizeVersion)
         {
             this.CubeSize = new Vector3(BoxExtents.Clamp(this.CubeEdge));
+        }
+
+        if (fileVersion < PlayerHeightVersion)
+        {
+            this.PlayerHeight = Core.PlayerHeight.Default;
         }
 
         this.Changed();
@@ -241,6 +261,7 @@ public class CubeSettings
     public void CopyFrom(CubeSettings other)
     {
         this.CubeSize = other.CubeSize;
+        this.PlayerHeight = other.PlayerHeight;
         this.Orientation = other.Orientation;
         this.ShowLabels = other.ShowLabels;
         this.SelfColour = other.SelfColour;

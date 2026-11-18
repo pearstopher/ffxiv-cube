@@ -3,7 +3,7 @@
 Namespace: [Cube.Core](Cube.Core.md)  
 Assembly: Cube.Core.dll  
 
-The user's settings (PROJECT.md, "Features": cube size (width, height and depth since #90), orientation mode, labels on/off, colours and opacity; "NPCs":
+The user's settings (PROJECT.md, "Features": cube size (width, height and depth since #90), player height in the cube (#91), orientation mode, labels on/off, colours and opacity; "NPCs":
 NPCs on/off; "View orientation control": the saved view orientation and the control's corner; #32: collision on/off
 and detail), with their defaults
 and the rules for valid values. The plugin's saved configuration derives from this, so the rules are unit tested
@@ -202,6 +202,33 @@ public Vector3 PartyColour
 #### Field Value
 
  [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
+
+### <a id="Cube_Core_CubeSettings_PlayerHeight"></a> PlayerHeight
+
+Where the player sits vertically in the box, as a fraction of its height from the bottom face (PROJECT.md,
+"Player height in cube", #91): 0–1, default 0.5 (centred). The settings window shows it as 0–100%. Files saved
+before [PlayerHeightVersion](Cube.Core.CubeSettings.md#Cube_Core_CubeSettings_PlayerHeightVersion) load it as 0.5.
+
+```csharp
+public float PlayerHeight
+```
+
+#### Field Value
+
+ [float](https://learn.microsoft.com/dotnet/api/system.single)
+
+### <a id="Cube_Core_CubeSettings_PlayerHeightVersion"></a> PlayerHeightVersion
+
+The settings file format that stores [PlayerHeight](Cube.Core.CubeSettings.md#Cube_Core_CubeSettings_PlayerHeight) (#91). Older files load it as centred (50%),
+as PROJECT.md asks.
+
+```csharp
+public const int PlayerHeightVersion = 4
+```
+
+#### Field Value
+
+ [int](https://learn.microsoft.com/dotnet/api/system.int32)
 
 ### <a id="Cube_Core_CubeSettings_RotationViewVersion"></a> RotationViewVersion
 
@@ -499,7 +526,8 @@ Brings settings loaded from an older file format up to date, then repairs them w
 Files before [RotationViewVersion](Cube.Core.CubeSettings.md#Cube_Core_CubeSettings_RotationViewVersion) stored the view as a heading and tilt; they become the same
 orientation (PROJECT.md: orientations saved by the old control carry over). A file from before the view
 control existed has neither, so the old fields' defaults give the default view. Files before
-[BoxSizeVersion](Cube.Core.CubeSettings.md#Cube_Core_CubeSettings_BoxSizeVersion) stored one cube edge; it becomes all three extents (#90).
+[BoxSizeVersion](Cube.Core.CubeSettings.md#Cube_Core_CubeSettings_BoxSizeVersion) stored one cube edge; it becomes all three extents (#90). Files before
+[PlayerHeightVersion](Cube.Core.CubeSettings.md#Cube_Core_CubeSettings_PlayerHeightVersion) had no player height; it becomes 50%, the centred cube they showed (#91).
 
 ```csharp
 public void Upgrade(int fileVersion)

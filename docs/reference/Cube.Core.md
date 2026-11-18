@@ -73,7 +73,7 @@ face shades every solid box uses.
 
  [CubeSettings](Cube.Core.CubeSettings.md)
 
-The user's settings (PROJECT.md, "Features": cube size (width, height and depth since #90), orientation mode, labels on/off, colours and opacity; "NPCs":
+The user's settings (PROJECT.md, "Features": cube size (width, height and depth since #90), player height in the cube (#91), orientation mode, labels on/off, colours and opacity; "NPCs":
 NPCs on/off; "View orientation control": the saved view orientation and the control's corner; #32: collision on/off
 and detail), with their defaults
 and the rules for valid values. The plugin's saved configuration derives from this, so the rules are unit tested
@@ -117,6 +117,13 @@ minimum a few pixels; "Features": the local player is a cube at the centre in it
 with their names; "Labels": the name drawn next to the cube, overlaps are fine; "NPCs": named NPCs are shown the
 same way, in the NPC colour).
 
+ [PlayerHeight](Cube.Core.PlayerHeight.md)
+
+The rules for where the player sits vertically in the box (PROJECT.md, "Exact behaviour rules", Cube, "Player height
+in cube"; #91): a fraction <code>p</code> of the box's height, from 0 (player on the bottom face) to 1 (player on the top
+face), default 0.5 (centred). The box spans <code>player.y - height × p</code> to <code>player.y + height × (1 - p)</code>;
+x and z stay centred on the player.
+
  [PlayerSet](Cube.Core.PlayerSet.md)
 
 The players and named NPCs inside the cube this frame (PROJECT.md, "Players": every player character in the
@@ -158,7 +165,8 @@ inside or crossing the cube is shown as a simplified box, not the game's model).
 
  [CubeSpace](Cube.Core.CubeSpace.md)
 
-The cube of space around the local player (PROJECT.md, "Exact behaviour rules", Cube): centred on the player,
+The cube of space around the local player (PROJECT.md, "Exact behaviour rules", Cube): centred on the player
+horizontally, and vertically too unless "Player height in cube" (#91, [PlayerHeight](Cube.Core.PlayerHeight.md#Cube_Core_PlayerHeight)) moves them up or down,
 a box with a width, height and depth of 10–100 yalms each (default 40, see [BoxExtents](Cube.Core.BoxExtents.md#Cube_Core_BoxExtents)), turned about
 the vertical axis by its alignment [Yaw](Cube.Core.CubeSpace.md#Cube_Core_CubeSpace_Yaw). Answers "is this point inside?" and turns world positions into
 cube-local view coordinates.

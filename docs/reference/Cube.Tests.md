@@ -120,6 +120,14 @@ Checks players are drawn as small coloured cubes (PROJECT.md, "Players": about 1
 a few pixels; "Colours": one colour each for self, party/alliance, others and NPCs; "NPCs": drawn like players, in
 the NPC colour; "Draw order": near cubes cover far ones; "Efficiency and memory": no per-frame allocations).
 
+ [PlayerHeightTests](Cube.Tests.PlayerHeightTests.md)
+
+Checks "Player height in cube" (PROJECT.md, "Exact behaviour rules", Cube; #91): a fraction p of the box's height,
+0–1, default 0.5; the box spans <code>player.y - height × p</code> to <code>player.y + height × (1 - p)</code> with x and z
+centred on the player; culling uses the shifted box; on screen the box stays centred, so the player's marker moves
+off the middle; the setting is saved, older configs load as 50%, and reset to defaults restores it. Also the
+zero-allocation rule ("Efficiency and memory").
+
  [PlayerLabelsTests](Cube.Tests.PlayerLabelsTests.md)
 
 Checks name labels (PROJECT.md, "Features": other players are labelled with their names, labels on/off;

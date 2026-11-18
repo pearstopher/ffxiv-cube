@@ -15,9 +15,9 @@ internal sealed class Configuration : CubeSettings, IPluginConfiguration
     /// <summary>
     /// The current file format. Bump it and migrate in <see cref="CubeSettings.Upgrade"/> if a setting's meaning
     /// changes. 2: the view is a rotation instead of a heading and tilt (#79). 3: the cube is a width, height and
-    /// depth instead of one edge (#90).
+    /// depth instead of one edge (#90). 4: adds the player height in the cube; older files load it as 50% (#91).
     /// </summary>
-    public const int CurrentVersion = BoxSizeVersion;
+    public const int CurrentVersion = PlayerHeightVersion;
 
     /// <inheritdoc/>
     public int Version { get; set; } = CurrentVersion;

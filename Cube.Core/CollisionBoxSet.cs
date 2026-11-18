@@ -108,7 +108,7 @@ public sealed class CollisionBoxSet
     /// ± (half the height + margin) vertically. The box can turn to any yaw, so sideways both world axes get the same
     /// reach: the furthest a corner of its footprint gets from the centre.
     /// </summary>
-    /// <param name="centre">The cube's centre (the player's position).</param>
+    /// <param name="centre">The cube's centre: the player's position, shifted vertically by the player height setting (#91).</param>
     /// <param name="size">The cube's width, height and depth in yalms; clamped like <see cref="CubeSpace"/>.</param>
     public static CollisionBox RegionFor(Vector3 centre, Vector3 size)
     {

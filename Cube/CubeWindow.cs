@@ -383,10 +383,11 @@ internal sealed class CubeWindow : Window
         // The cube fills the content region and keeps its shape on resize: Fit uses one scale for both axes.
         var regionMin = ImGui.GetCursorScreenPos();
         var regionSize = ImGui.GetContentRegionAvail();
-        // The rotation is only recomputed when the yaw has actually changed.
+        // The rotation is only recomputed when the yaw has actually changed. The box's centre is shifted up or down
+        // from the player by the player height setting (PROJECT.md, "Player height in cube", #91).
         var space = this.hasSpace && yaw == this.yaw
-            ? this.LastSpace.Recentred(centre, settings.CubeSize)
-            : new CubeSpace(centre, settings.CubeSize, yaw);
+            ? this.LastSpace.Recentred(centre, settings.CubeSize, settings.PlayerHeight)
+            : new CubeSpace(centre, settings.CubeSize, yaw, settings.PlayerHeight);
         this.yaw = yaw;
         this.hasSpace = true;
         var projection = ViewProjection.Fit(regionMin, regionSize, space.Half, this.view);
@@ -400,7 +401,8 @@ internal sealed class CubeWindow : Window
 
         if (settings.ShowCollision)
         {
-            this.UpdateCollision(centre, space.Size, settings.CollisionDetail);
+            // Gathered around the box, not the player: with the player off-centre the region shifts with it (#91).
+            this.UpdateCollision(space.Centre, space.Size, settings.CollisionDetail);
         }
         else
         {

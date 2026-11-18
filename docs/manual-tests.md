@@ -44,6 +44,16 @@ The gizmo uses one `Manipulate` call with Rotate | Scale. If the scale handles a
 7. Other players and NPCs stay the same small size while the box narrows; anything outside the box on any one axis disappears.
 8. Reload the plugin: the size is still the one you chose. `/cube config`, "Reset size": back to 40 × 40 × 40.
 
+## Player height in cube (#91)
+
+The bridge checks that the setting changes which players above or below are inside, moves the player's marker off the middle, shifts the collision region, and that reset restores 50%. It can't drag the real slider.
+
+1. `/cube` and `/cube config`. "Player height in cube" shows 50%; your cube is in the middle of the big one.
+2. Drag the slider to 0%: your cube slides down to the bottom face of the big cube, which stays where it is in the window. Collision and players above you fill the box; nothing below you is drawn.
+3. Drag it to 100%: your cube goes to the top face and the box shows what's below you.
+4. Change the height slider or zoom while at 25%: you stay a quarter of the way up the box.
+5. Reload the plugin: the slider keeps its value. "Reset to defaults": back to 50%.
+
 ## Collision boxes compared with vnavmesh (#31)
 
 The bridge checks the boxes are inside the cube, in the collision colour, and that the floor is painted under the player (`collision-drawn`), and the snapshot shows them. Whether they match the real walls and floors needs eyes on the game, with vnavmesh's collision debug view as the reference (vnavmesh is only a comparison tool, not a dependency).

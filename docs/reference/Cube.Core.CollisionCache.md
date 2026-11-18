@@ -298,7 +298,7 @@ The source, positioned anywhere; [Seek](Cube.Core.ICollisionSource.md#Cube_Core_
 
 `position` [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
 
-The cube's centre (the player).
+The cube's centre: the player, shifted vertically by the player height setting (#91).
 
 `size` [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
 
