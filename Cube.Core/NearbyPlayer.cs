@@ -10,6 +10,7 @@ namespace Cube.Core;
 /// <param name="Slot">Object table index the player was read from; keys the name cache.</param>
 /// <param name="EntityId">The game's id for the player, used by the bridge to compare with an independent read.</param>
 /// <param name="Position">World position in yalms.</param>
-/// <param name="Relation">Self, party/alliance, other or NPC.</param>
+/// <param name="Relation">Self, party/alliance, other, NPC or enemy.</param>
 /// <param name="Name">The name, shared from <see cref="NameCache"/>: only drawn on screen, never stored or sent (PROJECT.md, "Privacy").</param>
-public readonly record struct NearbyPlayer(int Slot, uint EntityId, Vector3 Position, PlayerRelation Relation, string Name);
+/// <param name="Label">The text drawn: <paramref name="Name"/> with any <c>[T]</c>/<c>[!]</c> markers (#111), cached by <see cref="MarkerLabels"/>.</param>
+public readonly record struct NearbyPlayer(int Slot, uint EntityId, Vector3 Position, PlayerRelation Relation, string Name, string Label = "");

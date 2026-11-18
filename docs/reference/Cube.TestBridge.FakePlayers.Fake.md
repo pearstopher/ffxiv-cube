@@ -16,12 +16,12 @@ private readonly record struct FakePlayers.Fake : IEquatable<FakePlayers.Fake>
 
 ## Constructors
 
-### <a id="Cube_TestBridge_FakePlayers_Fake__ctor_System_Byte___System_Numerics_Vector3_Cube_Core_PlayerRelation_System_Boolean_"></a> Fake\(byte\[\], Vector3, PlayerRelation, bool\)
+### <a id="Cube_TestBridge_FakePlayers_Fake__ctor_System_Byte___System_Numerics_Vector3_Cube_Core_PlayerRelation_System_Boolean_System_Boolean_System_Boolean_"></a> Fake\(byte\[\], Vector3, PlayerRelation, bool, bool, bool\)
 
 One fake player or NPC.
 
 ```csharp
-public Fake(byte[] Name, Vector3 Offset, PlayerRelation Relation, bool IsWorld)
+public Fake(byte[] Name, Vector3 Offset, PlayerRelation Relation, bool IsWorld, bool IsTarget, bool IsAttacker)
 ```
 
 #### Parameters
@@ -42,7 +42,39 @@ Party, other or NPC.
 
 Whether <code class="paramref">Offset</code> is a fixed world position.
 
+`IsTarget` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+Whether it stands in for the current target (name contains "Target"; #111).
+
+`IsAttacker` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+Whether it stands in for an attacking enemy (name contains "Attacker"; #111).
+
 ## Properties
+
+### <a id="Cube_TestBridge_FakePlayers_Fake_IsAttacker"></a> IsAttacker
+
+Whether it stands in for an attacking enemy (name contains "Attacker"; #111).
+
+```csharp
+public bool IsAttacker { get; init; }
+```
+
+#### Property Value
+
+ [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+### <a id="Cube_TestBridge_FakePlayers_Fake_IsTarget"></a> IsTarget
+
+Whether it stands in for the current target (name contains "Target"; #111).
+
+```csharp
+public bool IsTarget { get; init; }
+```
+
+#### Property Value
+
+ [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
 ### <a id="Cube_TestBridge_FakePlayers_Fake_IsWorld"></a> IsWorld
 

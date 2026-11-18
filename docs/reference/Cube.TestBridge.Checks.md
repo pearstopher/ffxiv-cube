@@ -69,6 +69,12 @@ match Core's output): rebuilds the last frame independently from the same cube s
 compares it primitive by primitive (and each polygon's corners, #93), and checks one ImGui call was issued per
 primitive.
 
+ [EnemyMarkersCheck](Cube.TestBridge.Checks.EnemyMarkersCheck.md)
+
+Checks #111 end to end through the window: fake enemies arrive with the enemy relation, and the labels carry
+<code>[T]</code> for the target and <code>[!]</code> for an attacking enemy, target first when both apply. The game's real target
+and enemy-list reads are logged by the NPC probe and need a fight to exercise (docs/manual-tests.md).
+
  [FakePlayersCheck](Cube.TestBridge.Checks.FakePlayersCheck.md)
 
 Checks fake players reach the cube like real ones (PROJECT.md, "Automated testing": synthetic players so rendering

@@ -58,7 +58,14 @@ public sealed class PlayerSet
         this.playerCapacity = capacity;
         this.npcCapacity = npcCapacity;
         this.names = names;
+        this.markers = new MarkerLabels(names.Slots);
     }
+
+    /// <summary>Label text with the target and attacking markers (#111), cached per slot.</summary>
+    private readonly MarkerLabels markers;
+
+    /// <summary>The marker cache, for tests and the bridge.</summary>
+    public MarkerLabels Markers => this.markers;
 
     /// <summary>How many players and NPCs are inside the cube this frame.</summary>
     public int Count { get; private set; }
@@ -87,6 +94,15 @@ public sealed class PlayerSet
     /// <param name="isAlliance">The game's alliance-member flag.</param>
     public static PlayerRelation Classify(bool isLocal, bool isParty, bool isAlliance) =>
         isLocal ? PlayerRelation.Self : (isParty || isAlliance) ? PlayerRelation.Party : PlayerRelation.Other;
+
+    /// <summary>
+    /// The relation for a named NPC (#111): a hostile battle NPC is an enemy, anything else a plain NPC. Event NPCs are
+    /// never enemies, whatever their flags say.
+    /// </summary>
+    /// <param name="isBattleNpc">Whether the object is a battle NPC (not an event NPC).</param>
+    /// <param name="isHostile">The game's hostile flag (<c>Character.IsHostile</c>).</param>
+    public static PlayerRelation ClassifyNpc(bool isBattleNpc, bool isHostile) =>
+        isBattleNpc && isHostile ? PlayerRelation.Enemy : PlayerRelation.Npc;
 
     /// <summary>
     /// Whether an event or battle NPC counts as a named NPC (PROJECT.md, "NPCs"; the filter measured in #73,
@@ -134,8 +150,9 @@ public sealed class PlayerSet
     /// <param name="isParty">Party-member flag.</param>
     /// <param name="isAlliance">Alliance-member flag.</param>
     /// <param name="nameUtf8">The game's name bytes.</param>
+    /// <param name="isTarget">Whether this is the local player's current target (#111: gets a <c>[T]</c> marker).</param>
     /// <returns>True if the player is inside the cube and was kept.</returns>
-    public bool Offer(int slot, uint entityId, Vector3 position, bool isLocal, bool isParty, bool isAlliance, ReadOnlySpan<byte> nameUtf8)
+    public bool Offer(int slot, uint entityId, Vector3 position, bool isLocal, bool isParty, bool isAlliance, ReadOnlySpan<byte> nameUtf8, bool isTarget = false)
     {
         if (isLocal)
         {
@@ -158,7 +175,8 @@ public sealed class PlayerSet
 
         this.playerCount++;
         var relation = Classify(isLocal, isParty, isAlliance);
-        this.players[this.Count++] = new NearbyPlayer(slot, entityId, position, relation, this.names.Get(slot, nameUtf8));
+        var name = this.names.Get(slot, nameUtf8);
+        this.players[this.Count++] = new NearbyPlayer(slot, entityId, position, relation, name, this.markers.Get(slot, isTarget, false, name));
         return true;
     }
 
@@ -171,8 +189,11 @@ public sealed class PlayerSet
     /// <param name="entityId">The game's id for the NPC.</param>
     /// <param name="position">World position.</param>
     /// <param name="nameUtf8">The game's name bytes.</param>
+    /// <param name="isEnemy">Whether it is a hostile battle NPC (#111: kept as <see cref="PlayerRelation.Enemy"/>).</param>
+    /// <param name="isTarget">Whether it is the local player's current target (<c>[T]</c> marker).</param>
+    /// <param name="isAttacking">Whether it is attacking the local player (<c>[!]</c> marker); only enemies are marked.</param>
     /// <returns>True if the NPC is inside the cube and was kept.</returns>
-    public bool OfferNpc(int slot, uint entityId, Vector3 position, ReadOnlySpan<byte> nameUtf8)
+    public bool OfferNpc(int slot, uint entityId, Vector3 position, ReadOnlySpan<byte> nameUtf8, bool isEnemy = false, bool isTarget = false, bool isAttacking = false)
     {
         if (!this.ShowsNpcs || !this.Accept(slot, position, this.NpcCount == this.npcCapacity))
         {
@@ -180,7 +201,9 @@ public sealed class PlayerSet
         }
 
         this.NpcCount++;
-        this.players[this.Count++] = new NearbyPlayer(slot, entityId, position, PlayerRelation.Npc, this.names.Get(slot, nameUtf8));
+        var name = this.names.Get(slot, nameUtf8);
+        var relation = isEnemy ? PlayerRelation.Enemy : PlayerRelation.Npc;
+        this.players[this.Count++] = new NearbyPlayer(slot, entityId, position, relation, name, this.markers.Get(slot, isTarget, isEnemy && isAttacking, name));
         return true;
     }
 

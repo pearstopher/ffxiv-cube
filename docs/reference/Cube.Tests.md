@@ -121,6 +121,12 @@ Checks the draw-cost measurements the in-game bridge uses for PROJECT.md's budge
 ("Efficiency and memory": under 0.5 ms per frame on average, zero bytes allocated per frame),
 and that measuring is itself allocation-free with bounded memory.
 
+ [EnemyMarkerTests](Cube.Tests.EnemyMarkerTests.md)
+
+Checks #111: hostile battle NPCs are enemies with their own colour, the current target's label starts with
+<code>[T]</code>, an enemy attacking the player's starts with <code>[!]</code>, both read <code>[T] [!] Name</code>, and the prefixed
+strings are cached rather than rebuilt every frame (PROJECT.md, "Efficiency and memory": no per-frame allocation).
+
  [ErrorThrottleTests](Cube.Tests.ErrorThrottleTests.md)
 
 Checks repeated errors are logged sparingly (CLAUDE.md, "Dalamud rules": every game-facing handler catches and

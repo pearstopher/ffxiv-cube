@@ -79,6 +79,28 @@ public const int ObjectSlots = 819
 
 ## Methods
 
+### <a id="Cube_Game_PlayerReader_IsHater_FFXIVClientStructs_FFXIV_Client_Game_UI_UIState__System_UInt32_"></a> IsHater\(UIState\*, uint\)
+
+Whether an entity is on the game's list of enemies attacking the player (the "hater" list the enmity UI uses).
+
+```csharp
+private static bool IsHater(UIState* state, uint entityId)
+```
+
+#### Parameters
+
+`state` UIState\*
+
+The game's UI state; null is treated as an empty list.
+
+`entityId` [uint](https://learn.microsoft.com/dotnet/api/system.uint32)
+
+The enemy's entity id.
+
+#### Returns
+
+ [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
 ### <a id="Cube_Game_PlayerReader_Read_Cube_Core_PlayerSet_System_Single_"></a> Read\(PlayerSet, float\)
 
 Offers every player character, and every named NPC if the set shows NPCs, to the set; the set keeps those

@@ -102,3 +102,10 @@ The bridge checks both squares' placement for two corners and that idle frames c
 2. Walk up to a real wall or a solid object and check its box is still drawn.
 3. Run `python scripts/ingame_test.py` there and check `collision-phantoms` passes. Its log lines (`Phantom #107
    nearest ...` in `dalamud.log`) list the nearest remaining boxes the game's raycast doesn't hit, with their fields.
+
+## Enemy colour and [T] / [!] markers (#111)
+
+1. Stand near a hostile enemy (a FATE mob or overworld monster) and check its cube is red, not the purple of friendly NPCs. Change "Enemies" in the settings window and check the colour follows.
+2. Target the enemy: its label starts with `[T]`. Target a friendly NPC or another player: they get `[T]` too. Clear the target: the marker goes.
+3. Let the enemy attack you: its label starts with `[!]`; if it is also your target, `[T] [!]`. A friendly NPC never shows `[!]`.
+4. Check `dalamud.log` for `Probe`/error lines. If `[!]` is wrong (missing while being hit, or on enemies that aren't attacking you), report it: the enemy list read (`UIState.Hater`) would need swapping for another field.

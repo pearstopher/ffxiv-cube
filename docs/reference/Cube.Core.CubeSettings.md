@@ -84,6 +84,18 @@ public Vector3 CubeSize
 
  [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
 
+### <a id="Cube_Core_CubeSettings_DefaultEnemyColour"></a> DefaultEnemyColour
+
+Default enemy colour: red, so hostile battle NPCs stand apart from friendly ones (#111).
+
+```csharp
+public static readonly Vector3 DefaultEnemyColour
+```
+
+#### Field Value
+
+ [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
+
 ### <a id="Cube_Core_CubeSettings_DefaultNpcColour"></a> DefaultNpcColour
 
 Default NPC colour: purple, so NPCs stand apart from players (PROJECT.md, "Colours").
@@ -126,6 +138,18 @@ Default player colours: blue for self, green for party/alliance, orange for othe
 
 ```csharp
 public static readonly Vector3 DefaultSelfColour
+```
+
+#### Field Value
+
+ [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
+
+### <a id="Cube_Core_CubeSettings_EnemyColour"></a> EnemyColour
+
+Hostile battle NPCs' colour (#111). Files saved before it existed load the default.
+
+```csharp
+public Vector3 EnemyColour
 ```
 
 #### Field Value

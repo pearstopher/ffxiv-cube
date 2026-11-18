@@ -70,6 +70,18 @@ public const uint NoOwner = 3758096384
 
  [uint](https://learn.microsoft.com/dotnet/api/system.uint32)
 
+### <a id="Cube_Core_PlayerSet_markers"></a> markers
+
+Label text with the target and attacking markers (#111), cached per slot.
+
+```csharp
+private readonly MarkerLabels markers
+```
+
+#### Field Value
+
+ [MarkerLabels](Cube.Core.MarkerLabels.md)
+
 ### <a id="Cube_Core_PlayerSet_names"></a> names
 
 Names, cached per slot.
@@ -179,6 +191,18 @@ public ReadOnlySpan<NearbyPlayer> Items { get; }
 #### Property Value
 
  [ReadOnlySpan](https://learn.microsoft.com/dotnet/api/system.readonlyspan\-1)<[NearbyPlayer](Cube.Core.NearbyPlayer.md)\>
+
+### <a id="Cube_Core_PlayerSet_Markers"></a> Markers
+
+The marker cache, for tests and the bridge.
+
+```csharp
+public MarkerLabels Markers { get; }
+```
+
+#### Property Value
+
+ [MarkerLabels](Cube.Core.MarkerLabels.md)
 
 ### <a id="Cube_Core_PlayerSet_Names"></a> Names
 
@@ -305,6 +329,29 @@ The game's alliance-member flag.
 
  [PlayerRelation](Cube.Core.PlayerRelation.md)
 
+### <a id="Cube_Core_PlayerSet_ClassifyNpc_System_Boolean_System_Boolean_"></a> ClassifyNpc\(bool, bool\)
+
+The relation for a named NPC (#111): a hostile battle NPC is an enemy, anything else a plain NPC. Event NPCs are
+never enemies, whatever their flags say.
+
+```csharp
+public static PlayerRelation ClassifyNpc(bool isBattleNpc, bool isHostile)
+```
+
+#### Parameters
+
+`isBattleNpc` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+Whether the object is a battle NPC (not an event NPC).
+
+`isHostile` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+The game's hostile flag (<code>Character.IsHostile</code>).
+
+#### Returns
+
+ [PlayerRelation](Cube.Core.PlayerRelation.md)
+
 ### <a id="Cube_Core_PlayerSet_IsNamedNpc_System_UInt32_System_Boolean_System_ReadOnlySpan_System_Byte__"></a> IsNamedNpc\(uint, bool, ReadOnlySpan<byte\>\)
 
 Whether an event or battle NPC counts as a named NPC (PROJECT.md, "NPCs"; the filter measured in #73,
@@ -338,13 +385,13 @@ Objects owned by a player (pets, chocobo companions) are left out by both their 
 sub-kind, so either field being unset still leaves them out. Nameless NPCs are the game's invisible event
 helpers. The caller has already checked the object kind is an event or battle NPC.
 
-### <a id="Cube_Core_PlayerSet_Offer_System_Int32_System_UInt32_System_Numerics_Vector3_System_Boolean_System_Boolean_System_Boolean_System_ReadOnlySpan_System_Byte__"></a> Offer\(int, uint, Vector3, bool, bool, bool, ReadOnlySpan<byte\>\)
+### <a id="Cube_Core_PlayerSet_Offer_System_Int32_System_UInt32_System_Numerics_Vector3_System_Boolean_System_Boolean_System_Boolean_System_ReadOnlySpan_System_Byte__System_Boolean_"></a> Offer\(int, uint, Vector3, bool, bool, bool, ReadOnlySpan<byte\>, bool\)
 
 Offers one player. Outside the cube: rejected before anything else is done (no name lookup).
 Inside: classified, named from the cache and kept.
 
 ```csharp
-public bool Offer(int slot, uint entityId, Vector3 position, bool isLocal, bool isParty, bool isAlliance, ReadOnlySpan<byte> nameUtf8)
+public bool Offer(int slot, uint entityId, Vector3 position, bool isLocal, bool isParty, bool isAlliance, ReadOnlySpan<byte> nameUtf8, bool isTarget = false)
 ```
 
 #### Parameters
@@ -377,20 +424,24 @@ Alliance-member flag.
 
 The game's name bytes.
 
+`isTarget` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+Whether this is the local player's current target (#111: gets a <code>[T]</code> marker).
+
 #### Returns
 
  [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
 True if the player is inside the cube and was kept.
 
-### <a id="Cube_Core_PlayerSet_OfferNpc_System_Int32_System_UInt32_System_Numerics_Vector3_System_ReadOnlySpan_System_Byte__"></a> OfferNpc\(int, uint, Vector3, ReadOnlySpan<byte\>\)
+### <a id="Cube_Core_PlayerSet_OfferNpc_System_Int32_System_UInt32_System_Numerics_Vector3_System_ReadOnlySpan_System_Byte__System_Boolean_System_Boolean_System_Boolean_"></a> OfferNpc\(int, uint, Vector3, ReadOnlySpan<byte\>, bool, bool, bool\)
 
 Offers one named NPC (the caller has applied [IsNamedNpc](Cube.Core.PlayerSet.md#Cube_Core_PlayerSet_IsNamedNpc)). It goes through the same culling as a
 player and is kept with the [Npc](Cube.Core.PlayerRelation.md#Cube_Core_PlayerRelation_Npc) relation, up to the NPC cap. With NPCs turned off
 ([ShowsNpcs](Cube.Core.PlayerSet.md#Cube_Core_PlayerSet_ShowsNpcs)) it is rejected straight away and not even counted as offered.
 
 ```csharp
-public bool OfferNpc(int slot, uint entityId, Vector3 position, ReadOnlySpan<byte> nameUtf8)
+public bool OfferNpc(int slot, uint entityId, Vector3 position, ReadOnlySpan<byte> nameUtf8, bool isEnemy = false, bool isTarget = false, bool isAttacking = false)
 ```
 
 #### Parameters
@@ -410,6 +461,18 @@ World position.
 `nameUtf8` [ReadOnlySpan](https://learn.microsoft.com/dotnet/api/system.readonlyspan\-1)<[byte](https://learn.microsoft.com/dotnet/api/system.byte)\>
 
 The game's name bytes.
+
+`isEnemy` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+Whether it is a hostile battle NPC (#111: kept as [Enemy](Cube.Core.PlayerRelation.md#Cube_Core_PlayerRelation_Enemy)).
+
+`isTarget` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+Whether it is the local player's current target (<code>[T]</code> marker).
+
+`isAttacking` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+Whether it is attacking the local player (<code>[!]</code> marker); only enemies are marked.
 
 #### Returns
 

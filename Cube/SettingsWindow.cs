@@ -163,6 +163,8 @@ internal sealed class SettingsWindow : Window
 
         ImGui.SameLine();
         this.Track(ImGui.ColorEdit3("NPCs", ref c.NpcColour, ImGuiColorEditFlags.NoInputs));
+        ImGui.SameLine();
+        this.Track(ImGui.ColorEdit3("Enemies", ref c.EnemyColour, ImGuiColorEditFlags.NoInputs));
 
         // Collision (#32): on/off, and how finely it's drawn.
         if (ImGui.Checkbox("Show collision", ref c.ShowCollision))

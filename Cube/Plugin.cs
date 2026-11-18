@@ -120,6 +120,7 @@ public sealed class Plugin : IDalamudPlugin
             this.testBridge.Register(new TestBridge.Checks.DrawListMatchesCoreCheck());
             this.testBridge.Register(new TestBridge.Checks.PlayersMatchObjectTableCheck(ObjectTable));
             this.testBridge.Register(new TestBridge.Checks.FakePlayersCheck());
+            this.testBridge.Register(new TestBridge.Checks.EnemyMarkersCheck());
             this.testBridge.Register(new TestBridge.Checks.PlayerCubesCheck());
             this.testBridge.Register(new TestBridge.Checks.LabelsCheck());
             this.testBridge.Register(new TestBridge.Checks.OrientationCheck());

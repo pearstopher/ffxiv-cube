@@ -77,6 +77,7 @@ public static class PlayerCubes
         var party = projector.Shades(palette.Party);
         var other = projector.Shades(palette.Other);
         var npc = projector.Shades(palette.Npc);
+        var enemy = projector.Shades(palette.Enemy);
         var half = HalfSize(space, projection);
         var size = new Vector3(half);
         var labelOffset = (half * WidestReach * projection.PixelsPerYalm) + LabelGap;
@@ -90,6 +91,7 @@ public static class PlayerCubes
                 PlayerRelation.Self => self,
                 PlayerRelation.Party => party,
                 PlayerRelation.Npc => npc,
+                PlayerRelation.Enemy => enemy,
                 _ => other,
             };
             projector.AddFaces(list, screen, size, depth, shades, tag: i + 1);
