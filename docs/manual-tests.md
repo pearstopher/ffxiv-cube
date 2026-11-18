@@ -109,3 +109,11 @@ The bridge checks both squares' placement for two corners and that idle frames c
 2. Target the enemy: its label starts with `[T]`. Target a friendly NPC or another player: they get `[T]` too. Clear the target: the marker goes.
 3. Let the enemy attack you: its label starts with `[!]`; if it is also your target, `[T] [!]`. A friendly NPC never shows `[!]`.
 4. Check `dalamud.log` for `Probe`/error lines. If `[!]` is wrong (missing while being hit, or on enemies that aren't attacking you), report it: the enemy list read (`UIState.Hater`) would need swapping for another field.
+
+## Names, per-kind toggles and interactables (#112)
+
+1. Open the settings window. With "Show your name" ticked your own cube has your name beside it; untick it and the name goes. Names of other people are unaffected.
+2. Set "Name position" to "Centred above": every name sits centred over its cube, just above the top corner, and stays readable at the window edge. Back to "To the side": names return to the right of the cubes.
+3. Untick "Show players", "Show NPCs", "Show enemies" and "Show interactables" one at a time near each kind: only that kind disappears; you never do.
+4. In a housing ward or city, stand near an "Entrance", "Placard", "Summoning Bell" or "Market Board": each shows a teal cube with that name. Objects the game marks with only an arrow or icon, and furniture or gardening plants, show nothing. Change "Interactables" and the colour follows.
+5. Check the cube follows each interactable in the game. If one that has a text label in the game doesn't show (or an icon-only one does), report its name and place: the filter is "an event object with a name" (`docs/research-notes.md`).

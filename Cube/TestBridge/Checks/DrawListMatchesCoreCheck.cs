@@ -51,7 +51,7 @@ internal sealed class DrawListMatchesCoreCheck : BridgeCheck
         }
 
         var actual = window.DrawList;
-        CubeWindow.BuildFrame(this.expected, window.LastSpace, window.LastProjection, window.Players.Items, window.Palette, window.ShowLabels, window.WireColour, window.ClippedCollision.Items, window.CollisionColour);
+        CubeWindow.BuildFrame(this.expected, window.LastSpace, window.LastProjection, window.Players.Items, window.Palette, window.ShowLabels, window.WireColour, window.ClippedCollision.Items, window.CollisionColour, window.ShowOwnName, window.NamePosition);
 
         context.Metric("primitives", actual.Count);
         context.Metric("submitted", window.LastSubmitted);

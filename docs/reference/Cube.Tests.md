@@ -144,6 +144,12 @@ handles change width, height or depth in the cube's own axes whatever the orient
 keeping the ratios, a turn never changes the size and a resize never changes the view. ImGuizmo's handles are
 simulated by scaling the matrix's rows (its local axes) the way its scale operation does.
 
+ [NamesAndTogglesTests](Cube.Tests.NamesAndTogglesTests.md)
+
+Checks #112 (GitHub issue text): the own-name setting (on by default), name position (side by default, or centred
+above), a toggle per kind of cube (all on by default), and the text-labelled interactable kind (own colour, own cap,
+nameless objects left out).
+
  [PlayerCubesTests](Cube.Tests.PlayerCubesTests.md)
 
 Checks players are drawn as small coloured cubes (PROJECT.md, "Players": about 1/40 of the big cube's largest extent, minimum

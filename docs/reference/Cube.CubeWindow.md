@@ -130,7 +130,7 @@ Name cache slots: one per object table index (players and NPCs are both keyed by
 for a full crowd of Debug-only fake players and fake NPCs (#16, #23, #74), so checks can measure at the caps.
 
 ```csharp
-internal const int NameSlots = 969
+internal const int NameSlots = 999
 ```
 
 #### Field Value
@@ -621,6 +621,18 @@ internal long NameBuildFrames { get; private set; }
 
  [long](https://learn.microsoft.com/dotnet/api/system.int64)
 
+### <a id="Cube_CubeWindow_NamePosition"></a> NamePosition
+
+The last frame's name position setting (#112).
+
+```csharp
+internal NamePosition NamePosition { get; private set; }
+```
+
+#### Property Value
+
+ [NamePosition](Cube.Core.NamePosition.md)
+
 ### <a id="Cube_CubeWindow_Palette"></a> Palette
 
 The last frame's player colours, rebuilt from [Settings](Cube.CubeWindow.md#Cube_CubeWindow_Settings) only when they change.
@@ -678,6 +690,18 @@ The last frame's label setting.
 
 ```csharp
 internal bool ShowLabels { get; private set; }
+```
+
+#### Property Value
+
+ [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+### <a id="Cube_CubeWindow_ShowOwnName"></a> ShowOwnName
+
+The last frame's own-name setting (#112).
+
+```csharp
+internal bool ShowOwnName { get; private set; }
 ```
 
 #### Property Value
@@ -799,13 +823,13 @@ internal uint WireColour { get; private set; }
 
 ## Methods
 
-### <a id="Cube_CubeWindow_BuildFrame_Cube_Core_DrawList_Cube_Core_CubeSpace__Cube_Core_ViewProjection__System_ReadOnlySpan_Cube_Core_NearbyPlayer__Cube_Core_PlayerPalette__System_Boolean_System_UInt32_System_ReadOnlySpan_Cube_Core_ClippedBox__System_UInt32_"></a> BuildFrame\(DrawList, in CubeSpace, in ViewProjection, ReadOnlySpan<NearbyPlayer\>, in PlayerPalette, bool, uint, ReadOnlySpan<ClippedBox\>, uint\)
+### <a id="Cube_CubeWindow_BuildFrame_Cube_Core_DrawList_Cube_Core_CubeSpace__Cube_Core_ViewProjection__System_ReadOnlySpan_Cube_Core_NearbyPlayer__Cube_Core_PlayerPalette__System_Boolean_System_UInt32_System_ReadOnlySpan_Cube_Core_ClippedBox__System_UInt32_System_Boolean_Cube_Core_NamePosition_"></a> BuildFrame\(DrawList, in CubeSpace, in ViewProjection, ReadOnlySpan<NearbyPlayer\>, in PlayerPalette, bool, uint, ReadOnlySpan<ClippedBox\>, uint, bool, NamePosition\)
 
 Builds this frame's draw list for a given drawing region. Separate from the ImGui calls so the bridge can
 check exactly what Core produced.
 
 ```csharp
-internal static void BuildFrame(DrawList list, in CubeSpace space, in ViewProjection projection, ReadOnlySpan<NearbyPlayer> players, in PlayerPalette palette, bool labels, uint wireColour, ReadOnlySpan<ClippedBox> collision, uint collisionColour)
+internal static void BuildFrame(DrawList list, in CubeSpace space, in ViewProjection projection, ReadOnlySpan<NearbyPlayer> players, in PlayerPalette palette, bool labels, uint wireColour, ReadOnlySpan<ClippedBox> collision, uint collisionColour, bool selfLabel = false, NamePosition namePosition = NamePosition.Side)
 ```
 
 #### Parameters
@@ -845,6 +869,14 @@ The collision boxes clipped to the cube (PROJECT.md, "Collision (phase 2)").
 `collisionColour` [uint](https://learn.microsoft.com/dotnet/api/system.uint32)
 
 The collision boxes' colour.
+
+`selfLabel` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+Whether the local player's own name is labelled (#112).
+
+`namePosition` [NamePosition](Cube.Core.NamePosition.md)
+
+Whether names sit beside or above their cubes (#112).
 
 ### <a id="Cube_CubeWindow_Draw"></a> Draw\(\)
 

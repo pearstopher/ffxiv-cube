@@ -269,6 +269,10 @@ How finely collision is drawn (#32, the collision detail setting; PROJECT.md, "C
 shown as simplified boxes). Each level is a depth limit on the walk down a mesh collider's node tree; primitive
 colliders (boxes, cylinders, spheres, planes) are one box at every level.
 
+ [NamePosition](Cube.Core.NamePosition.md)
+
+Where a name label sits relative to its cube (#112; [NamePosition](Cube.Core.CubeSettings.md#Cube_Core_CubeSettings_NamePosition)).
+
  [OrientationMode](Cube.Core.OrientationMode.md)
 
 How the cube is aligned, and so what happens to its contents (PROJECT.md, "Cube": the orientation setting). The

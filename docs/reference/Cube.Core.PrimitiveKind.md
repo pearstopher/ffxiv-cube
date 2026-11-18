@@ -25,7 +25,8 @@ A filled quadrilateral [A](Cube.Core.DrawPrimitive.md#Cube_Core_DrawPrimitive_A)
 
 `Label = 2` 
 
-A player's name label, anchored at [A](Cube.Core.DrawPrimitive.md#Cube_Core_DrawPrimitive_A) (left end, vertically centred). The text is
+A player's name label, anchored at [A](Cube.Core.DrawPrimitive.md#Cube_Core_DrawPrimitive_A) (left end, vertically centred; or, when
+[B](Cube.Core.DrawPrimitive.md#Cube_Core_DrawPrimitive_B).X is 1 (#112), the middle of the text's bottom edge). The text is
 not stored here: it is the name of the player [Tag](Cube.Core.DrawPrimitive.md#Cube_Core_DrawPrimitive_Tag) points to, so the draw list stays
 a plain struct array and names are never copied (PROJECT.md, "Labels"; "Efficiency and memory").
 

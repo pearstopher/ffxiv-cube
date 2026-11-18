@@ -45,6 +45,12 @@ internal static class PlayerReader
     /// </summary>
     public const int MaxNpcs = 50;
 
+    /// <summary>
+    /// The most text-labelled interactable objects drawn per frame (#112). A housing ward put a few dozen entrances and
+    /// placards in range; the cap keeps the draw cost bounded and extras are dropped and counted.
+    /// </summary>
+    public const int MaxInteractables = 30;
+
     /// <summary>Whether an entity is on the game's list of enemies attacking the player (the "hater" list the enmity UI uses).</summary>
     /// <param name="state">The game's UI state; null is treated as an empty list.</param>
     /// <param name="entityId">The enemy's entity id.</param>
@@ -100,6 +106,7 @@ internal static class PlayerReader
     public static unsafe void Read(PlayerSet set, float localY)
     {
         var npcs = set.ShowsNpcs;
+        var objects = set.ShowsInteractables;
         var manager = GameObjectManager.Instance();
         var control = Control.Instance();
         if (manager == null || control == null)
@@ -112,7 +119,7 @@ internal static class PlayerReader
         var target = targetSystem == null ? null : targetSystem->GetTargetObject();
         var hate = UIState.Instance();
         var table = manager->Objects.IndexSorted;
-        var end = npcs ? Math.Min(table.Length, ObjectSlots) : CharacterSlots;
+        var end = npcs || objects ? Math.Min(table.Length, ObjectSlots) : CharacterSlots;
         for (var slot = 0; slot < end; slot++)
         {
             var obj = table[slot].Value;
@@ -133,6 +140,15 @@ internal static class PlayerReader
                 }
 
                 set.Offer(slot, obj->EntityId, position, isLocal, character->IsPartyMember, character->IsAllianceMember, obj->Name, obj == target);
+            }
+            else if (objects && kind == CsObjectKind.EventObj)
+            {
+                // A text-labelled interactable (#112): an event object with a name. Nameless ones are invisible
+                // triggers and icon-only markers (docs/research-notes.md).
+                if (PlayerSet.IsTextInteractable(obj->Name))
+                {
+                    set.OfferInteractable(slot, obj->EntityId, obj->Position, obj->Name, obj == target);
+                }
             }
             else if (npcs && (kind == CsObjectKind.EventNpc || kind == CsObjectKind.BattleNpc))
             {

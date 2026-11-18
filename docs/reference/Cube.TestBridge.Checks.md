@@ -98,6 +98,13 @@ Checks the cube is hidden when logged out, during loading screens, cutscenes, GP
 afterwards (PROJECT.md, "When hidden": the window is just empty then, never an error; "Efficiency and memory": no
 work and no allocations while there's nothing to draw).
 
+ [InteractableProbeCheck](Cube.TestBridge.Checks.InteractableProbeCheck.md)
+
+Research probe for #112 (which in-world objects does the game label with words, and which with icons?): walks the
+object table for a few seconds and logs every distinct (kind, name, nameplate icon, targetable) combination of the
+objects that are neither characters nor NPCs, so a single session in a housing area, a city and a dungeon answers
+which fields tell a text label from an icon-only one.
+
  [JumpHoldCheck](Cube.TestBridge.Checks.JumpHoldCheck.md)
 
 Checks "Jump" (#105; PROJECT.md, "Exact behaviour rules", Cube): with a simulated jump flag and a scripted height for
@@ -109,8 +116,16 @@ cube to the new height in the first frame.
  [LabelsCheck](Cube.TestBridge.Checks.LabelsCheck.md)
 
 Checks every other player in the cube gets exactly one name label showing their name, next to their cube and on
-top of it, and the local player gets none (PROJECT.md, "Features": other players are labelled with their names;
+top of it, and the local player gets one only while the own-name setting (#112) is on (PROJECT.md, "Features": other players are labelled with their names;
 "Labels": the name drawn next to the cube). Uses the standard fake players (#16) so it works with nobody around.
+
+ [NamesAndTogglesCheck](Cube.TestBridge.Checks.NamesAndTogglesCheck.md)
+
+Checks #112 end to end through the window: each per-kind toggle removes exactly its kind of cube from the next frame
+(and the local player is never removed), the own-name setting adds or removes the local player's label, and the
+name position setting makes every label centred above its cube. Uses fakes of every kind so it works with nobody
+around; the game's real reads of event objects are covered by the research probe and
+<code>docs/manual-tests.md</code>.
 
  [NoErrorsCaughtCheck](Cube.TestBridge.Checks.NoErrorsCaughtCheck.md)
 
@@ -219,15 +234,15 @@ Counts from edge deduplication.
 
 Counts from reading.
 
+ [JumpHoldCheck.Sample](Cube.TestBridge.Checks.JumpHoldCheck.Sample.md)
+
+One frame's measurements.
+
  [CollisionProbeCheck.Sample](Cube.TestBridge.Checks.CollisionProbeCheck.Sample.md)
 
 One frame's measurements.
 
  [PlayerHeightCheck.Sample](Cube.TestBridge.Checks.PlayerHeightCheck.Sample.md)
-
-One frame's measurements.
-
- [JumpHoldCheck.Sample](Cube.TestBridge.Checks.JumpHoldCheck.Sample.md)
 
 One frame's measurements.
 

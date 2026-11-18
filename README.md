@@ -49,9 +49,14 @@ Type `/cube config` (or use the settings button in `/xlplugins`). Changes show s
 | Orientation | The cube itself stays still on screen; this decides what happens to what's inside it. **Rotate contents with camera:** forward in the cube is where the game camera looks, so when you turn the camera everything inside turns around you. **Keep contents fixed (north stays put):** north is always the same side of the cube and the camera changes nothing. | Rotate contents with camera |
 | View control corner | Which corner of the cube window the x/y/z view control sits in. | Bottom right |
 | Reset view | Puts the view back to the default: from behind and above, at 30°. | |
-| Show names | Name labels next to the players' and NPCs' cubes. | On |
+| Show names | Name labels for other players, NPCs, enemies and interactables. | On |
+| Show your name | Your own name next to your cube. | On |
+| Name position | Names **to the side** of their cubes, or **centred above** them. | To the side |
 | You / Party / alliance / Others | The colour for each kind of player. | Blue / green / orange |
-| Show NPCs / NPCs | Whether named NPCs are shown, and their colour. At most 50 are drawn at once. | On / purple |
+| Show players | Whether other players (party and everyone else) are shown. You are always shown. | On |
+| Show NPCs / NPCs | Whether friendly named NPCs are shown, and their colour. At most 50 NPCs and enemies are drawn at once. | On / purple |
+| Show enemies / Enemies | Whether hostile enemies are shown, and their colour. | On / red |
+| Show interactables / Interactables | Whether objects the game labels with words ("Entrance", "Placard", "Summoning Bell", ...) are shown, and their colour. At most 30 are drawn at once. | On / teal |
 | Show collision / Detail | Whether the collision boxes are shown, and how finely. **Full** draws the most boxes and follows the shapes most closely; **Medium** and **Coarse** draw fewer, bigger boxes that still cover everything Full does. At most 2000 boxes are kept. | On / Full |
 | Opacity | How see-through everything in the window is. | 1.00 |
 | Reset to defaults | Puts every setting back. | |

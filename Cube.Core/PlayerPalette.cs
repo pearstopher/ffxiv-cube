@@ -9,7 +9,8 @@ namespace Cube.Core;
 /// <param name="Other">Every other player's colour.</param>
 /// <param name="Npc">Named NPCs' colour.</param>
 /// <param name="Enemy">Hostile battle NPCs' colour (#111).</param>
-public readonly record struct PlayerPalette(uint Self, uint Party, uint Other, uint Npc, uint Enemy)
+/// <param name="Interactable">Text-labelled interactable objects' colour (#112).</param>
+public readonly record struct PlayerPalette(uint Self, uint Party, uint Other, uint Npc, uint Enemy, uint Interactable = 0)
 {
     /// <summary>
     /// Defaults: blue for self, green for party/alliance, orange for others, purple for NPCs, red for enemies, fully
@@ -26,6 +27,7 @@ public readonly record struct PlayerPalette(uint Self, uint Party, uint Other, u
         PlayerRelation.Party => this.Party,
         PlayerRelation.Npc => this.Npc,
         PlayerRelation.Enemy => this.Enemy,
+        PlayerRelation.Interactable => this.Interactable,
         _ => this.Other,
     };
 }

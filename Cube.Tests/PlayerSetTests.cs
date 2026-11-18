@@ -164,7 +164,7 @@ public class PlayerSetTests
     public void With_npcs_off_no_npc_is_kept_but_players_still_are()
     {
         var set = NewSet(npcCapacity: 4);
-        set.Begin(new CubeSpace(Centre, new Vector3(40), 0), npcs: false);
+        set.Begin(new CubeSpace(Centre, new Vector3(40), 0), npcs: false, enemies: false);
 
         Assert.False(set.ShowsNpcs);
         Assert.False(set.OfferNpc(500, 7, Centre, Alice));

@@ -17,13 +17,13 @@ public readonly record struct PlayerPalette : IEquatable<PlayerPalette>
 
 ## Constructors
 
-### <a id="Cube_Core_PlayerPalette__ctor_System_UInt32_System_UInt32_System_UInt32_System_UInt32_System_UInt32_"></a> PlayerPalette\(uint, uint, uint, uint, uint\)
+### <a id="Cube_Core_PlayerPalette__ctor_System_UInt32_System_UInt32_System_UInt32_System_UInt32_System_UInt32_System_UInt32_"></a> PlayerPalette\(uint, uint, uint, uint, uint, uint\)
 
 One colour per relation (PROJECT.md, "Colours": self, party/alliance members, everyone else, NPCs; one colour
 each; #111: enemies too). Built from the user's [CubeSettings](Cube.Core.CubeSettings.md#Cube_Core_CubeSettings).
 
 ```csharp
-public PlayerPalette(uint Self, uint Party, uint Other, uint Npc, uint Enemy)
+public PlayerPalette(uint Self, uint Party, uint Other, uint Npc, uint Enemy, uint Interactable = 0)
 ```
 
 #### Parameters
@@ -48,6 +48,10 @@ Named NPCs' colour.
 
 Hostile battle NPCs' colour (#111).
 
+`Interactable` [uint](https://learn.microsoft.com/dotnet/api/system.uint32)
+
+Text-labelled interactable objects' colour (#112).
+
 ## Properties
 
 ### <a id="Cube_Core_PlayerPalette_Default"></a> Default
@@ -70,6 +74,18 @@ Hostile battle NPCs' colour (#111).
 
 ```csharp
 public uint Enemy { get; init; }
+```
+
+#### Property Value
+
+ [uint](https://learn.microsoft.com/dotnet/api/system.uint32)
+
+### <a id="Cube_Core_PlayerPalette_Interactable"></a> Interactable
+
+Text-labelled interactable objects' colour (#112).
+
+```csharp
+public uint Interactable { get; init; }
 ```
 
 #### Property Value

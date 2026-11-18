@@ -121,6 +121,7 @@ public sealed class Plugin : IDalamudPlugin
             this.testBridge.Register(new TestBridge.Checks.PlayersMatchObjectTableCheck(ObjectTable));
             this.testBridge.Register(new TestBridge.Checks.FakePlayersCheck());
             this.testBridge.Register(new TestBridge.Checks.EnemyMarkersCheck());
+            this.testBridge.Register(new TestBridge.Checks.NamesAndTogglesCheck());
             this.testBridge.Register(new TestBridge.Checks.PlayerCubesCheck());
             this.testBridge.Register(new TestBridge.Checks.LabelsCheck());
             this.testBridge.Register(new TestBridge.Checks.OrientationCheck());
@@ -136,6 +137,7 @@ public sealed class Plugin : IDalamudPlugin
             this.testBridge.Register(new TestBridge.Checks.GameStateProbeCheck(ObjectTable, ClientState, Condition, Log));
             this.testBridge.Register(new TestBridge.Checks.CollisionProbeCheck(Log));
             this.testBridge.Register(new TestBridge.Checks.TriangleProbeCheck(Log));
+            this.testBridge.Register(new TestBridge.Checks.InteractableProbeCheck(Log));
             this.testBridge.Register(new TestBridge.Checks.CollisionReaderCheck());
             this.testBridge.Register(new TestBridge.Checks.CollisionPhantomsCheck(Log));
             this.testBridge.Register(new TestBridge.Checks.CollisionDrawCheck());
