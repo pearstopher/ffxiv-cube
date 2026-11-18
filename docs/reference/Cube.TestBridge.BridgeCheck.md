@@ -41,6 +41,7 @@ internal abstract class BridgeCheck
 [SettingsCheck](Cube.TestBridge.Checks.SettingsCheck.md), 
 [SettingsWindowCheck](Cube.TestBridge.Checks.SettingsWindowCheck.md), 
 [SoakCheck](Cube.TestBridge.Checks.SoakCheck.md), 
+[TriangleProbeCheck](Cube.TestBridge.Checks.TriangleProbeCheck.md), 
 [ViewControlCheck](Cube.TestBridge.Checks.ViewControlCheck.md), 
 [WindowOpenCloseCheck](Cube.TestBridge.Checks.WindowOpenCloseCheck.md)
 

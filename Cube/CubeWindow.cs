@@ -250,6 +250,13 @@ internal sealed class CubeWindow : Window
     /// <summary>Bytes this frame's collision gather allocated, subtracted from the draw cost. Debug builds only.</summary>
     private long gatherBytes;
 
+    /// <summary>
+    /// Extra drawing a research probe asks the window to do on its own draw list, inside the frame, so real ImGui
+    /// costs can be measured (#99). Null outside such a probe. Runs after the frame's cost is recorded, so it never
+    /// counts against the draw budget. Debug builds only.
+    /// </summary>
+    internal Action<ImDrawListPtr>? ProbeDraw { get; set; }
+
     /// <summary>Synthetic players the test bridge can inject (#16). Empty unless a check enables them. Debug builds only.</summary>
     internal TestBridge.FakePlayers Fakes { get; } = new();
 #endif
@@ -452,6 +459,7 @@ internal sealed class CubeWindow : Window
         this.LastSubmitted = this.Submit(ImGui.GetWindowDrawList(), this.DrawList, this.Players.Items);
 #if DEBUG
         this.SubmitTicks += Stopwatch.GetTimestamp() - submitStart;
+        this.ProbeDraw?.Invoke(ImGui.GetWindowDrawList());
 #endif
         this.DrawViewControl(regionMin, regionSize);
     }
