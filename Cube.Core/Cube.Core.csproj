@@ -4,6 +4,12 @@
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <!--
+      Core is the per-frame logic, so it is always compiled optimised, Debug builds included: the in-game bridge then
+      measures the frame budget (PROJECT.md, "Efficiency and memory") on the same Core code users run in Release (#93).
+      Without this, every property call and struct copy is paid in full and the Debug number overstates the cost.
+    -->
+    <Optimize>true</Optimize>
   </PropertyGroup>
 
 </Project>

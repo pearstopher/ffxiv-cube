@@ -81,10 +81,21 @@ internal sealed class FrameSnapshotCheck(string folder) : BridgeCheck
             foreach (var p in window.DrawList.Items)
             {
                 json.WriteStartObject();
-                json.WriteString("kind", p.Kind switch { PrimitiveKind.Line => "line", PrimitiveKind.Quad => "quad", _ => "label" });
+                json.WriteString("kind", p.Kind switch { PrimitiveKind.Line => "line", PrimitiveKind.Quad => "quad", PrimitiveKind.Polygon => "polygon", _ => "label" });
                 json.WriteStartArray("points");
-                WritePoint(json, null, p.A);
-                if (p.Kind != PrimitiveKind.Label)
+                if (p.Kind == PrimitiveKind.Polygon)
+                {
+                    foreach (var corner in window.DrawList.Points(p))
+                    {
+                        WritePoint(json, null, corner);
+                    }
+                }
+                else
+                {
+                    WritePoint(json, null, p.A);
+                }
+
+                if (p.Kind is PrimitiveKind.Line or PrimitiveKind.Quad)
                 {
                     WritePoint(json, null, p.B);
                 }

@@ -126,6 +126,74 @@ public readonly struct BoxProjector
         }
     }
 
+    /// <summary>
+    /// Adds the visible faces of a collision box clipped to a turned cube (#93): an upright prism on its footprint
+    /// polygon (<see cref="ClippedBox"/>). The top (or bottom, seen from below) is one quad or polygon, and each side
+    /// whose outward normal faces the viewer is a quad, so nothing reaches past the footprint and so past the cube.
+    /// </summary>
+    /// <remarks>
+    /// Sides are shaded like a box's: the east/west shade when the side faces more east or west than north or south,
+    /// otherwise the north/south shade, so a turned side reads as part of the same solid. All faces share one depth,
+    /// as a box's do. A zero-height prism (a flat floor) shows its top only. Nothing is allocated: the projected
+    /// corners are on the stack.
+    /// </remarks>
+    /// <param name="list">The frame's draw list.</param>
+    /// <param name="box">The clipped box; its footprint corners go counter-clockwise.</param>
+    /// <param name="depth">The depth all its faces are sorted by.</param>
+    /// <param name="shades">The face colours (<see cref="Shades"/>).</param>
+    /// <param name="tag">Owner of the faces (<see cref="DrawPrimitive.Tag"/>).</param>
+    public void AddPrism(DrawList list, in ClippedBox box, float depth, in BoxShades shades, int tag)
+    {
+        var n = box.CornerCount;
+        var minY = box.Bounds.Min.Y;
+        var rise = this.stepY * (box.Bounds.Max.Y - minY);
+        Span<Vector2> bottom = stackalloc Vector2[ClippedBox.MaxCorners];
+        for (var i = 0; i < n; i++)
+        {
+            bottom[i] = this.Screen(box.CornerAt(i, minY));
+        }
+
+        if (this.facing.Y != 0)
+        {
+            Span<Vector2> face = stackalloc Vector2[ClippedBox.MaxCorners];
+            var lift = this.facing.Y > 0 ? rise : Vector2.Zero;
+            for (var i = 0; i < n; i++)
+            {
+                face[i] = bottom[i] + lift;
+            }
+
+            if (n == 4)
+            {
+                list.AddQuad(face[0], face[1], face[2], face[3], depth, shades.Horizontal, tag);
+            }
+            else
+            {
+                list.AddPolygon(face[..n], depth, shades.Horizontal, tag);
+            }
+        }
+
+        if (box.Bounds.Max.Y <= minY)
+        {
+            return;
+        }
+
+        for (var i = 0; i < n; i++)
+        {
+            var j = i + 1 == n ? 0 : i + 1;
+            var edge = box.Corner(j) - box.Corner(i);
+
+            // Counter-clockwise corners: the outside is on the right of each edge.
+            var normal = new Vector3(edge.Y, 0, -edge.X);
+            if (Vector3.Dot(normal, this.depthStep) >= -VisibleThreshold * edge.Length())
+            {
+                continue;
+            }
+
+            var colour = MathF.Abs(normal.X) >= MathF.Abs(normal.Z) ? shades.EastWest : shades.NorthSouth;
+            list.AddQuad(bottom[i], bottom[j], bottom[j] + rise, bottom[i] + rise, depth, colour, tag);
+        }
+    }
+
     /// <summary>The sign of the face along an axis that faces the viewer, from the axis's depth step.</summary>
     /// <param name="depthStep">How much depth one yalm along the axis adds.</param>
     private static float Facing(float depthStep) =>

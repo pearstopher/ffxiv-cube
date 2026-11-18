@@ -20,17 +20,42 @@ public sealed class DrawList
     /// <summary>The reused sort keys, one per primitive (<see cref="SortKey"/>).</summary>
     private readonly long[] keys;
 
+    /// <summary>
+    /// The reused corner buffer for polygons (<see cref="PrimitiveKind.Polygon"/>). Corners stay where they were added
+    /// while the primitives are sorted, since each polygon refers to its own range.
+    /// </summary>
+    private readonly Vector2[] points;
+
+    /// <summary>How many of <see cref="points"/> are used this frame.</summary>
+    private int pointCount;
+
+    /// <summary>
+    /// The largest point buffer: a polygon's start is stored in 16 bits (<see cref="DrawPrimitive.FirstPoint"/>) to
+    /// keep primitives small.
+    /// </summary>
+    public const int MaxPointCapacity = ushort.MaxValue + 1;
+
     /// <summary>Creates an empty list.</summary>
     /// <param name="capacity">The most primitives a frame can hold.</param>
-    public DrawList(int capacity)
+    /// <param name="pointCapacity">
+    /// The most polygon corners a frame can hold, up to <see cref="MaxPointCapacity"/>; 0 (the default) gives room for
+    /// one <see cref="ClippedBox.MaxCorners"/>-corner polygon per eight primitives.
+    /// </param>
+    public DrawList(int capacity, int pointCapacity = 0)
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(capacity, 1);
+        ArgumentOutOfRangeException.ThrowIfNegative(pointCapacity);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(pointCapacity, MaxPointCapacity);
         this.items = new DrawPrimitive[capacity];
         this.keys = new long[capacity];
+        this.points = new Vector2[pointCapacity > 0 ? pointCapacity : Math.Clamp(capacity, ClippedBox.MaxCorners, MaxPointCapacity)];
     }
 
     /// <summary>How many primitives the list can hold.</summary>
     public int Capacity => this.items.Length;
+
+    /// <summary>How many polygon corners the list can hold.</summary>
+    public int PointCapacity => this.points.Length;
 
     /// <summary>How many primitives were added this frame (at most <see cref="Capacity"/>).</summary>
     public int Count { get; private set; }
@@ -46,6 +71,34 @@ public sealed class DrawList
     {
         this.Count = 0;
         this.Dropped = 0;
+        this.pointCount = 0;
+    }
+
+    /// <summary>A polygon's corners, in order around it (pixels); empty for other kinds.</summary>
+    /// <param name="primitive">A primitive from <see cref="Items"/>.</param>
+    public ReadOnlySpan<Vector2> Points(in DrawPrimitive primitive) =>
+        primitive.Kind == PrimitiveKind.Polygon ? this.points.AsSpan(primitive.FirstPoint, primitive.Corners) : default;
+
+    /// <summary>
+    /// Adds a filled convex polygon (<see cref="PrimitiveKind.Polygon"/>); its corners are copied into the list's
+    /// point buffer. Dropped like any other primitive when either buffer is full.
+    /// </summary>
+    /// <param name="corners">3 to <see cref="ClippedBox.MaxCorners"/> corners in order around the outline (pixels).</param>
+    /// <param name="depth">Distance from the viewer.</param>
+    /// <param name="colour">Packed colour.</param>
+    /// <param name="tag">Owner (<see cref="DrawPrimitive.Tag"/>).</param>
+    public void AddPolygon(ReadOnlySpan<Vector2> corners, float depth, uint colour, int tag = 0)
+    {
+        if (corners.Length < 3 || corners.Length > byte.MaxValue || this.pointCount + corners.Length > this.points.Length || this.Count == this.items.Length)
+        {
+            this.Dropped++;
+            return;
+        }
+
+        var first = this.pointCount;
+        corners.CopyTo(this.points.AsSpan(first));
+        this.pointCount += corners.Length;
+        this.Add(new DrawPrimitive { Kind = PrimitiveKind.Polygon, Corners = (byte)corners.Length, FirstPoint = (ushort)first, A = corners[0], Depth = depth, Colour = colour, Tag = tag });
     }
 
     /// <summary>Adds a line.</summary>

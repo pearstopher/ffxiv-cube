@@ -274,7 +274,8 @@ public class CollisionBoxTests
         var cube = new CubeSpace(Centre, 40, 0.7f);
         var box = Around(Centre, new Vector3(3, 1, 2));
 
-        Assert.True(CollisionClipper.TryClip(cube, box, out var clipped));
+        Assert.True(CollisionClipper.TryClip(cube, box, out var prism));
+        var clipped = prism.Bounds;
 
         AssertBox(box, clipped);
     }
@@ -285,7 +286,8 @@ public class CollisionBoxTests
         var cube = new CubeSpace(Centre, 40, 0);
         var box = Box(Centre.X - 5, Centre.Y - 50, Centre.Z + 10, Centre.X + 50, Centre.Y + 5, Centre.Z + 30);
 
-        Assert.True(CollisionClipper.TryClip(cube, box, out var clipped));
+        Assert.True(CollisionClipper.TryClip(cube, box, out var prism));
+        var clipped = prism.Bounds;
 
         AssertBox(Box(Centre.X - 5, Centre.Y - 20, Centre.Z + 10, Centre.X + 20, Centre.Y + 5, Centre.Z + 20), clipped);
     }
@@ -317,7 +319,8 @@ public class CollisionBoxTests
         {
             var cube = new CubeSpace(Centre, 40, yaw);
 
-            Assert.True(CollisionClipper.TryClip(cube, box, out var clipped));
+            Assert.True(CollisionClipper.TryClip(cube, box, out var prism));
+            var clipped = prism.Bounds;
 
             Assert.True(box.Contains(clipped));
             Assert.Equal(Centre.Y - 20, clipped.Min.Y, Precision);
@@ -336,7 +339,8 @@ public class CollisionBoxTests
         var cube = new CubeSpace(Centre, 40, MathF.PI / 4);
         var box = Box(Centre.X + 5, Centre.Y, Centre.Z - 60, Centre.X + 8, Centre.Y + 1, Centre.Z + 60);
 
-        Assert.True(CollisionClipper.TryClip(cube, box, out var clipped));
+        Assert.True(CollisionClipper.TryClip(cube, box, out var prism));
+        var clipped = prism.Bounds;
 
         var reach = (20 * MathF.Sqrt(2)) - 5;
         Assert.Equal(Centre.Z + reach, clipped.Max.Z, 1e-3f);
@@ -349,7 +353,8 @@ public class CollisionBoxTests
         var cube = new CubeSpace(Centre, 40, 0.4f);
         var wall = Box(Centre.X + 2, Centre.Y - 1, Centre.Z - 60, Centre.X + 2, Centre.Y + 3, Centre.Z + 60);
 
-        Assert.True(CollisionClipper.TryClip(cube, wall, out var clipped));
+        Assert.True(CollisionClipper.TryClip(cube, wall, out var prism));
+        var clipped = prism.Bounds;
 
         Assert.Equal(Centre.X + 2, clipped.Min.X);
         Assert.Equal(Centre.X + 2, clipped.Max.X);
@@ -365,13 +370,13 @@ public class CollisionBoxTests
             Around(Centre + new Vector3(30, 0, 0), new Vector3(1)),
             Around(Centre + new Vector3(-5, 0, 0), new Vector3(1)),
         };
-        var destination = new CollisionBox[3];
+        var destination = new ClippedBox[3];
 
         var count = CollisionClipper.Clip(cube, source, destination);
 
         Assert.Equal(2, count);
-        AssertBox(source[0], destination[0]);
-        AssertBox(source[2], destination[1]);
+        AssertBox(source[0], destination[0].Bounds);
+        AssertBox(source[2], destination[1].Bounds);
     }
 
     [Fact]
@@ -380,14 +385,14 @@ public class CollisionBoxTests
         var cube = new CubeSpace(Centre, 40, 0);
         var source = new[] { Around(Centre, new Vector3(1)), Around(Centre, new Vector3(2)) };
 
-        Assert.Equal(1, CollisionClipper.Clip(cube, source, new CollisionBox[1]));
+        Assert.Equal(1, CollisionClipper.Clip(cube, source, new ClippedBox[1]));
     }
 
     [Fact]
     public void Gathering_and_clipping_every_frame_does_not_allocate()
     {
         var set = new CollisionBoxSet();
-        var clipped = new CollisionBox[set.Capacity];
+        var clipped = new ClippedBox[set.Capacity];
         var cube = new CubeSpace(Centre, 40, 0.3f);
         var world = Matrix4x4.CreateRotationY(0.5f) * Matrix4x4.CreateTranslation(Centre);
 

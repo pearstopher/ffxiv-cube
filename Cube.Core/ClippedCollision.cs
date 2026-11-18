@@ -15,7 +15,7 @@ namespace Cube.Core;
 public sealed class ClippedCollision
 {
     /// <summary>The reused buffer of clipped boxes.</summary>
-    private readonly CollisionBox[] boxes;
+    private readonly ClippedBox[] boxes;
 
     /// <summary>The ready set the boxes were clipped from.</summary>
     private CollisionBoxSet? set;
@@ -40,7 +40,7 @@ public sealed class ClippedCollision
     public ClippedCollision(int capacity = CollisionBoxSet.DefaultCapacity)
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(capacity, 1);
-        this.boxes = new CollisionBox[capacity];
+        this.boxes = new ClippedBox[capacity];
     }
 
     /// <summary>How many boxes reach into the cube.</summary>
@@ -50,7 +50,7 @@ public sealed class ClippedCollision
     public long Clips { get; private set; }
 
     /// <summary>The boxes inside the cube, clipped to it, in world coordinates.</summary>
-    public ReadOnlySpan<CollisionBox> Items => this.boxes.AsSpan(0, this.Count);
+    public ReadOnlySpan<ClippedBox> Items => this.boxes.AsSpan(0, this.Count);
 
     /// <summary>Clips the cache's ready boxes to the cube if either changed since the last call.</summary>
     /// <param name="cube">This frame's cube.</param>

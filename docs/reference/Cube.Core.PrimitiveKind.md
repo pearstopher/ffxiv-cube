@@ -28,3 +28,11 @@ A filled quadrilateral [A](Cube.Core.DrawPrimitive.md#Cube_Core_DrawPrimitive_A)
 A player's name label, anchored at [A](Cube.Core.DrawPrimitive.md#Cube_Core_DrawPrimitive_A) (left end, vertically centred). The text is
 not stored here: it is the name of the player [Tag](Cube.Core.DrawPrimitive.md#Cube_Core_DrawPrimitive_Tag) points to, so the draw list stays
 a plain struct array and names are never copied (PROJECT.md, "Labels"; "Efficiency and memory").
+
+
+
+`Polygon = 3` 
+
+A filled convex polygon of 3 to [MaxCorners](Cube.Core.ClippedBox.md#Cube_Core_ClippedBox_MaxCorners) corners, stored in the draw list's point
+buffer ([Points](Cube.Core.DrawList.md#Cube_Core_DrawList_Points)): the top or bottom of a collision box clipped to a turned cube (#93),
+whose footprint isn't a quad. One ImGui call, so a see-through face shows no seams where quads would meet.

@@ -20,11 +20,13 @@ public class CollisionCubesTests
 
     private static NearbyPlayer Self() => new(0, 1, Vector3.Zero, PlayerRelation.Self, "Me");
 
+    private static ClippedBox[] Plain(CollisionBox[] boxes) => boxes.Select(b => new ClippedBox(b)).ToArray();
+
     private static DrawPrimitive[] Frame(in CubeSpace space, CollisionBox[] boxes, NearbyPlayer[] players)
     {
         var projection = Projection(space);
         var list = new DrawList(256);
-        CollisionCubes.Add(list, new BoxProjector(space, projection), boxes, Grey);
+        CollisionCubes.Add(list, new BoxProjector(space, projection), Plain(boxes), Grey);
         PlayerCubes.Add(list, space, projection, players, PlayerPalette.Default, labels: false);
         list.SortBackToFront();
         return list.Items.ToArray();
@@ -57,7 +59,7 @@ public class CollisionCubesTests
         var collision = new DrawList(8);
         var player = new DrawList(8);
 
-        CollisionCubes.Add(collision, new BoxProjector(space, projection), [box], Grey);
+        CollisionCubes.Add(collision, new BoxProjector(space, projection), [new ClippedBox(box)], Grey);
         CubeGeometry.AddSolidCube(player, space, projection, space.ToView(box.Centre), 2f, Grey);
 
         static string Key(DrawPrimitive p) =>
@@ -170,11 +172,11 @@ public class CollisionCubesTests
         var space = Space(0.4f);
         var projection = Projection(space);
         var list = new DrawList(3 * CollisionBoxSet.DefaultCapacity);
-        var boxes = new CollisionBox[CollisionBoxSet.DefaultCapacity];
+        var boxes = new ClippedBox[CollisionBoxSet.DefaultCapacity];
         for (var i = 0; i < boxes.Length; i++)
         {
             var min = new Vector3((i % 40) - 20, (i / 40 % 10) - 5, (i / 400) - 3);
-            boxes[i] = new CollisionBox(min, min + new Vector3(0.8f, 0.5f, 0.9f));
+            boxes[i] = new ClippedBox(new CollisionBox(min, min + new Vector3(0.8f, 0.5f, 0.9f)));
         }
 
         Allocations.AssertNone(() =>

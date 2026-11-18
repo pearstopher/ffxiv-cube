@@ -62,10 +62,22 @@ internal sealed class DrawBudgetCheck : BridgeCheck
         }
 
         sampler.Reset();
+        var clipsBefore = context.Window.ClippedCollision.Clips;
+        var buildBefore = context.Window.BuildTicks;
+        var submitBefore = context.Window.SubmitTicks;
         while (sampler.Count < FramesToMeasure)
         {
             yield return CheckStep.NextFrame;
         }
+
+        // Core's share (building and sorting the frame) and ImGui's (issuing the calls), per frame.
+        var perFrame = 1000.0 / System.Diagnostics.Stopwatch.Frequency / sampler.Count;
+        context.Metric("buildMs", (context.Window.BuildTicks - buildBefore) * perFrame);
+        context.Metric("submitMs", (context.Window.SubmitTicks - submitBefore) * perFrame);
+
+        // How often the boxes were clipped again while measuring: only when the cube moved or turned (#93).
+        context.Metric("clipsWhileMeasuring", context.Window.ClippedCollision.Clips - clipsBefore);
+        context.Metric("cubeYaw", context.Window.LastSpace.Yaw);
 
         var average = sampler.AverageMilliseconds;
         var bytes = sampler.TotalAllocatedBytes;

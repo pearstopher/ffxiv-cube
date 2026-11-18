@@ -234,6 +234,45 @@ The face colours ([Shades](Cube.Core.BoxProjector.md#Cube_Core_BoxProjector_Shad
 
 Owner of the faces ([Tag](Cube.Core.DrawPrimitive.md#Cube_Core_DrawPrimitive_Tag)).
 
+### <a id="Cube_Core_BoxProjector_AddPrism_Cube_Core_DrawList_Cube_Core_ClippedBox__System_Single_Cube_Core_BoxShades__System_Int32_"></a> AddPrism\(DrawList, in ClippedBox, float, in BoxShades, int\)
+
+Adds the visible faces of a collision box clipped to a turned cube (#93): an upright prism on its footprint
+polygon ([ClippedBox](Cube.Core.ClippedBox.md#Cube_Core_ClippedBox)). The top (or bottom, seen from below) is one quad or polygon, and each side
+whose outward normal faces the viewer is a quad, so nothing reaches past the footprint and so past the cube.
+
+```csharp
+public void AddPrism(DrawList list, in ClippedBox box, float depth, in BoxShades shades, int tag)
+```
+
+#### Parameters
+
+`list` [DrawList](Cube.Core.DrawList.md)
+
+The frame's draw list.
+
+`box` [ClippedBox](Cube.Core.ClippedBox.md)
+
+The clipped box; its footprint corners go counter-clockwise.
+
+`depth` [float](https://learn.microsoft.com/dotnet/api/system.single)
+
+The depth all its faces are sorted by.
+
+`shades` [BoxShades](Cube.Core.BoxShades.md)
+
+The face colours ([Shades](Cube.Core.BoxProjector.md#Cube_Core_BoxProjector_Shades)).
+
+`tag` [int](https://learn.microsoft.com/dotnet/api/system.int32)
+
+Owner of the faces ([Tag](Cube.Core.DrawPrimitive.md#Cube_Core_DrawPrimitive_Tag)).
+
+#### Remarks
+
+Sides are shaded like a box's: the east/west shade when the side faces more east or west than north or south,
+otherwise the north/south shade, so a turned side reads as part of the same solid. All faces share one depth,
+as a box's do. A zero-height prism (a flat floor) shows its top only. Nothing is allocated: the projected
+corners are on the stack.
+
 ### <a id="Cube_Core_BoxProjector_Depth_System_Numerics_Vector3_"></a> Depth\(Vector3\)
 
 The depth of a world point ([Depth](Cube.Core.ViewProjection.md#Cube_Core_ViewProjection_Depth) of its view position).

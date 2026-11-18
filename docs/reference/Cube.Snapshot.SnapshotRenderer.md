@@ -20,8 +20,8 @@ public static class SnapshotRenderer
 ## Remarks
 
 Dump format: <code>regionMin</code> and <code>regionSize</code> (the window's drawing region in screen pixels) and
-<code>primitives</code>, each with <code>kind</code> (<code>line</code>, <code>quad</code> or <code>label</code>), <code>points</code>
-(<code>[[x, y], ...]</code> in screen pixels; one anchor point for a label), <code>colour</code> (<code>0xAABBGGRR</code> as a
+<code>primitives</code>, each with <code>kind</code> (<code>line</code>, <code>quad</code>, <code>polygon</code> or <code>label</code>), <code>points</code>
+(<code>[[x, y], ...]</code> in screen pixels; a polygon's 3 to 8 corners; one anchor point for a label), <code>colour</code> (<code>0xAABBGGRR</code> as a
 number), for lines <code>thickness</code>, and for labels <code>chars</code> and <code>fontSize</code>.
 
 ## Fields
@@ -125,13 +125,13 @@ Region size in pixels.
 
  [Canvas](Cube.Snapshot.Canvas.md)
 
-### <a id="Cube_Snapshot_SnapshotRenderer_Paint_System_Numerics_Vector2_System_Numerics_Vector2_System_ReadOnlySpan_Cube_Core_DrawPrimitive__"></a> Paint\(Vector2, Vector2, ReadOnlySpan<DrawPrimitive\>\)
+### <a id="Cube_Snapshot_SnapshotRenderer_Paint_System_Numerics_Vector2_System_Numerics_Vector2_Cube_Core_DrawList_"></a> Paint\(Vector2, Vector2, DrawList\)
 
 Paints Core's primitives directly, in order. Used by <code>--demo</code> to check the look of Core's output
 without the game.
 
 ```csharp
-public static Canvas Paint(Vector2 regionMin, Vector2 regionSize, ReadOnlySpan<DrawPrimitive> items)
+public static Canvas Paint(Vector2 regionMin, Vector2 regionSize, DrawList list)
 ```
 
 #### Parameters
@@ -144,9 +144,9 @@ Screen position of the region's top-left, subtracted from every point.
 
 Region size: the canvas size.
 
-`items` [ReadOnlySpan](https://learn.microsoft.com/dotnet/api/system.readonlyspan\-1)<[DrawPrimitive](Cube.Core.DrawPrimitive.md)\>
+`list` [DrawList](Cube.Core.DrawList.md)
 
-The sorted primitives.
+The sorted primitives, with any polygons' corners.
 
 #### Returns
 

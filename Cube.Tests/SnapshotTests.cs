@@ -92,7 +92,7 @@ public class SnapshotTests
         Cube.Core.CubeGeometry.AddSolidCube(list, space, projection, Vector3.Zero, 2, Green);
         list.SortBackToFront();
 
-        var canvas = SnapshotRenderer.Paint(Vector2.Zero, size, list.Items);
+        var canvas = SnapshotRenderer.Paint(Vector2.Zero, size, list);
 
         // The centre shows one of the cube's faces: green, possibly shaded darker, never red or blue.
         var centre = canvas.GetPixel(100, 100);

@@ -34,8 +34,8 @@ public class ClippedCollisionTests
         clipped.Update(new CubeSpace(Vector3.Zero, Edge, 0f), cache);
 
         Assert.Equal(2, clipped.Count);
-        Assert.Equal(Inside.Max, clipped.Items[0].Max);
-        Assert.Equal(20f, clipped.Items[1].Max.X, 4);
+        Assert.Equal(Inside.Max, clipped.Items[0].Bounds.Max);
+        Assert.Equal(20f, clipped.Items[1].Bounds.Max.X, 4);
     }
 
     [Fact]

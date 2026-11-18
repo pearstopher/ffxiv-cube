@@ -5,7 +5,8 @@ Assembly: Cube.dll
 
 Checks the window drew exactly what Core produced (PROJECT.md, "Automated testing": the primitives drawn
 match Core's output): rebuilds the last frame independently from the same cube space and projection,
-compares it primitive by primitive, and checks one ImGui call was issued per primitive.
+compares it primitive by primitive (and each polygon's corners, #93), and checks one ImGui call was issued per
+primitive.
 
 ```csharp
 internal sealed class DrawListMatchesCoreCheck : BridgeCheck
