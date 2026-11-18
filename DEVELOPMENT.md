@@ -135,6 +135,36 @@ Each namespace's overview lives in `docs/namespaces/<namespace>.md`; a test fail
 - [ ] The plugin loads and unloads cleanly in game, with no errors in `/xllog`, and the in-game checks pass (or are marked pending)
 - [ ] The PR body says `Closes #<issue>`
 
+## 9. Releasing a new version
+
+The version lives in `<Version>` in `Cube/Cube.csproj`, because Dalamud's build bot builds the commit as-is. A release bumps it in a commit, then pushes a matching tag; `.github/workflows/release.yml` does the rest. (`/release` walks through these steps.)
+
+1. Make sure `main` has everything you want to release and CI is green.
+2. Pick the next version (`git tag --sort=-v:refname` shows the latest): patch for fixes and changed behaviour, minor for a new feature.
+3. Set `<Version>` to it with `.0` on the end (`v1.0.1` → `1.0.1.0`) and merge that through a PR. A unit test fails if the csproj is older than what `repo.json` already publishes.
+4. Tag `main` and push the tag:
+
+   ```sh
+   git checkout main
+   git pull
+   git tag v1.0.1
+   git push origin v1.0.1
+   ```
+
+5. The **Release** workflow then:
+   - stops without releasing anything if the tag doesn't match `<Version>`;
+   - builds and tests in Release (including the check that the Debug-only test bridge isn't in the DLL);
+   - publishes a GitHub Release with `latest.zip` and generated notes;
+   - regenerates `repo.json` on `main` with `scripts/make_repo_json.py` and commits it.
+
+Never reuse a tag. If a release goes wrong, fix it on `main` and release the next version.
+
+To install the released plugin, add this custom repo in `/xlsettings` > **Experimental** (and disable the dev plugin while it's installed):
+
+```
+https://raw.githubusercontent.com/pearstopher/ffxiv-cube/main/repo.json
+```
+
 ## Troubleshooting
 
 | Problem | Fix |
