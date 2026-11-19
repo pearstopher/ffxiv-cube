@@ -150,6 +150,12 @@ Checks #112 (GitHub issue text): the own-name setting (on by default), name posi
 above), a toggle per kind of cube (all on by default), and the text-labelled interactable kind (own colour, own cap,
 nameless objects left out).
 
+ [NodeSplitterTests](Cube.Tests.NodeSplitterTests.md)
+
+Checks the node splitting of #127 against PROJECT.md, "Collision (phase 2)": the drawn boxes are what the player
+would bump into, so a gap the player could walk through (about 0.5 yalm) must not be covered by a box, and no
+triangle may ever be left uncovered. Also the bounded cache that keeps the pieces (PROJECT.md, "Bounded memory").
+
  [PlayerCubesTests](Cube.Tests.PlayerCubesTests.md)
 
 Checks players are drawn as small coloured cubes (PROJECT.md, "Players": about 1/40 of the big cube's largest extent, minimum

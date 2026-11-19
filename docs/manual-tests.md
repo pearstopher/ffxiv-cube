@@ -117,3 +117,10 @@ The bridge checks both squares' placement for two corners and that idle frames c
 3. Untick "Show players", "Show NPCs", "Show enemies" and "Show interactables" one at a time near each kind: only that kind disappears; you never do.
 4. In a housing ward or city, stand near an "Entrance", "Placard", "Summoning Bell" or "Market Board": each shows a teal cube with that name. Objects the game marks with only an arrow or icon, and furniture or gardening plants, show nothing. Change "Interactables" and the colour follows.
 5. Check the cube follows each interactable in the game. If one that has a text label in the game doesn't show (or an icon-only one does), report its name and place: the filter is "an event object with a name" (`docs/research-notes.md`).
+
+## Collision boxes split at gaps (#127)
+
+1. Stand inside a house with a counter that has an opening (or any room with a kitchen counter or a table with space under it). Open the cube with collision on. Within a second or two of arriving, the box over the counter should split so the opening shows as empty space instead of one long box.
+2. Look for a large square box drawn over empty floor or air in the room. It should be gone, or much smaller, once the boxes have sharpened (they start as the old coarse boxes and refine a few hundred triangles a frame).
+3. Walk around: the boxes near you should sharpen in each new spot, and a wall or floor you can bump into should never lose its box (no holes). Report any wall or floor that has no box.
+4. Run `python scripts/ingame_test.py` there and check `collision-split` passes (its metrics list the nodes refined and the pieces kept).

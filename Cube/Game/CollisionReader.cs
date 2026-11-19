@@ -1,3 +1,4 @@
+using System;
 using System.Diagnostics;
 using System.Numerics;
 using Cube.Core;
@@ -58,16 +59,100 @@ internal sealed class CollisionReader
 #if DEBUG
         zone = this.SimulatedZone ?? zone;
 #endif
+        if (!this.hasZone || zone != this.zone)
+        {
+            // Split pieces belong to the old zone's meshes (PROJECT.md: collision data is dropped on a zone change).
+            this.refine.Pieces.Clear();
+            this.zone = zone;
+            this.hasZone = true;
+        }
+
         var scene = FindScene();
         if (scene == null)
         {
             // No collision loaded (between zones): nothing to show, and what was kept belongs to the old area.
             this.Cache.Clear();
+            this.refine.Pieces.Clear();
             return false;
         }
 
-        var source = new SceneSource(scene, CollisionDetails.MaxNodeDepth(detail));
-        return this.Cache.Step(ref source, centre, size, zone, CollisionDetails.Stamp(Stamp(scene), detail));
+        this.refine.BeginFrame();
+        var source = new SceneSource(scene, CollisionDetails.MaxNodeDepth(detail), this.refine);
+        var completed = this.Cache.Step(ref source, centre, size, zone, CollisionDetails.Stamp(Stamp(scene), detail));
+        if (completed && this.refine.EndGather())
+        {
+            // Some nodes were drawn as their coarse box because this frame's refining budget ran out: gather again
+            // (the old boxes stay drawn meanwhile) so they sharpen within a second or two (#127).
+            this.Cache.Invalidate();
+        }
+
+        return completed;
+    }
+
+    /// <summary>The zone the split-piece cache belongs to.</summary>
+    private uint zone;
+
+    /// <summary>Whether <see cref="zone"/> has been set.</summary>
+    private bool hasZone;
+
+    /// <summary>The node-splitting state shared by every frame's <see cref="SceneSource"/> (#127).</summary>
+    private readonly RefineState refine = new();
+
+    /// <summary>The pieces mesh nodes were split into (#127); the test bridge reads its size.</summary>
+    internal NodePieceCache NodePieces => this.refine.Pieces;
+
+    /// <summary>
+    /// Everything the node splitting keeps between frames (#127): the cache of pieces, the scratch space it works in
+    /// (allocated once, so splitting allocates nothing per frame), and this frame's triangle budget.
+    /// </summary>
+    /// <remarks>
+    /// <b>Lazy refining within the frame budget.</b> Splitting reads every triangle of a node, so only
+    /// <see cref="TrianglesPerFrame"/> triangles are read per frame (about 0.1 ms). A node not yet split is drawn as its
+    /// coarse box, so the cube never has holes; <see cref="EndGather"/> asks for another gather while any are left.
+    /// </remarks>
+    internal sealed class RefineState
+    {
+        /// <summary>Triangles read per frame for splitting. A node that starts under the budget is finished even if it ends over it.</summary>
+        public const int TrianglesPerFrame = 300;
+
+        /// <summary>
+        /// Nodes with more triangles than this aren't split and stay their coarse box (the #125 leaves hold 9 to 16; a
+        /// much bigger node is a different kind of thing and would eat the frame budget).
+        /// </summary>
+        public const int MaxTriangles = 64;
+
+        /// <summary>
+        /// Only nodes with a side at least this long (world yalms) are split: the #125 measurements found nearly all of
+        /// the wasted volume in them, and a smaller box can't hide much.
+        /// </summary>
+        public const float MinSplitSide = 3f;
+
+        /// <summary>The split pieces, keyed by node.</summary>
+        public NodePieceCache Pieces { get; } = new();
+
+        /// <summary>Scratch: the current node's triangle bounds.</summary>
+        public LocalBox[] Triangles { get; } = new LocalBox[MaxTriangles];
+
+        /// <summary>Scratch: the current node's pieces.</summary>
+        public LocalBox[] NodePieces { get; } = new LocalBox[NodeSplitter.MaxPiecesPerNode];
+
+        /// <summary>Triangles that may still be read this frame.</summary>
+        public int TrianglesLeft { get; set; }
+
+        /// <summary>Whether a node was left coarse in this gather for want of budget or room.</summary>
+        public bool Skipped { get; set; }
+
+        /// <summary>Resets the per-frame triangle budget.</summary>
+        public void BeginFrame() => this.TrianglesLeft = TrianglesPerFrame;
+
+        /// <summary>Ends a completed gather.</summary>
+        /// <returns>True if some nodes were left coarse and another gather should refine them.</returns>
+        public bool EndGather()
+        {
+            var again = this.Skipped;
+            this.Skipped = false;
+            return again;
+        }
     }
 
     /// <summary>The collision scene, or null if the module or scene isn't there.</summary>
@@ -100,7 +185,8 @@ internal sealed class CollisionReader
     /// <param name="detailDepth">
     /// The deepest node-tree level offered (<see cref="CollisionDetails.MaxNodeDepth"/>, from the detail setting).
     /// </param>
-    private unsafe struct SceneSource(Scene* scene, int detailDepth) : ICollisionSource
+    /// <param name="refine">The node-splitting state (#127).</param>
+    private unsafe struct SceneSource(Scene* scene, int detailDepth, RefineState refine) : ICollisionSource
     {
         /// <summary>
         /// Deepest mesh node tree walked. The trees are balanced binary trees of a few hundred nodes; the cap only
@@ -156,7 +242,7 @@ internal sealed class CollisionReader
             switch (type)
             {
                 case ColliderType.Mesh:
-                    OfferMesh((ColliderMesh*)collider, set, detailDepth);
+                    OfferMesh((ColliderMesh*)collider, set, detailDepth, refine);
                     break;
                 case ColliderType.Box:
                     OfferUnit(((ColliderBox*)collider)->World, UnitMin, Vector3.One, set);
@@ -206,7 +292,8 @@ internal sealed class CollisionReader
         /// <param name="mesh">The mesh collider.</param>
         /// <param name="set">The set being gathered.</param>
         /// <param name="detailDepth">The deepest tree level offered.</param>
-        private static void OfferMesh(ColliderMesh* mesh, CollisionBoxSet set, int detailDepth)
+        /// <param name="refine">The node-splitting state (#127).</param>
+        private static void OfferMesh(ColliderMesh* mesh, CollisionBoxSet set, int detailDepth, RefineState refine)
         {
             var bounds = new CollisionBox(mesh->WorldBoundingBox.Min, mesh->WorldBoundingBox.Max);
             if (!set.Overlaps(bounds) || mesh->MeshIsSimple || mesh->Mesh == null)
@@ -216,7 +303,7 @@ internal sealed class CollisionReader
             }
 
             var world = mesh->World.FullMatrix();
-            OfferNode(((MeshPCB*)mesh->Mesh)->RootNode, world, set, 0, detailDepth);
+            OfferNode(((MeshPCB*)mesh->Mesh)->RootNode, world, set, 0, detailDepth, refine);
         }
 
         /// <summary>
@@ -229,7 +316,8 @@ internal sealed class CollisionReader
         /// <param name="set">The set being gathered.</param>
         /// <param name="depth">How deep in the tree; capped at <see cref="MaxDepth"/>.</param>
         /// <param name="detailDepth">The deepest tree level offered (#32).</param>
-        private static void OfferNode(MeshPCB.FileNode* node, in Matrix4x4 world, CollisionBoxSet set, int depth, int detailDepth)
+        /// <param name="refine">The node-splitting state (#127).</param>
+        private static void OfferNode(MeshPCB.FileNode* node, in Matrix4x4 world, CollisionBoxSet set, int depth, int detailDepth, RefineState refine)
         {
             if (node == null || depth > MaxDepth)
             {
@@ -250,11 +338,128 @@ internal sealed class CollisionReader
 
             if (node->NumPrims > 0)
             {
-                set.Offer(box);
+                OfferSplitNode(node, box, world, set, refine);
             }
 
-            OfferNode(node->Child1, world, set, depth + 1, detailDepth);
-            OfferNode(node->Child2, world, set, depth + 1, detailDepth);
+            OfferNode(node->Child1, world, set, depth + 1, detailDepth, refine);
+            OfferNode(node->Child2, world, set, depth + 1, detailDepth, refine);
+        }
+
+        /// <summary>
+        /// Offers a node holding triangles as the pieces its triangles fall into when a gap of at least
+        /// <see cref="NodeSplitter.Gap"/> separates them (#127), or as its coarse box when it hasn't been split yet or
+        /// isn't worth splitting. Pieces are kept in the mesh's own space and placed by the same world matrix as the
+        /// coarse box, so the turn from #123 still applies.
+        /// </summary>
+        /// <remarks>
+        /// A node not yet split because this frame's triangle budget is spent is offered coarse and flagged
+        /// (<see cref="RefineState.Skipped"/>), so the cube has no holes and gathers again to sharpen it. A node that
+        /// is small, has too many triangles, or has no room in the cache is stored or left as its coarse box and
+        /// doesn't ask for another gather.
+        /// </remarks>
+        /// <param name="node">The node, which holds triangles.</param>
+        /// <param name="coarse">The node's own box in the world.</param>
+        /// <param name="world">The mesh's world matrix.</param>
+        /// <param name="set">The set being gathered.</param>
+        /// <param name="refine">The node-splitting state.</param>
+        private static void OfferSplitNode(MeshPCB.FileNode* node, in CollisionBox coarse, in Matrix4x4 world, CollisionBoxSet set, RefineState refine)
+        {
+            var size = coarse.HalfSize;
+            if (MathF.Max(size.X, MathF.Max(size.Y, size.Z)) * 2f < RefineState.MinSplitSide)
+            {
+                set.Offer(coarse);
+                return;
+            }
+
+            var key = (ulong)node;
+            var check = Check(node);
+            if (refine.Pieces.TryGet(key, check, out var cached))
+            {
+                OfferPieces(cached, coarse, world, set);
+                return;
+            }
+
+            var count = node->NumPrims;
+            if (count > RefineState.MaxTriangles)
+            {
+                refine.Pieces.Add(key, check, default);
+                set.Offer(coarse);
+                return;
+            }
+
+            if (refine.TrianglesLeft <= 0)
+            {
+                refine.Skipped = true;
+                set.Offer(coarse);
+                return;
+            }
+
+            refine.TrianglesLeft -= count;
+            var triangles = refine.Triangles.AsSpan(0, count);
+            var i = 0;
+            foreach (ref var prim in node->Primitives)
+            {
+                if (i >= count)
+                {
+                    break;
+                }
+
+                var a = node->Vertex(prim.V1);
+                var b = node->Vertex(prim.V2);
+                var c = node->Vertex(prim.V3);
+                triangles[i++] = new LocalBox(Vector3.Min(a, Vector3.Min(b, c)), Vector3.Max(a, Vector3.Max(b, c)));
+            }
+
+            var made = NodeSplitter.Split(triangles[..i], refine.NodePieces);
+            var pieces = refine.NodePieces.AsSpan(0, made);
+            if (!refine.Pieces.Add(key, check, pieces))
+            {
+                // Full: start the cache again so the next gather has room; this node stays coarse for now.
+                refine.Pieces.Clear();
+                set.Offer(coarse);
+                return;
+            }
+
+            OfferPieces(pieces, coarse, world, set);
+        }
+
+        /// <summary>Offers a node's split pieces through the mesh's world matrix, or its coarse box if it has none.</summary>
+        /// <param name="pieces">The node's pieces in mesh space; empty means "use the coarse box".</param>
+        /// <param name="coarse">The node's own box.</param>
+        /// <param name="world">The mesh's world matrix.</param>
+        /// <param name="set">The set being gathered.</param>
+        private static void OfferPieces(ReadOnlySpan<LocalBox> pieces, in CollisionBox coarse, in Matrix4x4 world, CollisionBoxSet set)
+        {
+            if (pieces.IsEmpty)
+            {
+                set.Offer(coarse);
+                return;
+            }
+
+            foreach (var piece in pieces)
+            {
+                set.Offer(CollisionBox.FromTransformed(piece.Min, piece.Max, world));
+            }
+        }
+
+        /// <summary>
+        /// A number identifying what a node holds, stored beside its pieces so a different mesh loaded at the same
+        /// address is never given the old mesh's pieces: the triangle count and the bits of its bounds.
+        /// </summary>
+        /// <param name="node">The node.</param>
+        private static uint Check(MeshPCB.FileNode* node)
+        {
+            unchecked
+            {
+                var hash = (uint)node->NumPrims;
+                hash = (hash * 31) + BitConverter.SingleToUInt32Bits(node->LocalBounds.Min.X);
+                hash = (hash * 31) + BitConverter.SingleToUInt32Bits(node->LocalBounds.Min.Y);
+                hash = (hash * 31) + BitConverter.SingleToUInt32Bits(node->LocalBounds.Min.Z);
+                hash = (hash * 31) + BitConverter.SingleToUInt32Bits(node->LocalBounds.Max.X);
+                hash = (hash * 31) + BitConverter.SingleToUInt32Bits(node->LocalBounds.Max.Y);
+                hash = (hash * 31) + BitConverter.SingleToUInt32Bits(node->LocalBounds.Max.Z);
+                return hash;
+            }
         }
     }
 }

@@ -31,6 +31,44 @@ is spent. No game pointer is kept between frames: each frame finds its place aga
 list, so a collider unloaded in between is never touched.
 </p>
 
+## Fields
+
+### <a id="Cube_Game_CollisionReader_hasZone"></a> hasZone
+
+Whether [zone](Cube.Game.CollisionReader.md#Cube_Game_CollisionReader_zone) has been set.
+
+```csharp
+private bool hasZone
+```
+
+#### Field Value
+
+ [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+### <a id="Cube_Game_CollisionReader_refine"></a> refine
+
+The node-splitting state shared by every frame's [SceneSource](Cube.Game.CollisionReader.SceneSource.md#Cube_Game_CollisionReader_SceneSource) (#127).
+
+```csharp
+private readonly CollisionReader.RefineState refine
+```
+
+#### Field Value
+
+ [CollisionReader](Cube.Game.CollisionReader.md).[RefineState](Cube.Game.CollisionReader.RefineState.md)
+
+### <a id="Cube_Game_CollisionReader_zone"></a> zone
+
+The zone the split-piece cache belongs to.
+
+```csharp
+private uint zone
+```
+
+#### Field Value
+
+ [uint](https://learn.microsoft.com/dotnet/api/system.uint32)
+
 ## Properties
 
 ### <a id="Cube_Game_CollisionReader_Cache"></a> Cache
@@ -44,6 +82,18 @@ public CollisionCache Cache { get; }
 #### Property Value
 
  [CollisionCache](Cube.Core.CollisionCache.md)
+
+### <a id="Cube_Game_CollisionReader_NodePieces"></a> NodePieces
+
+The pieces mesh nodes were split into (#127); the test bridge reads its size.
+
+```csharp
+internal NodePieceCache NodePieces { get; }
+```
+
+#### Property Value
+
+ [NodePieceCache](Cube.Core.NodePieceCache.md)
 
 ### <a id="Cube_Game_CollisionReader_SimulatedZone"></a> SimulatedZone
 

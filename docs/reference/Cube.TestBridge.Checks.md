@@ -57,6 +57,11 @@ their per-frame time budget, allocate nothing and stay under the box cap.
 Checks the collision settings in the running game (#32: collision on/off and detail level, saved and applied
 immediately; PROJECT.md, "Collision (phase 2)").
 
+ [CollisionSplitCheck](Cube.TestBridge.Checks.CollisionSplitCheck.md)
+
+Checks collision node boxes are split at gaps in the running game, lazily and within the budget (#127; PROJECT.md,
+"Collision (phase 2)" and "Efficiency and memory").
+
  [CollisionZoneChangesCheck](Cube.TestBridge.Checks.CollisionZoneChangesCheck.md)
 
 Checks memory stays bounded across zone changes (PROJECT.md, "Bounded memory": caches have fixed caps, nothing
@@ -244,7 +249,7 @@ Counts from edge deduplication.
 
 Counts from reading.
 
- [PlayerHeightCheck.Sample](Cube.TestBridge.Checks.PlayerHeightCheck.Sample.md)
+ [CollisionProbeCheck.Sample](Cube.TestBridge.Checks.CollisionProbeCheck.Sample.md)
 
 One frame's measurements.
 
@@ -252,7 +257,7 @@ One frame's measurements.
 
 One frame's measurements.
 
- [CollisionProbeCheck.Sample](Cube.TestBridge.Checks.CollisionProbeCheck.Sample.md)
+ [PlayerHeightCheck.Sample](Cube.TestBridge.Checks.PlayerHeightCheck.Sample.md)
 
 One frame's measurements.
 
