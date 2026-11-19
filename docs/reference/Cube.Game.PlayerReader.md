@@ -38,6 +38,19 @@ public const int CharacterSlots = 200
 
  [int](https://learn.microsoft.com/dotnet/api/system.int32)
 
+### <a id="Cube_Game_PlayerReader_MaxInteractables"></a> MaxInteractables
+
+The most text-labelled interactable objects drawn per frame (#112). A housing ward put a few dozen entrances and
+placards in range; the cap keeps the draw cost bounded and extras are dropped and counted.
+
+```csharp
+public const int MaxInteractables = 30
+```
+
+#### Field Value
+
+ [int](https://learn.microsoft.com/dotnet/api/system.int32)
+
 ### <a id="Cube_Game_PlayerReader_MaxNpcs"></a> MaxNpcs
 
 The most named NPCs drawn per frame (#73: a busy city put 22 in the largest cube; 50 players' worth of extra
@@ -78,6 +91,28 @@ public const int ObjectSlots = 819
  [int](https://learn.microsoft.com/dotnet/api/system.int32)
 
 ## Methods
+
+### <a id="Cube_Game_PlayerReader_IsHater_FFXIVClientStructs_FFXIV_Client_Game_UI_UIState__System_UInt32_"></a> IsHater\(UIState\*, uint\)
+
+Whether an entity is on the game's list of enemies attacking the player (the "hater" list the enmity UI uses).
+
+```csharp
+private static bool IsHater(UIState* state, uint entityId)
+```
+
+#### Parameters
+
+`state` UIState\*
+
+The game's UI state; null is treated as an empty list.
+
+`entityId` [uint](https://learn.microsoft.com/dotnet/api/system.uint32)
+
+The enemy's entity id.
+
+#### Returns
+
+ [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
 ### <a id="Cube_Game_PlayerReader_Read_Cube_Core_PlayerSet_System_Single_"></a> Read\(PlayerSet, float\)
 

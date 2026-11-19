@@ -114,7 +114,7 @@ internal sealed class FakePlayers
     /// <param name="offset">Position as fractions of the half-size on each axis from the cube centre (1 = on a face).</param>
     /// <param name="relation">Party, other or NPC (fakes are never Self).</param>
     public void Add(string name, Vector3 offset, PlayerRelation relation) =>
-        this.fakes.Add(new Fake(Encoding.UTF8.GetBytes(name), offset, relation, false));
+        this.fakes.Add(MakeFake(name, offset, relation, false));
 
     /// <summary>
     /// Adds one fake at a fixed world position, like a real player standing still, so it rotates with the cube's
@@ -124,7 +124,7 @@ internal sealed class FakePlayers
     /// <param name="world">Its world position.</param>
     /// <param name="relation">Party, other or NPC (fakes are never Self).</param>
     public void AddAtWorld(string name, Vector3 world, PlayerRelation relation) =>
-        this.fakes.Add(new Fake(Encoding.UTF8.GetBytes(name), world, relation, true));
+        this.fakes.Add(MakeFake(name, world, relation, true));
 
     /// <summary>Removes all fakes.</summary>
     public void Clear() => this.fakes.Clear();
@@ -138,14 +138,20 @@ internal sealed class FakePlayers
         {
             var fake = this.fakes[i];
             var position = fake.IsWorld ? fake.Offset : space.FromView(fake.Offset * space.Half);
-            if (fake.Relation == PlayerRelation.Npc)
+            if (fake.Relation is PlayerRelation.Npc or PlayerRelation.Enemy)
             {
-                // Rejected by the set while NPCs are turned off, like a real NPC.
-                set.OfferNpc(FirstSlot + i, FirstEntityId + (uint)i, position, fake.Name);
+                // Rejected by the set while NPCs are turned off, like a real NPC. Fakes whose names contain "Target" or
+                // "Attacker" stand in for the real target and enemy-list reads (#111).
+                var isEnemy = fake.Relation == PlayerRelation.Enemy;
+                set.OfferNpc(FirstSlot + i, FirstEntityId + (uint)i, position, fake.Name, isEnemy, fake.IsTarget, fake.IsAttacker);
+            }
+            else if (fake.Relation == PlayerRelation.Interactable)
+            {
+                set.OfferInteractable(FirstSlot + i, FirstEntityId + (uint)i, position, fake.Name);
             }
             else
             {
-                set.Offer(FirstSlot + i, FirstEntityId + (uint)i, position, false, fake.Relation == PlayerRelation.Party, false, fake.Name);
+                set.Offer(FirstSlot + i, FirstEntityId + (uint)i, position, false, fake.Relation == PlayerRelation.Party, false, fake.Name, fake.IsTarget);
             }
         }
     }
@@ -155,5 +161,20 @@ internal sealed class FakePlayers
     /// <param name="Offset">Position as fractions of the half-size on each axis in cube-local coordinates, or a world position if <paramref name="IsWorld"/>.</param>
     /// <param name="Relation">Party, other or NPC.</param>
     /// <param name="IsWorld">Whether <paramref name="Offset"/> is a fixed world position.</param>
-    private readonly record struct Fake(byte[] Name, Vector3 Offset, PlayerRelation Relation, bool IsWorld);
+    /// <param name="IsTarget">Whether it stands in for the current target (name contains "Target"; #111).</param>
+    /// <param name="IsAttacker">Whether it stands in for an attacking enemy (name contains "Attacker"; #111).</param>
+    private readonly record struct Fake(byte[] Name, Vector3 Offset, PlayerRelation Relation, bool IsWorld, bool IsTarget, bool IsAttacker);
+
+    /// <summary>Builds a fake; the markers it shows come from its name, worked out once here so offering allocates nothing.</summary>
+    /// <param name="name">Its label.</param>
+    /// <param name="offset">Position (see <see cref="Fake"/>).</param>
+    /// <param name="relation">Its relation.</param>
+    /// <param name="isWorld">Whether <paramref name="offset"/> is a world position.</param>
+    private static Fake MakeFake(string name, Vector3 offset, PlayerRelation relation, bool isWorld) => new(
+        Encoding.UTF8.GetBytes(name),
+        offset,
+        relation,
+        isWorld,
+        name.Contains("Target", System.StringComparison.Ordinal),
+        name.Contains("Attacker", System.StringComparison.Ordinal));
 }

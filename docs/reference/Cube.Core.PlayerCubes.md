@@ -94,12 +94,12 @@ public static uint LabelColour { get; }
 
 ## Methods
 
-### <a id="Cube_Core_PlayerCubes_Add_Cube_Core_DrawList_Cube_Core_CubeSpace__Cube_Core_ViewProjection__System_ReadOnlySpan_Cube_Core_NearbyPlayer__Cube_Core_PlayerPalette__System_Boolean_"></a> Add\(DrawList, in CubeSpace, in ViewProjection, ReadOnlySpan<NearbyPlayer\>, in PlayerPalette, bool\)
+### <a id="Cube_Core_PlayerCubes_Add_Cube_Core_DrawList_Cube_Core_CubeSpace__Cube_Core_ViewProjection__System_ReadOnlySpan_Cube_Core_NearbyPlayer__Cube_Core_PlayerPalette__System_Boolean_System_Boolean_Cube_Core_NamePosition_"></a> Add\(DrawList, in CubeSpace, in ViewProjection, ReadOnlySpan<NearbyPlayer\>, in PlayerPalette, bool, bool, NamePosition\)
 
 Adds a cube for every player, in their colour, and a name label for everyone but the local player.
 
 ```csharp
-public static void Add(DrawList list, in CubeSpace space, in ViewProjection projection, ReadOnlySpan<NearbyPlayer> players, in PlayerPalette palette, bool labels = true)
+public static void Add(DrawList list, in CubeSpace space, in ViewProjection projection, ReadOnlySpan<NearbyPlayer> players, in PlayerPalette palette, bool labels = true, bool selfLabel = false, NamePosition position = NamePosition.Side)
 ```
 
 #### Parameters
@@ -126,7 +126,15 @@ Colours per relation.
 
 `labels` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-Whether to add name labels (PROJECT.md, "Features": labels on/off setting).
+Whether to add name labels for everyone but the local player (PROJECT.md, "Features": labels on/off setting).
+
+`selfLabel` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+Whether the local player's own name is labelled too (#112).
+
+`position` [NamePosition](Cube.Core.NamePosition.md)
+
+Whether labels sit beside or centred above their cubes (#112).
 
 #### Remarks
 

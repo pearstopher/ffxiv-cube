@@ -41,6 +41,11 @@ Checks the gathered collision is clipped to the cube for drawing, and only when 
 "Collision (phase 2)": boxes clipped to the cube; "Efficiency and memory": recompute only when the inputs change,
 no per-frame allocations, collision data dropped on a zone change).
 
+ [ClippedFuzzTests](Cube.Tests.ClippedFuzzTests.md)
+
+Fuzzes the clipper at 45° (#115; PROJECT.md, "Collision (phase 2)": clipped to the cube): whatever the box, a box
+drawn as a plain rectangle must lie wholly inside the cube.
+
  [ClippedPrismTests](Cube.Tests.ClippedPrismTests.md)
 
 Checks collision stays inside the cube at every cube yaw (#93; PROJECT.md, "Collision (phase 2)": each collider is
@@ -121,6 +126,12 @@ Checks the draw-cost measurements the in-game bridge uses for PROJECT.md's budge
 ("Efficiency and memory": under 0.5 ms per frame on average, zero bytes allocated per frame),
 and that measuring is itself allocation-free with bounded memory.
 
+ [EnemyMarkerTests](Cube.Tests.EnemyMarkerTests.md)
+
+Checks #111: hostile battle NPCs are enemies with their own colour, the current target's label starts with
+<code>[T]</code>, an enemy attacking the player's starts with <code>[!]</code>, both read <code>[T] [!] Name</code>, and the prefixed
+strings are cached rather than rebuilt every frame (PROJECT.md, "Efficiency and memory": no per-frame allocation).
+
  [ErrorThrottleTests](Cube.Tests.ErrorThrottleTests.md)
 
 Checks repeated errors are logged sparingly (CLAUDE.md, "Dalamud rules": every game-facing handler catches and
@@ -132,6 +143,12 @@ Checks the corner gizmo's shared model matrix (PROJECT.md, "View orientation con
 handles change width, height or depth in the cube's own axes whatever the orientation, the centre handle zooms
 keeping the ratios, a turn never changes the size and a resize never changes the view. ImGuizmo's handles are
 simulated by scaling the matrix's rows (its local axes) the way its scale operation does.
+
+ [NamesAndTogglesTests](Cube.Tests.NamesAndTogglesTests.md)
+
+Checks #112 (GitHub issue text): the own-name setting (on by default), name position (side by default, or centred
+above), a toggle per kind of cube (all on by default), and the text-labelled interactable kind (own colour, own cap,
+nameless objects left out).
 
  [PlayerCubesTests](Cube.Tests.PlayerCubesTests.md)
 

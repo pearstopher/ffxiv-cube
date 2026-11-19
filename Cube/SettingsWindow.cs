@@ -20,6 +20,9 @@ internal sealed class SettingsWindow : Window
     /// <summary>The corner choices, in <see cref="WidgetCorner"/> order.</summary>
     private static readonly string[] CornerNames = ["Bottom right", "Bottom left", "Top right", "Top left"];
 
+    /// <summary>The name position choices, in <see cref="NamePosition"/> order (#112).</summary>
+    private static readonly string[] NamePositionNames = ["To the side", "Centred above"];
+
     /// <summary>The collision detail choices, in <see cref="CollisionDetail"/> order.</summary>
     private static readonly string[] DetailNames = ["Full", "Medium", "Coarse"];
 
@@ -144,18 +147,38 @@ internal sealed class SettingsWindow : Window
             this.save();
         }
 
+        // Names (#112): other people's and objects' names, your own, and where they sit.
         if (ImGui.Checkbox("Show names", ref c.ShowLabels))
         {
             this.ApplyAndSave();
         }
 
+        ImGui.SameLine();
+        if (ImGui.Checkbox("Show your name", ref c.ShowOwnName))
+        {
+            this.ApplyAndSave();
+        }
+
+        ImGui.SetNextItemWidth(200);
+        var namePosition = (int)c.NamePosition;
+        if (ImGui.Combo("Name position", ref namePosition, NamePositionNames, NamePositionNames.Length))
+        {
+            c.NamePosition = (NamePosition)namePosition;
+            this.ApplyAndSave();
+        }
+
+        // One toggle and colour per kind of cube (#112). You are always shown; PROJECT.md, "NPCs": NPCs on/off.
         this.Track(ImGui.ColorEdit3("You", ref c.SelfColour, ImGuiColorEditFlags.NoInputs));
+        if (ImGui.Checkbox("Show players", ref c.ShowPlayers))
+        {
+            this.ApplyAndSave();
+        }
+
         ImGui.SameLine();
         this.Track(ImGui.ColorEdit3("Party / alliance", ref c.PartyColour, ImGuiColorEditFlags.NoInputs));
         ImGui.SameLine();
         this.Track(ImGui.ColorEdit3("Others", ref c.OtherColour, ImGuiColorEditFlags.NoInputs));
 
-        // Named NPCs (PROJECT.md, "NPCs"): on/off, and their own colour.
         if (ImGui.Checkbox("Show NPCs", ref c.ShowNpcs))
         {
             this.ApplyAndSave();
@@ -163,6 +186,22 @@ internal sealed class SettingsWindow : Window
 
         ImGui.SameLine();
         this.Track(ImGui.ColorEdit3("NPCs", ref c.NpcColour, ImGuiColorEditFlags.NoInputs));
+
+        if (ImGui.Checkbox("Show enemies", ref c.ShowEnemies))
+        {
+            this.ApplyAndSave();
+        }
+
+        ImGui.SameLine();
+        this.Track(ImGui.ColorEdit3("Enemies", ref c.EnemyColour, ImGuiColorEditFlags.NoInputs));
+
+        if (ImGui.Checkbox("Show interactables", ref c.ShowInteractables))
+        {
+            this.ApplyAndSave();
+        }
+
+        ImGui.SameLine();
+        this.Track(ImGui.ColorEdit3("Interactables", ref c.InteractableColour, ImGuiColorEditFlags.NoInputs));
 
         // Collision (#32): on/off, and how finely it's drawn.
         if (ImGui.Checkbox("Show collision", ref c.ShowCollision))

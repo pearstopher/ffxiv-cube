@@ -37,6 +37,18 @@ public sealed class PlayerSet
     /// <summary>Most NPCs kept per frame.</summary>
     private readonly int npcCapacity;
 
+    /// <summary>Most interactable objects kept per frame (#112).</summary>
+    private readonly int interactableCapacity;
+
+    /// <summary>Whether friendly NPCs are taken this frame (<see cref="Begin"/>).</summary>
+    private bool showNpcs;
+
+    /// <summary>Whether hostile NPCs are taken this frame.</summary>
+    private bool showEnemies;
+
+    /// <summary>Whether other players are taken this frame.</summary>
+    private bool showPlayers;
+
     /// <summary>Names, cached per slot.</summary>
     private readonly NameCache names;
 
@@ -50,21 +62,34 @@ public sealed class PlayerSet
     /// <param name="capacity">Most players held per frame.</param>
     /// <param name="names">The name cache; its slot count bounds the slots that can be offered.</param>
     /// <param name="npcCapacity">Most named NPCs held per frame, on top of the players; 0 keeps none.</param>
-    public PlayerSet(int capacity, NameCache names, int npcCapacity = 0)
+    /// <param name="interactableCapacity">Most interactable objects held per frame, on top of both; 0 keeps none (#112).</param>
+    public PlayerSet(int capacity, NameCache names, int npcCapacity = 0, int interactableCapacity = 0)
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(capacity, 1);
         ArgumentOutOfRangeException.ThrowIfNegative(npcCapacity);
-        this.players = new NearbyPlayer[capacity + npcCapacity];
+        ArgumentOutOfRangeException.ThrowIfNegative(interactableCapacity);
+        this.interactableCapacity = interactableCapacity;
+        this.players = new NearbyPlayer[capacity + npcCapacity + interactableCapacity];
         this.playerCapacity = capacity;
         this.npcCapacity = npcCapacity;
         this.names = names;
+        this.markers = new MarkerLabels(names.Slots);
     }
+
+    /// <summary>Label text with the target and attacking markers (#111), cached per slot.</summary>
+    private readonly MarkerLabels markers;
+
+    /// <summary>The marker cache, for tests and the bridge.</summary>
+    public MarkerLabels Markers => this.markers;
 
     /// <summary>How many players and NPCs are inside the cube this frame.</summary>
     public int Count { get; private set; }
 
     /// <summary>How many of <see cref="Count"/> are NPCs.</summary>
     public int NpcCount { get; private set; }
+
+    /// <summary>How many of <see cref="Count"/> are interactable objects (#112).</summary>
+    public int InteractableCount { get; private set; }
 
     /// <summary>How many players or NPCs inside the cube didn't fit this frame.</summary>
     public int Dropped { get; private set; }
@@ -89,6 +114,15 @@ public sealed class PlayerSet
         isLocal ? PlayerRelation.Self : (isParty || isAlliance) ? PlayerRelation.Party : PlayerRelation.Other;
 
     /// <summary>
+    /// The relation for a named NPC (#111): a hostile battle NPC is an enemy, anything else a plain NPC. Event NPCs are
+    /// never enemies, whatever their flags say.
+    /// </summary>
+    /// <param name="isBattleNpc">Whether the object is a battle NPC (not an event NPC).</param>
+    /// <param name="isHostile">The game's hostile flag (<c>Character.IsHostile</c>).</param>
+    public static PlayerRelation ClassifyNpc(bool isBattleNpc, bool isHostile) =>
+        isBattleNpc && isHostile ? PlayerRelation.Enemy : PlayerRelation.Npc;
+
+    /// <summary>
     /// Whether an event or battle NPC counts as a named NPC (PROJECT.md, "NPCs"; the filter measured in #73,
     /// <c>docs/research-notes.md</c>).
     /// </summary>
@@ -109,13 +143,35 @@ public sealed class PlayerSet
     /// </summary>
     public bool ShowsNpcs { get; private set; }
 
+    /// <summary>
+    /// Whether interactable objects are taken this frame (#112). The game reader checks it to skip the object part of the
+    /// table altogether; <see cref="OfferInteractable"/> rejects every one while it's off.
+    /// </summary>
+    public bool ShowsInteractables { get; private set; }
+
+    /// <summary>
+    /// Whether an object counts as a text-labelled interactable (#112; <c>docs/research-notes.md</c>): an event object
+    /// with a name. Nameless event objects are the invisible triggers and icon-only markers (arrows); housing furniture
+    /// and gardening plants are a different object kind and never reach here. The caller has checked the kind.
+    /// </summary>
+    /// <param name="nameUtf8">The game's zero-terminated name bytes.</param>
+    public static bool IsTextInteractable(ReadOnlySpan<byte> nameUtf8) => nameUtf8.Length > 0 && nameUtf8[0] != 0;
+
     /// <summary>Starts a new frame: empties the set and sets the cube players are tested against.</summary>
     /// <param name="cube">This frame's cube.</param>
-    /// <param name="npcs">Whether named NPCs are shown this frame (the user's setting).</param>
-    public void Begin(in CubeSpace cube, bool npcs = true)
+    /// <param name="npcs">Whether friendly named NPCs are shown this frame (the user's setting).</param>
+    /// <param name="players">Whether other players are shown (#112); the local player always is.</param>
+    /// <param name="enemies">Whether hostile NPCs are shown (#112).</param>
+    /// <param name="interactables">Whether interactable objects are shown (#112).</param>
+    public void Begin(in CubeSpace cube, bool npcs = true, bool players = true, bool enemies = true, bool interactables = true)
     {
         this.space = cube;
-        this.ShowsNpcs = npcs && this.npcCapacity > 0;
+        this.showNpcs = npcs;
+        this.showEnemies = enemies;
+        this.showPlayers = players;
+        this.ShowsNpcs = (npcs || enemies) && this.npcCapacity > 0;
+        this.ShowsInteractables = interactables && this.interactableCapacity > 0;
+        this.InteractableCount = 0;
         this.Count = 0;
         this.NpcCount = 0;
         this.playerCount = 0;
@@ -134,8 +190,9 @@ public sealed class PlayerSet
     /// <param name="isParty">Party-member flag.</param>
     /// <param name="isAlliance">Alliance-member flag.</param>
     /// <param name="nameUtf8">The game's name bytes.</param>
+    /// <param name="isTarget">Whether this is the local player's current target (#111: gets a <c>[T]</c> marker).</param>
     /// <returns>True if the player is inside the cube and was kept.</returns>
-    public bool Offer(int slot, uint entityId, Vector3 position, bool isLocal, bool isParty, bool isAlliance, ReadOnlySpan<byte> nameUtf8)
+    public bool Offer(int slot, uint entityId, Vector3 position, bool isLocal, bool isParty, bool isAlliance, ReadOnlySpan<byte> nameUtf8, bool isTarget = false)
     {
         if (isLocal)
         {
@@ -151,6 +208,11 @@ public sealed class PlayerSet
             }
         }
 
+        if (!isLocal && !this.showPlayers)
+        {
+            return false;
+        }
+
         if (!this.Accept(slot, position, this.playerCount == this.playerCapacity))
         {
             return false;
@@ -158,7 +220,8 @@ public sealed class PlayerSet
 
         this.playerCount++;
         var relation = Classify(isLocal, isParty, isAlliance);
-        this.players[this.Count++] = new NearbyPlayer(slot, entityId, position, relation, this.names.Get(slot, nameUtf8));
+        var name = this.names.Get(slot, nameUtf8);
+        this.players[this.Count++] = new NearbyPlayer(slot, entityId, position, relation, name, this.markers.Get(slot, isTarget, false, name));
         return true;
     }
 
@@ -171,16 +234,45 @@ public sealed class PlayerSet
     /// <param name="entityId">The game's id for the NPC.</param>
     /// <param name="position">World position.</param>
     /// <param name="nameUtf8">The game's name bytes.</param>
+    /// <param name="isEnemy">Whether it is a hostile battle NPC (#111: kept as <see cref="PlayerRelation.Enemy"/>).</param>
+    /// <param name="isTarget">Whether it is the local player's current target (<c>[T]</c> marker).</param>
+    /// <param name="isAttacking">Whether it is attacking the local player (<c>[!]</c> marker); only enemies are marked.</param>
     /// <returns>True if the NPC is inside the cube and was kept.</returns>
-    public bool OfferNpc(int slot, uint entityId, Vector3 position, ReadOnlySpan<byte> nameUtf8)
+    public bool OfferNpc(int slot, uint entityId, Vector3 position, ReadOnlySpan<byte> nameUtf8, bool isEnemy = false, bool isTarget = false, bool isAttacking = false)
     {
-        if (!this.ShowsNpcs || !this.Accept(slot, position, this.NpcCount == this.npcCapacity))
+        if (!this.ShowsNpcs || !(isEnemy ? this.showEnemies : this.showNpcs) || !this.Accept(slot, position, this.NpcCount == this.npcCapacity))
         {
             return false;
         }
 
         this.NpcCount++;
-        this.players[this.Count++] = new NearbyPlayer(slot, entityId, position, PlayerRelation.Npc, this.names.Get(slot, nameUtf8));
+        var name = this.names.Get(slot, nameUtf8);
+        var relation = isEnemy ? PlayerRelation.Enemy : PlayerRelation.Npc;
+        this.players[this.Count++] = new NearbyPlayer(slot, entityId, position, relation, name, this.markers.Get(slot, isTarget, isEnemy && isAttacking, name));
+        return true;
+    }
+
+    /// <summary>
+    /// Offers one text-labelled interactable object (the caller has applied <see cref="IsTextInteractable"/>; #112). It is
+    /// culled like a player and kept as <see cref="PlayerRelation.Interactable"/>, up to its own cap, so a crowd of
+    /// objects never pushes out players or NPCs. Rejected straight away while the toggle is off.
+    /// </summary>
+    /// <param name="slot">Object table index (must be below the name cache's slot count).</param>
+    /// <param name="entityId">The game's id for the object.</param>
+    /// <param name="position">World position.</param>
+    /// <param name="nameUtf8">The game's name bytes.</param>
+    /// <param name="isTarget">Whether it is the local player's current target (<c>[T]</c> marker).</param>
+    /// <returns>True if the object is inside the cube and was kept.</returns>
+    public bool OfferInteractable(int slot, uint entityId, Vector3 position, ReadOnlySpan<byte> nameUtf8, bool isTarget = false)
+    {
+        if (!this.ShowsInteractables || !this.Accept(slot, position, this.InteractableCount == this.interactableCapacity))
+        {
+            return false;
+        }
+
+        this.InteractableCount++;
+        var name = this.names.Get(slot, nameUtf8);
+        this.players[this.Count++] = new NearbyPlayer(slot, entityId, position, PlayerRelation.Interactable, name, this.markers.Get(slot, isTarget, false, name));
         return true;
     }
 

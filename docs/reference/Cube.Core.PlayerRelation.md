@@ -34,3 +34,17 @@ The local player, at the centre of the cube.
 
 A named NPC (PROJECT.md, "NPCs"): drawn like a player, in its own colour. Never self or party, even when the NPC
 fights alongside the player.
+
+
+
+`Enemy = 4` 
+
+A hostile battle NPC (#111): drawn in its own colour so enemies stand apart from friendly NPCs. Counts as an NPC
+everywhere else (NPC setting, NPC cap).
+
+
+
+`Interactable = 5` 
+
+An in-world interactable the game labels with words (#112): an event object such as "Entrance" or "Placard". Drawn
+like an NPC in its own colour, with its own cap and toggle.

@@ -190,6 +190,36 @@ The fake's name.
 
  [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
+### <a id="Cube_TestBridge_FakePlayers_MakeFake_System_String_System_Numerics_Vector3_Cube_Core_PlayerRelation_System_Boolean_"></a> MakeFake\(string, Vector3, PlayerRelation, bool\)
+
+Builds a fake; the markers it shows come from its name, worked out once here so offering allocates nothing.
+
+```csharp
+private static FakePlayers.Fake MakeFake(string name, Vector3 offset, PlayerRelation relation, bool isWorld)
+```
+
+#### Parameters
+
+`name` [string](https://learn.microsoft.com/dotnet/api/system.string)
+
+Its label.
+
+`offset` [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
+
+Position (see [Fake](Cube.TestBridge.FakePlayers.Fake.md#Cube_TestBridge_FakePlayers_Fake)).
+
+`relation` [PlayerRelation](Cube.Core.PlayerRelation.md)
+
+Its relation.
+
+`isWorld` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+Whether <code class="paramref">offset</code> is a world position.
+
+#### Returns
+
+ [FakePlayers](Cube.TestBridge.FakePlayers.md).[Fake](Cube.TestBridge.FakePlayers.Fake.md)
+
 ### <a id="Cube_TestBridge_FakePlayers_Offer_Cube_Core_PlayerSet_Cube_Core_CubeSpace__"></a> Offer\(PlayerSet, in CubeSpace\)
 
 Offers every fake to the frame's player set. Allocation-free: names were encoded when added.

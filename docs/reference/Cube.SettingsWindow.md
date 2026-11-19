@@ -74,6 +74,18 @@ private static readonly string[] DetailNames
 
  [string](https://learn.microsoft.com/dotnet/api/system.string)\[\]
 
+### <a id="Cube_SettingsWindow_NamePositionNames"></a> NamePositionNames
+
+The name position choices, in [NamePosition](Cube.Core.NamePosition.md#Cube_Core_NamePosition) order (#112).
+
+```csharp
+private static readonly string[] NamePositionNames
+```
+
+#### Field Value
+
+ [string](https://learn.microsoft.com/dotnet/api/system.string)\[\]
+
 ### <a id="Cube_SettingsWindow_config"></a> config
 
 The settings being edited.

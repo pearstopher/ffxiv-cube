@@ -84,6 +84,30 @@ public Vector3 CubeSize
 
  [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
 
+### <a id="Cube_Core_CubeSettings_DefaultEnemyColour"></a> DefaultEnemyColour
+
+Default enemy colour: red, so hostile battle NPCs stand apart from friendly ones (#111).
+
+```csharp
+public static readonly Vector3 DefaultEnemyColour
+```
+
+#### Field Value
+
+ [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
+
+### <a id="Cube_Core_CubeSettings_DefaultInteractableColour"></a> DefaultInteractableColour
+
+Default colour for text-labelled interactable objects: teal, distinct from the other kinds (#112).
+
+```csharp
+public static readonly Vector3 DefaultInteractableColour
+```
+
+#### Field Value
+
+ [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
+
 ### <a id="Cube_Core_CubeSettings_DefaultNpcColour"></a> DefaultNpcColour
 
 Default NPC colour: purple, so NPCs stand apart from players (PROJECT.md, "Colours").
@@ -132,6 +156,30 @@ public static readonly Vector3 DefaultSelfColour
 
  [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
 
+### <a id="Cube_Core_CubeSettings_EnemyColour"></a> EnemyColour
+
+Hostile battle NPCs' colour (#111). Files saved before it existed load the default.
+
+```csharp
+public Vector3 EnemyColour
+```
+
+#### Field Value
+
+ [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
+
+### <a id="Cube_Core_CubeSettings_InteractableColour"></a> InteractableColour
+
+Interactable objects' colour (#112). Files saved before it existed load the default.
+
+```csharp
+public Vector3 InteractableColour
+```
+
+#### Field Value
+
+ [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
+
 ### <a id="Cube_Core_CubeSettings_MinOpacity"></a> MinOpacity
 
 Lowest opacity allowed, so the cubes can be made faint but never vanish entirely.
@@ -143,6 +191,18 @@ public const float MinOpacity = 0.1
 #### Field Value
 
  [float](https://learn.microsoft.com/dotnet/api/system.single)
+
+### <a id="Cube_Core_CubeSettings_NamePosition"></a> NamePosition
+
+Whether names sit beside or above their cubes (#112); [Side](Cube.Core.NamePosition.md#Cube_Core_NamePosition_Side) by default.
+
+```csharp
+public NamePosition NamePosition
+```
+
+#### Field Value
+
+ [NamePosition](Cube.Core.NamePosition.md)
 
 ### <a id="Cube_Core_CubeSettings_NpcColour"></a> NpcColour
 
@@ -270,9 +330,33 @@ public bool ShowCollision
 
  [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
+### <a id="Cube_Core_CubeSettings_ShowEnemies"></a> ShowEnemies
+
+Whether hostile battle NPCs are shown (#112), default on.
+
+```csharp
+public bool ShowEnemies
+```
+
+#### Field Value
+
+ [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+### <a id="Cube_Core_CubeSettings_ShowInteractables"></a> ShowInteractables
+
+Whether text-labelled interactable objects are shown (#112), default on. When off the reader skips them.
+
+```csharp
+public bool ShowInteractables
+```
+
+#### Field Value
+
+ [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
 ### <a id="Cube_Core_CubeSettings_ShowLabels"></a> ShowLabels
 
-Whether other players' names are drawn (PROJECT.md: labels on/off).
+Whether other players', NPCs' and objects' names are drawn (PROJECT.md: labels on/off).
 
 ```csharp
 public bool ShowLabels
@@ -289,6 +373,30 @@ game reader doesn't even look at NPCs. A config file saved before this setting e
 
 ```csharp
 public bool ShowNpcs
+```
+
+#### Field Value
+
+ [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+### <a id="Cube_Core_CubeSettings_ShowOwnName"></a> ShowOwnName
+
+Whether the local player's own name is drawn next to their cube (#112), default on.
+
+```csharp
+public bool ShowOwnName
+```
+
+#### Field Value
+
+ [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+### <a id="Cube_Core_CubeSettings_ShowPlayers"></a> ShowPlayers
+
+Whether other players (party, alliance and everyone else) are shown (#112), default on. The local player is always shown.
+
+```csharp
+public bool ShowPlayers
 ```
 
 #### Field Value

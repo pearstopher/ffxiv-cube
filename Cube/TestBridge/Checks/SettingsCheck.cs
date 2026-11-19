@@ -76,6 +76,7 @@ internal sealed class SettingsCheck : BridgeCheck
         // Labels off.
         settings.ResetSize();
         settings.ShowLabels = false;
+        settings.ShowOwnName = false;
         settings.Changed();
         foreach (var step in WaitForDraws(window))
         {
@@ -90,6 +91,7 @@ internal sealed class SettingsCheck : BridgeCheck
 
         // Colour and opacity together: other players' faces must be shades of the test colour at half opacity.
         settings.ShowLabels = true;
+        settings.ShowOwnName = true;
         settings.OtherColour = TestColour;
         settings.Opacity = 0.5f;
         settings.Changed();

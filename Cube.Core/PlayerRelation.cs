@@ -20,4 +20,16 @@ public enum PlayerRelation : byte
     /// fights alongside the player.
     /// </summary>
     Npc = 3,
+
+    /// <summary>
+    /// A hostile battle NPC (#111): drawn in its own colour so enemies stand apart from friendly NPCs. Counts as an NPC
+    /// everywhere else (NPC setting, NPC cap).
+    /// </summary>
+    Enemy = 4,
+
+    /// <summary>
+    /// An in-world interactable the game labels with words (#112): an event object such as "Entrance" or "Placard". Drawn
+    /// like an NPC in its own colour, with its own cap and toggle.
+    /// </summary>
+    Interactable = 5,
 }

@@ -115,6 +115,11 @@ The model matrix the corner gizmo works on, which carries both the view orientat
 (#90), and the rules for reading a drag back from it (PROJECT.md, "View orientation control" and "Control" under
 the box size: the axis handles change width, height or depth, the centre handle is zoom).
 
+ [MarkerLabels](Cube.Core.MarkerLabels.md)
+
+Builds the label text with its markers (#111): <code>[T]</code> in front of the player's current target, <code>[!]</code> in
+front of an enemy that is attacking the player, both as <code>[T] [!] Name</code> with the target marker first.
+
  [NameCache](Cube.Core.NameCache.md)
 
 Turns the game's UTF-8 name bytes into strings, once per name: a string is only built when the bytes in an
@@ -231,7 +236,7 @@ label code (PROJECT.md, "NPCs": shown the same way as players).
  [PlayerPalette](Cube.Core.PlayerPalette.md)
 
 One colour per relation (PROJECT.md, "Colours": self, party/alliance members, everyone else, NPCs; one colour
-each). Built from the user's [CubeSettings](Cube.Core.CubeSettings.md#Cube_Core_CubeSettings).
+each; #111: enemies too). Built from the user's [CubeSettings](Cube.Core.CubeSettings.md#Cube_Core_CubeSettings).
 
  [ViewOrientation](Cube.Core.ViewOrientation.md)
 
@@ -263,6 +268,10 @@ Where [CollisionCache](Cube.Core.CollisionCache.md#Cube_Core_CollisionCache) get
 How finely collision is drawn (#32, the collision detail setting; PROJECT.md, "Collision (phase 2)": colliders are
 shown as simplified boxes). Each level is a depth limit on the walk down a mesh collider's node tree; primitive
 colliders (boxes, cylinders, spheres, planes) are one box at every level.
+
+ [NamePosition](Cube.Core.NamePosition.md)
+
+Where a name label sits relative to its cube (#112; [NamePosition](Cube.Core.CubeSettings.md#Cube_Core_CubeSettings_NamePosition)).
 
  [OrientationMode](Cube.Core.OrientationMode.md)
 

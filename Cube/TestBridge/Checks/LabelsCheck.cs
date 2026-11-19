@@ -5,7 +5,7 @@ namespace Cube.TestBridge.Checks;
 
 /// <summary>
 /// Checks every other player in the cube gets exactly one name label showing their name, next to their cube and on
-/// top of it, and the local player gets none (PROJECT.md, "Features": other players are labelled with their names;
+/// top of it, and the local player gets one only while the own-name setting (#112) is on (PROJECT.md, "Features": other players are labelled with their names;
 /// "Labels": the name drawn next to the cube). Uses the standard fake players (#16) so it works with nobody around.
 /// </summary>
 /// <remarks>
@@ -89,7 +89,7 @@ internal sealed class LabelsCheck : BridgeCheck
             }
 
             labelsPerPlayer[index]++;
-            if (drawn >= window.LastLabelCount || window.LastLabelText[drawn] != players[index].Name)
+            if (drawn >= window.LastLabelCount || window.LastLabelText[drawn] != players[index].Label)
             {
                 return CheckStep.Fail($"Label {drawn} (player {index}) wasn't drawn with that player's name.");
             }
@@ -110,8 +110,9 @@ internal sealed class LabelsCheck : BridgeCheck
         var others = 0;
         for (var i = 0; i < players.Length; i++)
         {
-            var want = players[i].Relation == PlayerRelation.Self ? 0 : 1;
-            others += want;
+            var self = players[i].Relation == PlayerRelation.Self;
+            var want = self ? (window.Settings.ShowOwnName ? 1 : 0) : 1;
+            others += self ? 0 : 1;
             if (labelsPerPlayer[i] != want)
             {
                 return CheckStep.Fail($"Player {i} ({players[i].Relation}) has {labelsPerPlayer[i]} labels; expected {want}.");
@@ -121,7 +122,7 @@ internal sealed class LabelsCheck : BridgeCheck
         context.Metric("players", players.Length);
         context.Metric("labels", drawn);
         return others >= FakePlayers.StandardArriving(window.Settings.ShowNpcs)
-            ? CheckStep.Pass($"{drawn} labels, one per other player, each with that player's name, beside and above their cube; none on self.")
+            ? CheckStep.Pass($"{drawn} labels, one per other player (and one on you while Show your name is on), each with that player's name, beside and above their cube.")
             : CheckStep.Fail($"Only {others} other players in the cube; expected the standard fakes.");
     }
 }

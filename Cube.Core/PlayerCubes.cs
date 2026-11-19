@@ -60,12 +60,14 @@ public static class PlayerCubes
     /// <param name="projection">The projection.</param>
     /// <param name="players">This frame's players inside the cube.</param>
     /// <param name="palette">Colours per relation.</param>
-    /// <param name="labels">Whether to add name labels (PROJECT.md, "Features": labels on/off setting).</param>
+    /// <param name="labels">Whether to add name labels for everyone but the local player (PROJECT.md, "Features": labels on/off setting).</param>
+    /// <param name="selfLabel">Whether the local player's own name is labelled too (#112).</param>
+    /// <param name="position">Whether labels sit beside or centred above their cubes (#112).</param>
     /// <remarks>
     /// One <see cref="BoxProjector"/> and one set of face shades per relation are worked out per call, so each player
     /// costs one projection of their position (PROJECT.md, "Efficiency and memory").
     /// </remarks>
-    public static void Add(DrawList list, in CubeSpace space, in ViewProjection projection, ReadOnlySpan<NearbyPlayer> players, in PlayerPalette palette, bool labels = true)
+    public static void Add(DrawList list, in CubeSpace space, in ViewProjection projection, ReadOnlySpan<NearbyPlayer> players, in PlayerPalette palette, bool labels = true, bool selfLabel = false, NamePosition position = NamePosition.Side)
     {
         if (players.IsEmpty)
         {
@@ -77,9 +79,12 @@ public static class PlayerCubes
         var party = projector.Shades(palette.Party);
         var other = projector.Shades(palette.Other);
         var npc = projector.Shades(palette.Npc);
+        var enemy = projector.Shades(palette.Enemy);
+        var interactable = projector.Shades(palette.Interactable);
         var half = HalfSize(space, projection);
         var size = new Vector3(half);
         var labelOffset = (half * WidestReach * projection.PixelsPerYalm) + LabelGap;
+        var above = position == NamePosition.Above;
         for (var i = 0; i < players.Length; i++)
         {
             ref readonly var player = ref players[i];
@@ -90,14 +95,23 @@ public static class PlayerCubes
                 PlayerRelation.Self => self,
                 PlayerRelation.Party => party,
                 PlayerRelation.Npc => npc,
+                PlayerRelation.Enemy => enemy,
+                PlayerRelation.Interactable => interactable,
                 _ => other,
             };
             projector.AddFaces(list, screen, size, depth, shades, tag: i + 1);
 
-            // The local player isn't labelled: PROJECT.md labels the *other* players (and NPCs).
-            if (labels && player.Relation != PlayerRelation.Self)
+            // PROJECT.md labels the *other* players (and NPCs); the local player's own name is a separate setting (#112).
+            if (player.Relation == PlayerRelation.Self ? selfLabel : labels)
             {
-                list.AddLabel(new Vector2(screen.X + labelOffset, screen.Y), depth, LabelColour, i + 1);
+                // Above: the anchor is the middle of the text's bottom edge, a gap over the cube's top corner; the
+                // window centres the text on it, since only it knows the text's width.
+                list.AddLabel(
+                    above ? new Vector2(screen.X, screen.Y - labelOffset) : new Vector2(screen.X + labelOffset, screen.Y),
+                    depth,
+                    LabelColour,
+                    i + 1,
+                    above);
             }
         }
     }
