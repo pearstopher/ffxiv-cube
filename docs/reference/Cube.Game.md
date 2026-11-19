@@ -30,6 +30,11 @@ offers each to [PlayerSet](Cube.Core.PlayerSet.md#Cube_Core_PlayerSet) (PROJECT.
 (<code>docs/research-notes.md</code>): FFXIVClientStructs, not Dalamud's object table, because it allocates nothing per
 frame.
 
+ [CollisionReader.RefineState](Cube.Game.CollisionReader.RefineState.md)
+
+Everything the node splitting keeps between frames (#127): the cache of pieces, the scratch space it works in
+(allocated once, so splitting allocates nothing per frame), and this frame's triangle budget.
+
 ### Structs
 
  [CollisionReader.SceneSource](Cube.Game.CollisionReader.SceneSource.md)

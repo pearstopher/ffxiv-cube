@@ -126,6 +126,18 @@ Turns the game's UTF-8 name bytes into strings, once per name: a string is only 
 object slot change (PROJECT.md, "Efficiency and memory": name labels are cached and only rebuilt when a name
 changes). Reading the same names every frame allocates nothing.
 
+ [NodePieceCache](Cube.Core.NodePieceCache.md)
+
+Remembers the pieces each collision mesh node was split into ([NodeSplitter](Cube.Core.NodeSplitter.md#Cube_Core_NodeSplitter)), so the split is worked out
+once per node and a gather only transforms the kept pieces (#127). Bounded and dropped on zone change, like the box
+sets (PROJECT.md, "Bounded memory").
+
+ [NodeSplitter](Cube.Core.NodeSplitter.md)
+
+Splits one collision mesh node's box into pieces wherever its triangles leave a gap the player could walk through
+(PROJECT.md, "Collision (phase 2)": the boxes are what the player would bump into; #127, from the #125 research in
+<code>docs/research-notes.md</code>).
+
  [PlayerCubes](Cube.Core.PlayerCubes.md)
 
 Draws each player in the cube as a small solid cube in their relation's colour, with a name label for other
@@ -210,6 +222,10 @@ cube-local view coordinates.
 One thing to draw, already projected to window pixels: the plugin turns each into one ImGui call
 (PROJECT.md, "Cheap drawing": the fewest primitives that do the job).
 
+ [NodePieceCache.Entry](Cube.Core.NodePieceCache.Entry.md)
+
+Where one node's pieces are, and which node they were made for.
+
  [CollisionClipper.Footprint](Cube.Core.CollisionClipper.Footprint.md)
 
 The cube's rectangular footprint in world X/Z (stored as `System.Numerics.Vector2` X and Y), with its bounds for the
@@ -227,6 +243,10 @@ plugin from Dalamud's client state and condition flags (<code>docs/research-note
  [GizmoChange](Cube.Core.GizmoChange.md)
 
 What a gizmo drag changed ([Read](Cube.Core.GizmoModel.md#Cube_Core_GizmoModel_Read)).
+
+ [LocalBox](Cube.Core.LocalBox.md)
+
+An axis-aligned box in a mesh's own (local) space: a triangle's bounds, or one piece of a split node.
 
  [NearbyPlayer](Cube.Core.NearbyPlayer.md)
 
