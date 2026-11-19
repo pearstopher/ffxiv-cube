@@ -11,8 +11,8 @@ Prints one line: "OK ...", "UNKNOWN ..." or "STOP ...".
 -FromFile reads saved stream-json instead of calling claude (used to test the parsing).
 #>
 param(
-    [double]$SessionLimit = 0.70,
-    [double]$WeeklyLimit = 0.85,
+    [double]$SessionLimit = 0.90,
+    [double]$WeeklyLimit = 0.95,
     [string]$FromFile = ""
 )
 

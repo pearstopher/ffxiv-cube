@@ -391,7 +391,7 @@ The `/work-all` runner needs the current 5-hour and weekly plan usage before it 
 - **Not used:** the status line `rate_limits` field (only runs in interactive sessions, not `-p`), and the
   undocumented OAuth usage endpoint (needs the stored login token).
 - `scripts/check-usage.ps1` wraps the probe. It prints `OK`, `UNKNOWN` or `STOP` and exits 1 only on `STOP`
-  (5-hour >= 70% or weekly >= 85%). Unreadable usage never blocks. `-FromFile <saved stream-json>` tests the parsing.
+  (5-hour >= 90% or weekly >= 95%). Unreadable usage never blocks. `-FromFile <saved stream-json>` tests the parsing.
 - Thresholds are the issue's proposals; a measured cost per issue is not yet available (run history has token
   counts, not plan percentages), so they are unchanged.
 
