@@ -517,3 +517,12 @@ Candidate B's cost, measured as an upper bound (Debug build, allocating lists): 
 5. Add a bridge check: for the sample region, refined boxes cover every ray hit that the coarse boxes did, and the share of boxes with a ray hit rises (here from 25% to 76% of the worst nodes).
 
 Limits to expect: a single big tilted triangle (a ramp, a roof) still has a large axis box, and the sweep cannot split inside one triangle; the node's local box plus #123's turn helps when the object is turned, not for a tilted plane. Ray-test misses on very thin sheets (a few centimetres) remain in any box-based approach. The mesh itself is still not drawn: triangles stay out of reach of the budget (#99).
+
+## The counter opening that stayed closed (#129)
+
+After #127 the big empty boxes were gone but a counter's opening was still drawn closed. Debug probe `probe-collision-near` (`CollisionNearProbeCheck`, `Near #129` lines) dumps every collider within 4 yalms of the player: type, layer, material, layout id, whether the reader keeps it, each node's triangles, a ring of the game's movement raycast, and a downward floor map.
+
+- **The data was right, the reader skipped it.** The counter (layout id ending `0118`) is one mesh node of **78 triangles** whose bounds fall in two runs along z, -0.89 to 0.30 and 1.38 to 3.03, with a 1.08-yalm opening between and no triangle across it. `NodeSplitter` splits that into two boxes, but the reader left every node of more than 64 triangles (`RefineState.MaxTriangles`) as its coarse box. The limit is now 256.
+- **Correction to the #125 notes.** "A leaf holds about 9 to 16 triangles" was true only of the worst few boxes listed. The house sample's nodes averaged 92 triangles (95,630 over 1,042) and the outdoor one 57; the largest seen has 192. The 64-triangle limit set from that claim left a large share of nodes coarse. `probe-collision-fit` now counts nodes over the limit (`fitNodesOverSplitLimit`, 0 after the change).
+- **The game's movement raycast is not ground truth for standing.** The player stands on top of that counter (feet at 0.7818 yalms, the slab's top), but downward `RaycastMaterialFilter` rays didn't hit its top. The character's own collision uses something the filter ray misses for some surfaces. `collision-phantoms` ray hits therefore under-count real collision for such objects, so a box with no ray hit is not proof of a phantom.
+- Checked in game afterwards: the box under the player at the counter is z 1.38 to 3.03, the opening is open.

@@ -293,6 +293,18 @@ public int Nodes
 
  [int](https://learn.microsoft.com/dotnet/api/system.int32)
 
+### <a id="Cube_TestBridge_Checks_CollisionFitProbeCheck_Scan_OverTheLimit"></a> OverTheLimit
+
+Nodes with more triangles than the reader splits (they stay their coarse box); 0 is the goal (#129).
+
+```csharp
+public int OverTheLimit
+```
+
+#### Field Value
+
+ [int](https://learn.microsoft.com/dotnet/api/system.int32)
+
 ### <a id="Cube_TestBridge_Checks_CollisionFitProbeCheck_Scan_RayHits"></a> RayHits
 
 Of those, boxes with a ray hit inside.

@@ -34,6 +34,11 @@ Checks collision never reaches outside the cube on screen, at any camera angle, 
 PROJECT.md, "Collision (phase 2)": clipped to the cube; "Cube": in "Rotate contents with camera" the contents turn
 with the camera).
 
+ [CollisionNearProbeCheck](Cube.TestBridge.Checks.CollisionNearProbeCheck.md)
+
+Research probe for #129: what collision really sits around the player, and what does the game's own movement
+raycast say about it? Used with the player standing in a gap (a counter's opening) to see why the cube draws it closed.
+
  [CollisionPhantomsCheck](Cube.TestBridge.Checks.CollisionPhantomsCheck.md)
 
 Research and regression check for #107: some collision boxes are drawn where the player can walk straight through.
@@ -249,7 +254,7 @@ Counts from edge deduplication.
 
 Counts from reading.
 
- [CollisionProbeCheck.Sample](Cube.TestBridge.Checks.CollisionProbeCheck.Sample.md)
+ [PlayerHeightCheck.Sample](Cube.TestBridge.Checks.PlayerHeightCheck.Sample.md)
 
 One frame's measurements.
 
@@ -257,7 +262,7 @@ One frame's measurements.
 
 One frame's measurements.
 
- [PlayerHeightCheck.Sample](Cube.TestBridge.Checks.PlayerHeightCheck.Sample.md)
+ [CollisionProbeCheck.Sample](Cube.TestBridge.Checks.CollisionProbeCheck.Sample.md)
 
 One frame's measurements.
 

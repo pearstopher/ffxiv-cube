@@ -78,6 +78,13 @@ public void Cache_ReturnsWhatWasStored_AndMissesOnADifferentCheck()
 public void Cache_StoresAnEmptyNode_AsRefinedWithNoPieces()
 ```
 
+### <a id="Cube_Tests_NodeSplitterTests_CounterWithAnOpening_SeventyEightTriangles_LeavesTheOpeningUncovered"></a> CounterWithAnOpening\_SeventyEightTriangles\_LeavesTheOpeningUncovered\(\)
+
+```csharp
+[Fact]
+public void CounterWithAnOpening_SeventyEightTriangles_LeavesTheOpeningUncovered()
+```
+
 ### <a id="Cube_Tests_NodeSplitterTests_Covers_Cube_Core_LocalBox_Cube_Core_LocalBox_"></a> Covers\(LocalBox, LocalBox\)
 
 ```csharp
