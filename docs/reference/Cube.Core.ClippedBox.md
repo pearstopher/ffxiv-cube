@@ -15,7 +15,7 @@ public struct ClippedBox
 ## Remarks
 
 <p>
-The boxes are world-axis-aligned but the cube is turned by its yaw, so the overlap of the two footprints is a
+The cube is turned by its yaw (and a collision box may be turned too, #123), so the overlap of the two footprints is a
 convex polygon of up to eight corners, not a rectangle (#93). Drawing the polygon's world-aligned bounds instead
 reached up to √2 past the cube's sides for a box bigger than the cube (a floor), so collision stuck out of the
 cube and looked like a separate, still shape when the contents turned with the camera. The prism is exact.

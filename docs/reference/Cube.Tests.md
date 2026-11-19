@@ -211,6 +211,13 @@ into a PNG) paints what the dump says, in order, and writes a valid PNG.
 
 Locates files in the repository from a test's output folder, for tests that inspect the repo or build output.
 
+ [TurnedBoxTests](Cube.Tests.TurnedBoxTests.md)
+
+Checks that collision boxes turn to fit their objects (PROJECT.md, "Collision (phase 2)": simplified boxes clipped to
+the cube; "Efficiency and memory": no allocations in the per-frame path). A box from a pure yaw keeps its turn, a
+tilted or sheared matrix falls back to the world-axis box, and clipping a turned box to a turned cube stays inside
+both shapes (#110 research, #123).
+
  [ViewOrientationTests.VectorComparer](Cube.Tests.ViewOrientationTests.VectorComparer.md)
 
  [ViewOrientationTests](Cube.Tests.ViewOrientationTests.md)

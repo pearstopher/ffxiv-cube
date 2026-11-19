@@ -17,7 +17,7 @@ namespace Cube.Core;
 /// change beyond a small threshold"). Each frame <see cref="CollisionClipper"/> clips the cached boxes to the cube.
 /// </para>
 /// <para>
-/// <b>Bounded.</b> The buffer is allocated once at <see cref="Capacity"/> boxes (2,000 × 24 bytes = 48 KB by
+/// <b>Bounded.</b> The buffer is allocated once at <see cref="Capacity"/> boxes (2,000 × 32 bytes = 64 KB by
 /// default, the #28 recommendation) and reused; a full set drops extras and counts them in <see cref="Dropped"/>,
 /// like the player cap. <see cref="Clear"/> drops the data on a zone change (PROJECT.md: collision data is dropped
 /// when you leave the area or change zone).
@@ -246,6 +246,14 @@ public sealed class CollisionBoxSet
     /// <returns>True if they merge.</returns>
     public static bool TryMerge(in CollisionBox a, in CollisionBox b, out CollisionBox merged)
     {
+        if (a.IsTurned || b.IsTurned)
+        {
+            // The merge tests compare world-axis boxes, which is only the box itself when it isn't turned. A turned
+            // box is its own object (a fence post, a diagonal wall) and merging it would grow its footprint.
+            merged = default;
+            return false;
+        }
+
         if (a.Contains(b))
         {
             merged = a;

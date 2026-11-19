@@ -28,7 +28,7 @@ asks for a new walk (PROJECT.md: "When the player moves, stale data is refreshed
 change beyond a small threshold"). Each frame [CollisionClipper](Cube.Core.CollisionClipper.md#Cube_Core_CollisionClipper) clips the cached boxes to the cube.
 </p>
 <p>
-<b>Bounded.</b> The buffer is allocated once at [Capacity](Cube.Core.CollisionBoxSet.md#Cube_Core_CollisionBoxSet_Capacity) boxes (2,000 × 24 bytes = 48 KB by
+<b>Bounded.</b> The buffer is allocated once at [Capacity](Cube.Core.CollisionBoxSet.md#Cube_Core_CollisionBoxSet_Capacity) boxes (2,000 × 32 bytes = 64 KB by
 default, the #28 recommendation) and reused; a full set drops extras and counts them in [Dropped](Cube.Core.CollisionBoxSet.md#Cube_Core_CollisionBoxSet_Dropped),
 like the player cap. [Clear](Cube.Core.CollisionBoxSet.md#Cube_Core_CollisionBoxSet_Clear) drops the data on a zone change (PROJECT.md: collision data is dropped
 when you leave the area or change zone).
