@@ -78,6 +78,23 @@ internal sealed class FrameSnapshotCheck(string folder) : BridgeCheck
             WritePoint(json, "regionMin", window.LastRegionMin);
             WritePoint(json, "regionSize", window.LastRegionSize);
             json.WriteStartArray("primitives");
+
+            // The Mesh style's lines go first, as the window draws them before the draw list (#100).
+            var mesh = window.LastDrewMesh ? window.ClippedMesh.Screen : default;
+            for (var i = 0; i + 1 < mesh.Length; i += 2)
+            {
+                json.WriteStartObject();
+                json.WriteString("kind", "line");
+                json.WriteStartArray("points");
+                WritePoint(json, null, mesh[i]);
+                WritePoint(json, null, mesh[i + 1]);
+                json.WriteEndArray();
+                json.WriteNumber("colour", window.MeshColour);
+                json.WriteNumber("depth", 0f);
+                json.WriteNumber("thickness", 1f);
+                json.WriteEndObject();
+            }
+
             foreach (var p in window.DrawList.Items)
             {
                 json.WriteStartObject();

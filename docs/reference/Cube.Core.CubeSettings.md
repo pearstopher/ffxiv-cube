@@ -56,6 +56,32 @@ public CollisionDetail CollisionDetail
 
  [CollisionDetail](Cube.Core.CollisionDetail.md)
 
+### <a id="Cube_Core_CubeSettings_CollisionStyle"></a> CollisionStyle
+
+How collision is drawn (#100): [Boxes](Cube.Core.CollisionStyle.md#Cube_Core_CollisionStyle_Boxes) (the default) or the slower
+[Mesh](Cube.Core.CollisionStyle.md#Cube_Core_CollisionStyle_Mesh). Files saved before [CollisionStyleVersion](Cube.Core.CubeSettings.md#Cube_Core_CubeSettings_CollisionStyleVersion) load Boxes.
+
+```csharp
+public CollisionStyle CollisionStyle
+```
+
+#### Field Value
+
+ [CollisionStyle](Cube.Core.CollisionStyle.md)
+
+### <a id="Cube_Core_CubeSettings_CollisionStyleVersion"></a> CollisionStyleVersion
+
+The settings file format that stores [CollisionStyle](Cube.Core.CubeSettings.md#Cube_Core_CubeSettings_CollisionStyle) (#100). Older files load Boxes, the style they
+always showed.
+
+```csharp
+public const int CollisionStyleVersion = 5
+```
+
+#### Field Value
+
+ [int](https://learn.microsoft.com/dotnet/api/system.int32)
+
 ### <a id="Cube_Core_CubeSettings_CubeEdge"></a> CubeEdge
 
 The single edge files saved before [BoxSizeVersion](Cube.Core.CubeSettings.md#Cube_Core_CubeSettings_BoxSizeVersion) stored. Only read from those files, so their
@@ -636,7 +662,8 @@ Files before [RotationViewVersion](Cube.Core.CubeSettings.md#Cube_Core_CubeSetti
 orientation (PROJECT.md: orientations saved by the old control carry over). A file from before the view
 control existed has neither, so the old fields' defaults give the default view. Files before
 [BoxSizeVersion](Cube.Core.CubeSettings.md#Cube_Core_CubeSettings_BoxSizeVersion) stored one cube edge; it becomes all three extents (#90). Files before
-[PlayerHeightVersion](Cube.Core.CubeSettings.md#Cube_Core_CubeSettings_PlayerHeightVersion) had no player height; it becomes 50%, the centred cube they showed (#91).
+[PlayerHeightVersion](Cube.Core.CubeSettings.md#Cube_Core_CubeSettings_PlayerHeightVersion) had no player height; it becomes 50%, the centred cube they showed (#91). Files
+before [CollisionStyleVersion](Cube.Core.CubeSettings.md#Cube_Core_CubeSettings_CollisionStyleVersion) had no collision style; it becomes Boxes (#100).
 
 ```csharp
 public void Upgrade(int fileVersion)

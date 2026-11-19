@@ -40,6 +40,7 @@ internal abstract class BridgeCheck
 [InteractableProbeCheck](Cube.TestBridge.Checks.InteractableProbeCheck.md), 
 [JumpHoldCheck](Cube.TestBridge.Checks.JumpHoldCheck.md), 
 [LabelsCheck](Cube.TestBridge.Checks.LabelsCheck.md), 
+[MeshStyleCheck](Cube.TestBridge.Checks.MeshStyleCheck.md), 
 [NamesAndTogglesCheck](Cube.TestBridge.Checks.NamesAndTogglesCheck.md), 
 [NoErrorsCaughtCheck](Cube.TestBridge.Checks.NoErrorsCaughtCheck.md), 
 [OrientationCheck](Cube.TestBridge.Checks.OrientationCheck.md), 

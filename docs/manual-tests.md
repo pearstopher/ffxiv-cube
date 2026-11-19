@@ -130,3 +130,14 @@ The bridge checks both squares' placement for two corners and that idle frames c
 1. In a house, stand at a counter with an opening (a block on each side and a gap you could fall into) and look at the cube from above: the opening shows as a gap between two boxes, not one long box.
 2. Walk around the room: no large box floats over empty space; real walls, floors and furniture still have their boxes.
 3. Run `python scripts/ingame_test.py` at the counter and check `probe-collision-near` and `probe-collision-fit` pass; `fitNodesOverSplitLimit` in `results.json` is 0.
+
+## Mesh collision style (#100)
+
+1. Open the settings window and set "Collision style" to "Mesh (slower)". The note under it says Mesh is slower. The collision boxes are replaced by thin grey lines: the game's own collision triangles as a wireframe.
+2. Stand in a house and compare the cube with the room: walls, floors, stairs and the counter opening should all show as their real triangles. The counter opening is an empty gap in the lines, not a box.
+3. Compare with vnavmesh's debug view (or the game's geometry) of the same place: the lines should follow the same walls and floors. Report anything missing or invented.
+4. Turn the camera in "Rotate contents with camera" mode: nothing is ever drawn outside the cube's outline. For a moment after a big turn the picture may lag a few frames behind the camera; that is the mesh being rebuilt a slice per frame.
+5. Walk around: the lines around you update within a second. Change zone: the old zone's lines vanish and the new ones appear.
+6. Set the style back to "Boxes": the boxes return, the frame rate recovers, and no lines remain.
+7. Watch `dalamud.log` for `Mesh collision:` warnings. One appears only if the scene was bigger than the fixed buffers (131,072 triangles or 196,608 edges); then part of the mesh is not drawn.
+8. Run `python scripts/ingame_test.py` and check `mesh-style` passes. Its metrics report the triangles, edges, the idle draw time (reported, no limit) and a snapshot `drawlist-mesh.json` of the scene (turn it into a PNG with the snapshot tool).

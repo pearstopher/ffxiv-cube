@@ -124,6 +124,31 @@ private const float GizmoRectScale = 7
 
  [float](https://learn.microsoft.com/dotnet/api/system.single)
 
+### <a id="Cube_CubeWindow_MeshAlpha"></a> MeshAlpha
+
+The Mesh style's line opacity: the collision colour, fainter than the boxes' so a dense mesh stays readable.
+
+```csharp
+private const float MeshAlpha = 0.45
+```
+
+#### Field Value
+
+ [float](https://learn.microsoft.com/dotnet/api/system.single)
+
+### <a id="Cube_CubeWindow_MeshBuildTicks"></a> MeshBuildTicks
+
+How long a frame may spend rebuilding the clipped mesh, in clock ticks. The rest of a rebuild waits for the next
+frame while the previous result keeps being drawn (PROJECT.md, "Collision style").
+
+```csharp
+private static readonly long MeshBuildTicks
+```
+
+#### Field Value
+
+ [long](https://learn.microsoft.com/dotnet/api/system.int64)
+
 ### <a id="Cube_CubeWindow_NameSlots"></a> NameSlots
 
 Name cache slots: one per object table index (players and NPCs are both keyed by slot), plus room above them
@@ -284,6 +309,18 @@ private bool hasSpace
 
  [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
+### <a id="Cube_CubeWindow_reportedEdgesDropped"></a> reportedEdgesDropped
+
+The most dropped edges already logged, so a larger overflow is logged again but a repeat isn't.
+
+```csharp
+private int reportedEdgesDropped
+```
+
+#### Field Value
+
+ [int](https://learn.microsoft.com/dotnet/api/system.int32)
+
 ### <a id="Cube_CubeWindow_save"></a> save
 
 Writes the settings to disk; called when the user lets go of the view control.
@@ -370,6 +407,18 @@ internal ClippedCollision ClippedCollision { get; }
 #### Property Value
 
  [ClippedCollision](Cube.Core.ClippedCollision.md)
+
+### <a id="Cube_CubeWindow_ClippedMesh"></a> ClippedMesh
+
+The triangles' edges clipped to the cube and projected, as drawn in the Mesh style (#100). Read by the test bridge.
+
+```csharp
+internal ClippedMesh ClippedMesh { get; }
+```
+
+#### Property Value
+
+ [ClippedMesh](Cube.Core.ClippedMesh.md)
 
 ### <a id="Cube_CubeWindow_Collision"></a> Collision
 
@@ -462,6 +511,18 @@ internal DrawCostSampler GatherCost { get; }
 #### Property Value
 
  [DrawCostSampler](Cube.Core.DrawCostSampler.md)
+
+### <a id="Cube_CubeWindow_LastDrewMesh"></a> LastDrewMesh
+
+Whether the last frame drew the Mesh style (collision on and Mesh chosen).
+
+```csharp
+internal bool LastDrewMesh { get; private set; }
+```
+
+#### Property Value
+
+ [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
 ### <a id="Cube_CubeWindow_LastFontSize"></a> LastFontSize
 
@@ -595,6 +656,31 @@ internal static float LineThickness { get; }
 #### Property Value
 
  [float](https://learn.microsoft.com/dotnet/api/system.single)
+
+### <a id="Cube_CubeWindow_Mesh"></a> Mesh
+
+The collision triangles around the cube for the Mesh style (#100); only allocated and walked while that style is
+chosen. Read by the test bridge.
+
+```csharp
+internal MeshReader Mesh { get; }
+```
+
+#### Property Value
+
+ [MeshReader](Cube.Game.MeshReader.md)
+
+### <a id="Cube_CubeWindow_MeshColour"></a> MeshColour
+
+The Mesh style's line colour, rebuilt with [Palette](Cube.CubeWindow.md#Cube_CubeWindow_Palette).
+
+```csharp
+internal uint MeshColour { get; private set; }
+```
+
+#### Property Value
+
+ [uint](https://learn.microsoft.com/dotnet/api/system.uint32)
 
 ### <a id="Cube_CubeWindow_NameBuildBytes"></a> NameBuildBytes
 
@@ -1048,6 +1134,20 @@ How many calls were made.
 Labels are clipped to the window by the window draw list's own clip rectangle, so names near the edge are cut
 off rather than spilling over the game. The text is the cached name string, so no string is built here.
 
+### <a id="Cube_CubeWindow_SubmitMesh_Dalamud_Bindings_ImGui_ImDrawListPtr_"></a> SubmitMesh\(ImDrawListPtr\)
+
+Issues one ImGui line per projected mesh edge (#100).
+
+```csharp
+private void SubmitMesh(ImDrawListPtr target)
+```
+
+#### Parameters
+
+`target` [ImDrawListPtr](https://github.com/goatcorp/Dalamud/blob/master/imgui/Dalamud.Bindings.ImGui/Custom/Generated/Generated/Structs.gen.cs)
+
+The window's ImGui draw list.
+
 ### <a id="Cube_CubeWindow_UpdateCollision_System_Numerics_Vector3_System_Numerics_Vector3_Cube_Core_CollisionDetail_"></a> UpdateCollision\(Vector3, Vector3, CollisionDetail\)
 
 Lets the collision reader do this frame's share of gathering (PROJECT.md, "Collision (phase 2)"). In Debug builds
@@ -1071,3 +1171,19 @@ The cube's width, height and depth in yalms.
 `detail` [CollisionDetail](Cube.Core.CollisionDetail.md)
 
 The collision detail setting (#32).
+
+### <a id="Cube_CubeWindow_UpdateMesh_Cube_Core_CubeSpace__"></a> UpdateMesh\(in CubeSpace\)
+
+The Mesh style's frame work (#100): lets the reader gather its share of triangles, then lets the clipped mesh
+rebuild its share, both within time budgets. In Debug builds a frame where either did work is timed on its own
+like [UpdateCollision](Cube.CubeWindow.md#Cube_CubeWindow_UpdateCollision), and kept out of the draw cost, since this is background gathering.
+
+```csharp
+private void UpdateMesh(in CubeSpace space)
+```
+
+#### Parameters
+
+`space` [CubeSpace](Cube.Core.CubeSpace.md)
+
+This frame's cube.

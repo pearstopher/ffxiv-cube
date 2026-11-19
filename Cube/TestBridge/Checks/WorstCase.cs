@@ -23,6 +23,9 @@ internal static class WorstCase
         settings.ShowNpcs = true;
         settings.ShowCollision = true;
         settings.CollisionDetail = CollisionDetail.Full;
+
+        // The budgets are Boxes mode's; Mesh mode has its own check, which reports its cost instead (#100).
+        settings.CollisionStyle = CollisionStyle.Boxes;
         settings.CubeSize = new System.Numerics.Vector3(BoxExtents.Max);
         settings.Changed();
         window.Fakes.UseCrowd();

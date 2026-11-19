@@ -86,6 +86,18 @@ private static readonly string[] NamePositionNames
 
  [string](https://learn.microsoft.com/dotnet/api/system.string)\[\]
 
+### <a id="Cube_SettingsWindow_StyleNames"></a> StyleNames
+
+The collision style choices, in [CollisionStyle](Cube.Core.CollisionStyle.md#Cube_Core_CollisionStyle) order (#100); Mesh is marked slower.
+
+```csharp
+private static readonly string[] StyleNames
+```
+
+#### Field Value
+
+ [string](https://learn.microsoft.com/dotnet/api/system.string)\[\]
+
 ### <a id="Cube_SettingsWindow_config"></a> config
 
 The settings being edited.

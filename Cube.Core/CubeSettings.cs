@@ -113,6 +113,12 @@ public class CubeSettings
     /// <summary>How finely collision is drawn (#32); <see cref="CollisionDetail.Full"/> by default.</summary>
     public CollisionDetail CollisionDetail = CollisionDetail.Full;
 
+    /// <summary>
+    /// How collision is drawn (#100): <see cref="Core.CollisionStyle.Boxes"/> (the default) or the slower
+    /// <see cref="Core.CollisionStyle.Mesh"/>. Files saved before <see cref="CollisionStyleVersion"/> load Boxes.
+    /// </summary>
+    public CollisionStyle CollisionStyle = CollisionStyle.Boxes;
+
     /// <summary>Opacity of everything drawn except labels (which stay readable), <see cref="MinOpacity"/>–1.</summary>
     public float Opacity = 1f;
 
@@ -133,6 +139,12 @@ public class CubeSettings
     /// as PROJECT.md asks.
     /// </summary>
     public const int PlayerHeightVersion = 4;
+
+    /// <summary>
+    /// The settings file format that stores <see cref="CollisionStyle"/> (#100). Older files load Boxes, the style they
+    /// always showed.
+    /// </summary>
+    public const int CollisionStyleVersion = 5;
 
     /// <summary>
     /// The view control's rotation (PROJECT.md, "View orientation control": the chosen orientation is saved, any
@@ -201,6 +213,11 @@ public class CubeSettings
             this.CollisionDetail = CollisionDetail.Full;
         }
 
+        if (!Enum.IsDefined(this.CollisionStyle))
+        {
+            this.CollisionStyle = CollisionStyle.Boxes;
+        }
+
         this.Revision++;
     }
 
@@ -240,7 +257,8 @@ public class CubeSettings
     /// orientation (PROJECT.md: orientations saved by the old control carry over). A file from before the view
     /// control existed has neither, so the old fields' defaults give the default view. Files before
     /// <see cref="BoxSizeVersion"/> stored one cube edge; it becomes all three extents (#90). Files before
-    /// <see cref="PlayerHeightVersion"/> had no player height; it becomes 50%, the centred cube they showed (#91).
+    /// <see cref="PlayerHeightVersion"/> had no player height; it becomes 50%, the centred cube they showed (#91). Files
+    /// before <see cref="CollisionStyleVersion"/> had no collision style; it becomes Boxes (#100).
     /// </summary>
     /// <param name="fileVersion">The format version the settings were saved with.</param>
     public void Upgrade(int fileVersion)
@@ -260,6 +278,11 @@ public class CubeSettings
         if (fileVersion < PlayerHeightVersion)
         {
             this.PlayerHeight = Core.PlayerHeight.Default;
+        }
+
+        if (fileVersion < CollisionStyleVersion)
+        {
+            this.CollisionStyle = CollisionStyle.Boxes;
         }
 
         this.Changed();
@@ -302,6 +325,7 @@ public class CubeSettings
         this.InteractableColour = other.InteractableColour;
         this.ShowCollision = other.ShowCollision;
         this.CollisionDetail = other.CollisionDetail;
+        this.CollisionStyle = other.CollisionStyle;
         this.Opacity = other.Opacity;
         this.ViewRotation = other.ViewRotation;
         this.ViewWidgetCorner = other.ViewWidgetCorner;

@@ -23,6 +23,12 @@ Reads the states that hide the cube (PROJECT.md, "When hidden") from Dalamud, us
 `Dalamud.Plugin.Services.IClientState.IsGPosing` and `Dalamud.Plugin.Services.IClientState.IsPvP`, and the loading-screen and cutscene
 condition flags.
 
+ [MeshReader](Cube.Game.MeshReader.md)
+
+Reads the collision triangles the game client has loaded around the player into a [TriangleCache](Cube.Core.TriangleCache.md#Cube_Core_TriangleCache) for
+the Mesh collision style (#100; PROJECT.md, "Collision style"): mesh colliders' triangles through their world matrix,
+and primitive colliders as their real shapes in triangles ([PrimitiveMeshes](Cube.Core.PrimitiveMeshes.md#Cube_Core_PrimitiveMeshes)).
+
  [PlayerReader](Cube.Game.PlayerReader.md)
 
 Reads the local player, the players around them and the named NPCs straight from the game's object manager and
@@ -36,6 +42,10 @@ Everything the node splitting keeps between frames (#127): the cache of pieces, 
 (allocated once, so splitting allocates nothing per frame), and this frame's triangle budget.
 
 ### Structs
+
+ [MeshReader.SceneSource](Cube.Game.MeshReader.SceneSource.md)
+
+The game's collision scene as an [ITriangleSource](Cube.Core.ITriangleSource.md#Cube_Core_ITriangleSource); made fresh each frame so no collider pointer outlives it.
 
  [CollisionReader.SceneSource](Cube.Game.CollisionReader.SceneSource.md)
 

@@ -24,6 +24,12 @@ Formats the build details the plugin logs when it loads, so a stale build
 The cached collision boxes clipped to this frame's cube, ready for [CollisionCubes](Cube.Core.CollisionCubes.md#Cube_Core_CollisionCubes) (PROJECT.md,
 "Collision (phase 2)": boxes clipped to the cube). Clips again only when the cube or the gathered boxes change.
 
+ [ClippedMesh](Cube.Core.ClippedMesh.md)
+
+The Mesh style's drawing data (#100; PROJECT.md, "Collision style"): the cached triangles' edges, clipped to the
+cube, with exact duplicates removed, and projected to the window. Everything is rebuilt only when its inputs change,
+and a rebuild is spread over frames while the previous result keeps being drawn.
+
  [CollisionBoxSet](Cube.Core.CollisionBoxSet.md)
 
 The cached collision boxes around the cube (PROJECT.md, "Collision (phase 2)" and "Efficiency and memory"): the
@@ -160,6 +166,29 @@ object table whose position is inside the cube; "NPCs": every named NPC inside t
 anyone outside is not shown at all). The game reader offers everyone it finds; this class culls, classifies and
 names them.
 
+ [PrimitiveMeshes](Cube.Core.PrimitiveMeshes.md)
+
+Turns the game's primitive colliders (box, cylinder, sphere, plane) into triangles for the Mesh style (#100;
+PROJECT.md, "Collision style": primitives are shown as their real shapes, in triangles).
+
+ [SegmentClip](Cube.Core.SegmentClip.md)
+
+Clips a line segment to the cube in cube-local coordinates (#100; PROJECT.md, "Collision style": everything is
+clipped exactly to the cube). The Mesh style draws triangle <em>edges</em>, so clipping segments (Liang–Barsky)
+is all it needs: unlike clipping whole triangles it never invents an edge along the cube's face.
+
+ [TriangleCache](Cube.Core.TriangleCache.md)
+
+Gathers the collision triangles around the cube a few colliders per frame within a time budget, and keeps the last
+complete set for clipping and drawing (#100; PROJECT.md, "Collision style" and "Efficiency and memory"): the
+Mesh-style counterpart of [CollisionCache](Cube.Core.CollisionCache.md#Cube_Core_CollisionCache).
+
+ [TriangleSet](Cube.Core.TriangleSet.md)
+
+The collision triangles around the cube in world coordinates (#100; PROJECT.md, "Collision style"): the Mesh-style
+counterpart of [CollisionBoxSet](Cube.Core.CollisionBoxSet.md#Cube_Core_CollisionBoxSet). The game reader offers every triangle it reads; this class keeps the
+ones that could be inside the cube at any yaw, up to a fixed capacity, and says when the set is stale.
+
  [ViewWidget](Cube.Core.ViewWidget.md)
 
 Where the view controls go and how big they are (PROJECT.md, "View orientation control": a rotate gizmo in a corner
@@ -282,6 +311,13 @@ from the current extents, so moving a width/height/depth slider or a gizmo handl
 Where [CollisionCache](Cube.Core.CollisionCache.md#Cube_Core_CollisionCache) gets its boxes from: in the plugin, the game's collision scene
 (<code>Cube.Game.CollisionReader</code>); in the tests, a list of fake colliders.
 
+ [ITriangleSource](Cube.Core.ITriangleSource.md)
+
+Where [TriangleCache](Cube.Core.TriangleCache.md#Cube_Core_TriangleCache) gets its triangles from: in the plugin, the game's collision scene
+(<code>Cube.Game.MeshReader</code>); in the tests, a list of fake colliders. The Mesh-style twin of
+[ICollisionSource](Cube.Core.ICollisionSource.md#Cube_Core_ICollisionSource), with the same rules: no game pointer is kept between frames, so each frame starts
+with [Seek](Cube.Core.ITriangleSource.md#Cube_Core_ITriangleSource_Seek); and it is a struct generic argument so nothing is boxed.
+
 ### Enums
 
  [CollisionDetail](Cube.Core.CollisionDetail.md)
@@ -289,6 +325,10 @@ Where [CollisionCache](Cube.Core.CollisionCache.md#Cube_Core_CollisionCache) get
 How finely collision is drawn (#32, the collision detail setting; PROJECT.md, "Collision (phase 2)": colliders are
 shown as simplified boxes). Each level is a depth limit on the walk down a mesh collider's node tree; primitive
 colliders (boxes, cylinders, spheres, planes) are one box at every level.
+
+ [CollisionStyle](Cube.Core.CollisionStyle.md)
+
+How collision is drawn (#100; PROJECT.md, "Collision style"): as simplified boxes, or as the game's own triangles.
 
  [NamePosition](Cube.Core.NamePosition.md)
 

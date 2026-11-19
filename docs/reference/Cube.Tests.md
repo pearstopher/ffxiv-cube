@@ -144,6 +144,14 @@ handles change width, height or depth in the cube's own axes whatever the orient
 keeping the ratios, a turn never changes the size and a resize never changes the view. ImGuizmo's handles are
 simulated by scaling the matrix's rows (its local axes) the way its scale operation does.
 
+ [MeshStyleTests](Cube.Tests.MeshStyleTests.md)
+
+Checks the Mesh collision style's rules (PROJECT.md, "Collision style", #100): the real triangles are drawn as they
+are and exactly clipped to the cube; nothing is drawn outside it; primitive colliders become their real shapes;
+a scene bigger than the buffer is reported, not silently cut; gathering is budgeted and dropped on a zone change;
+rebuilding happens only when inputs change; the per-frame path allocates nothing; Boxes stays the default and old
+settings files keep it.
+
  [NamesAndTogglesTests](Cube.Tests.NamesAndTogglesTests.md)
 
 Checks #112 (GitHub issue text): the own-name setting (on by default), name position (side by default, or centred
@@ -262,6 +270,10 @@ never drifts.
  [CollisionCacheTests.FakeSource](Cube.Tests.CollisionCacheTests.FakeSource.md)
 
 A scene of fixed boxes, one per collider, whose clock advances a set amount per collider offered.
+
+ [MeshStyleTests.FakeSource](Cube.Tests.MeshStyleTests.FakeSource.md)
+
+A fake scene: a list of triangles (three corners each); one "collider" per triangle, costing a set number of ticks.
 
  [ClippedCollisionTests.ListSource](Cube.Tests.ClippedCollisionTests.ListSource.md)
 

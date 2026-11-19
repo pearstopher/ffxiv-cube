@@ -26,6 +26,9 @@ internal sealed class SettingsWindow : Window
     /// <summary>The collision detail choices, in <see cref="CollisionDetail"/> order.</summary>
     private static readonly string[] DetailNames = ["Full", "Medium", "Coarse"];
 
+    /// <summary>The collision style choices, in <see cref="CollisionStyle"/> order (#100); Mesh is marked slower.</summary>
+    private static readonly string[] StyleNames = ["Boxes", "Mesh (slower)"];
+
     /// <summary>The settings being edited.</summary>
     private readonly Configuration config;
 
@@ -216,6 +219,20 @@ internal sealed class SettingsWindow : Window
         {
             c.CollisionDetail = (CollisionDetail)detail;
             this.ApplyAndSave();
+        }
+
+        // How collision is drawn (#100): simplified boxes, or the game's real triangles, which cost more.
+        ImGui.SetNextItemWidth(200);
+        var style = (int)c.CollisionStyle;
+        if (ImGui.Combo("Collision style", ref style, StyleNames, StyleNames.Length))
+        {
+            c.CollisionStyle = (CollisionStyle)style;
+            this.ApplyAndSave();
+        }
+
+        if (c.CollisionStyle == CollisionStyle.Mesh)
+        {
+            ImGui.TextUnformatted("Mesh draws every collision triangle as it is: slower than Boxes, most in busy places.");
         }
 
         ImGui.SetNextItemWidth(200);
