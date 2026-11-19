@@ -124,3 +124,9 @@ The bridge checks both squares' placement for two corners and that idle frames c
 2. Look for a large square box drawn over empty floor or air in the room. It should be gone, or much smaller, once the boxes have sharpened (they start as the old coarse boxes and refine a few hundred triangles a frame).
 3. Walk around: the boxes near you should sharpen in each new spot, and a wall or floor you can bump into should never lose its box (no holes). Report any wall or floor that has no box.
 4. Run `python scripts/ingame_test.py` there and check `collision-split` passes (its metrics list the nodes refined and the pieces kept).
+
+## Counter opening and splitting of big nodes (#127, #129)
+
+1. In a house, stand at a counter with an opening (a block on each side and a gap you could fall into) and look at the cube from above: the opening shows as a gap between two boxes, not one long box.
+2. Walk around the room: no large box floats over empty space; real walls, floors and furniture still have their boxes.
+3. Run `python scripts/ingame_test.py` at the counter and check `probe-collision-near` and `probe-collision-fit` pass; `fitNodesOverSplitLimit` in `results.json` is 0.

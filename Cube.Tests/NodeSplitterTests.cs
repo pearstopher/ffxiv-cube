@@ -28,6 +28,33 @@ public class NodeSplitterTests
     }
 
     [Fact]
+    public void CounterWithAnOpening_SeventyEightTriangles_LeavesTheOpeningUncovered()
+    {
+        // The #129 counter, as measured in game: a node of 78 triangles whose bounds fall in two runs along z,
+        // -0.89 to 0.30 and 1.38 to 3.03, with the 1.08-yalm opening between them (the player falls into it).
+        var triangles = new LocalBox[78];
+        for (var i = 0; i < 38; i++)
+        {
+            var z = -0.89f + (i * 0.03f);
+            triangles[i] = Box(-2.1f, -0.21f, z, -1.1f, 0.78f, Math.Min(z + 0.3f, 0.30f));
+        }
+
+        for (var i = 38; i < 78; i++)
+        {
+            var z = 1.38f + ((i - 38) * 0.04f);
+            triangles[i] = Box(-2.1f, -0.21f, z, -1.1f, 0.78f, Math.Min(z + 0.3f, 3.03f));
+        }
+
+        var pieces = new LocalBox[NodeSplitter.MaxPiecesPerNode];
+
+        var count = NodeSplitter.Split(triangles, pieces);
+
+        Assert.Equal(2, count);
+        Assert.Equal(0.30f, pieces[0].Max.Z, 3);
+        Assert.Equal(1.38f, pieces[1].Min.Z, 3);
+    }
+
+    [Fact]
     public void TouchingOrOverlappingTriangles_StayTogether()
     {
         var triangles = new[] { Box(0, 0, 0, 1, 1, 1), Box(1, 0, 0, 2, 1, 1), Box(1.5f, 0, 0, 3, 1, 1) };

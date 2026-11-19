@@ -26,11 +26,14 @@ coarse box, so the cube never has holes; [EndGather](Cube.Game.CollisionReader.R
 
 ### <a id="Cube_Game_CollisionReader_RefineState_MaxTriangles"></a> MaxTriangles
 
-Nodes with more triangles than this aren't split and stay their coarse box (the #125 leaves hold 9 to 16; a
-much bigger node is a different kind of thing and would eat the frame budget).
+Nodes with more triangles than this aren't split and stay their coarse box. A node holds at most 256
+vertices (FFXIVClientStructs' node format) and the largest seen held 192 triangles, so this splits
+practically every node (the <code>probe-collision-fit</code> check counts any left over). It was 64 in #127, which
+left a counter node of 78 triangles whole and its opening drawn closed (#129): the house sample's leaves
+averaged 92 triangles, not the 9 to 16 of the worst boxes the #125 notes listed.
 
 ```csharp
-public const int MaxTriangles = 64
+public const int MaxTriangles = 256
 ```
 
 #### Field Value

@@ -86,6 +86,7 @@ internal sealed class CollisionFitProbeCheck(IPluginLog log) : BridgeCheck
         context.Metric("fitComponentVolume", s.ComponentVolume);
         context.Metric("fitComponents", s.Components);
         context.Metric("fitAnalysisMs", s.Milliseconds);
+        context.Metric("fitNodesOverSplitLimit", s.OverTheLimit);
         context.Metric("fitSweepBoxes", s.SweepBoxes);
         context.Metric("fitSweepVolume", s.SweepVolume);
         context.Metric("fitSweepMs", s.SweepMilliseconds);
@@ -200,6 +201,11 @@ internal sealed class CollisionFitProbeCheck(IPluginLog log) : BridgeCheck
 
         if (node->NumPrims > 0)
         {
+            if (node->NumPrims > Cube.Game.CollisionReader.RefineState.MaxTriangles)
+            {
+                s.OverTheLimit++;
+            }
+
             this.AnalyseNode(node, world, collider, depth, min, max);
         }
 
@@ -589,6 +595,9 @@ internal sealed class CollisionFitProbeCheck(IPluginLog log) : BridgeCheck
 
         /// <summary>Of those, boxes with a ray hit inside.</summary>
         public int RayHits;
+
+        /// <summary>Nodes with more triangles than the reader splits (they stay their coarse box); 0 is the goal (#129).</summary>
+        public int OverTheLimit;
 
         /// <summary>Boxes from the triangle sweep over all nodes.</summary>
         public int SweepBoxes;
