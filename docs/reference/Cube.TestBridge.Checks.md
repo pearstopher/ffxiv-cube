@@ -22,6 +22,12 @@ Checks the collision boxes are drawn in the running game (#31; PROJECT.md, "Coll
 inside or crossing the cube is shown as a simplified box, clipped to the cube; "Draw order": far things first, with
 the players).
 
+ [CollisionFitProbeCheck](Cube.TestBridge.Checks.CollisionFitProbeCheck.md)
+
+Research probe for #125: how well do the mesh node boxes match the real collision, and what would match it better?
+PROJECT.md, "Phase 2", wants the cube to show what the player bumps into, so a box over a walkable gap (a counter
+with an opening) or over nothing (a big square nobody can touch) misleads.
+
  [CollisionInsideCubeCheck](Cube.TestBridge.Checks.CollisionInsideCubeCheck.md)
 
 Checks collision never reaches outside the cube on screen, at any camera angle, in either orientation mode (#93;
@@ -167,6 +173,10 @@ character inside the cube, nobody outside; "NPCs": every named, unowned NPC insi
 
 What [Examine](Cube.TestBridge.Checks.CollisionPhantomsCheck.md#Cube_TestBridge_Checks_CollisionPhantomsCheck_Examine) found.
 
+ [CollisionFitProbeCheck.Scan](Cube.TestBridge.Checks.CollisionFitProbeCheck.Scan.md)
+
+What [Examine](Cube.TestBridge.Checks.CollisionFitProbeCheck.md#Cube_TestBridge_Checks_CollisionFitProbeCheck_Examine) found.
+
  [SettingsCheck](Cube.TestBridge.Checks.SettingsCheck.md)
 
 Checks each setting changes the drawn frame straight away, and that putting the settings back restores it
@@ -234,15 +244,15 @@ Counts from edge deduplication.
 
 Counts from reading.
 
+ [PlayerHeightCheck.Sample](Cube.TestBridge.Checks.PlayerHeightCheck.Sample.md)
+
+One frame's measurements.
+
  [JumpHoldCheck.Sample](Cube.TestBridge.Checks.JumpHoldCheck.Sample.md)
 
 One frame's measurements.
 
  [CollisionProbeCheck.Sample](Cube.TestBridge.Checks.CollisionProbeCheck.Sample.md)
-
-One frame's measurements.
-
- [PlayerHeightCheck.Sample](Cube.TestBridge.Checks.PlayerHeightCheck.Sample.md)
 
 One frame's measurements.
 

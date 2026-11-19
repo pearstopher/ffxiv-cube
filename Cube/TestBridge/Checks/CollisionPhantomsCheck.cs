@@ -328,6 +328,13 @@ internal sealed class CollisionPhantomsCheck(IPluginLog log) : BridgeCheck
         return false;
     }
 
+    /// <summary>The same ray test for a box given by its corners, for the #125 fit probe.</summary>
+    /// <param name="min">Low corner.</param>
+    /// <param name="max">High corner.</param>
+    /// <param name="collider">The collider the box came from.</param>
+    internal static unsafe bool HasHitIn(Vector3 min, Vector3 max, Collider* collider) =>
+        HasHit(new Core.CollisionBox(min, max), collider);
+
     /// <summary>Which kinds of collider (type, layer, material) any ray hit, and how often: the kinds the game's movement raycast can ever hit.</summary>
     private static readonly Dictionary<string, int> HitObjects = [];
 
