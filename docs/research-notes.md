@@ -477,3 +477,43 @@ Probe: the Debug bridge check `probe-interactables` logged every object near the
 | `Companion` | "Fox Kit" | minion: left out |
 
 `NamePlateIconId` was 0 for every object, so it can't separate icons from text. The targetable flag changes with distance for the same object ("Entrance" appears both ways), so it isn't used either. The rule is therefore **kind is `EventObj` and the name is non-empty** (`PlayerSet.IsTextInteractable`). Not seen in this one session: aetherytes (a separate `Aetheryte` kind), treasure coffers and gathering points; they are not included. Cap: 30 per frame (a ward showed a few dozen in range), with their own count so they can't push out players or NPCs.
+
+## Matching the game's real collision more closely (#125)
+
+Owner report from inside a house: a large square drawn where nothing can be seen or touched, and a counter with an opening drawn as one long box with no gap. Both mean the drawn boxes cover space the player can walk through (PROJECT.md, "Phase 2": collision is what the player would bump into).
+
+Measured 2026-11-18 with the new Debug-only check `probe-collision-fit` (`CollisionFitProbeCheck`, `Fit #125` lines in `dalamud.log`, metrics `fit*`). It reads every blocking mesh node that holds triangles within 40 yalms of the player and compares the box drawn today with boxes built from the node's own triangles. Read-only: memory reads and the game's movement raycast. Two samples: outdoors in a housing area (532 nodes, 30,538 triangles) and then a house interior (1,042 nodes, 95,630 triangles; layout ids `A59DD5`, `A59DF6`, `A59E17` are the room's shell pieces).
+
+### Where the wrong boxes come from
+
+- **Not the inner nodes.** All 532 and 1,042 nodes that hold triangles are leaves; no inner node holds triangles of its own. The first idea (an inner node's box spanning its whole subtree) is false.
+- **Cause:** a leaf holds only about 9 to 16 triangles (up to 256 allowed) and its box is the **tight box around all of them**. When those few triangles lie far apart, for example the floor edge, a wall on the far side and a ceiling strip of a room, or the two blocks of a counter on either side of an opening, the box is a big mostly-empty block spanning the gap. The box for a leaf is exactly as tight as the node's triangles allow, so the node box equals the tight box (100% in both samples): nothing in the current reader is "too loose". It is **too coarse**: one box per node when the node's triangles form several separate pieces.
+- Typical offenders in the house: boxes about 20 x 6.5 x 24 yalms (2,000 to 6,500 cubic yalms) holding 9 to 12 triangles. Every one of the 15 worst whole boxes except one had no ray hit anywhere inside (the same 3 x 3 + side rays as #107), which is the large square the owner saw. Split at gaps, the same nodes become 2 to 6 boxes of about 1 to 150 cubic yalms, and almost every piece has a ray hit.
+- A wall or floor made of axis-aligned triangles has zero thickness on one axis, so a piece of one is a flat sheet: the drawing needs a minimum thickness for it (a few centimetres is enough; the existing box code already draws the thin 1-yalm slab from #101).
+
+### Options measured
+
+Candidate A: split each node's triangles into connected groups of 0.5-yalm cells. Candidate B (**better**): sort the triangles' own bounds along each axis and cut wherever a gap of at least 0.5 yalm separates them, recursively; each group becomes one box (0.5 yalm is about the player's width, so a narrower gap cannot be walked through and need not be shown). No cells, no hash table.
+
+| Housing interior, 40-yalm region | Today | Candidate B |
+| --- | --- | --- |
+| Boxes for 1,042 nodes | 1,042 | **1,183** (+14%; 88 nodes split) |
+| Volume covered (cubic yalms) | 98,844 | **28,905** (29%) |
+| Nodes with a side of 3 yalms or more (709 nodes, 59,097 triangles) | 97,755 | **27,941**, 850 boxes |
+| Ray hits inside the boxes of the 79 worst nodes | 20 of 79 whole boxes | **147 of 194** pieces |
+
+The outdoors sample had two huge terrain boxes (22 and 11 million cubic yalms, 15 triangles each, 222 yalms away, no ray hit) that the cell groups reduced to a few thousand: coarse mostly-empty nodes are common, not a house peculiarity.
+
+Candidate B's cost, measured as an upper bound (Debug build, allocating lists): 69 ms for the 95,630 triangles, about 0.7 microseconds each (the earlier #99 read of a triangle through its matrix is 88 ns on top). 59% of the triangles are in the nodes with a side of 3 yalms or more, which hold nearly all the wasted volume. An allocation-free version should be several times faster, but a full gather of a busy room is still tens of milliseconds, far above the 0.2 ms the cache spends per frame, so it cannot be done on every gather.
+
+### Recommendation
+
+**Refine each node once, in the mesh's own space, and keep the result.** The sweep depends only on the node's triangles, which don't change while the mesh is loaded, so:
+
+1. Compute a node's pieces the first time the node is reached, in the mesh's local space (so the #123 turn still applies), and keep them in a bounded cache keyed by node address (about 24 to 32 bytes a piece; 1,042 nodes made 1,183 pieces, so a cap of about 4,000 pieces is 128 KB). Drop it on zone change like the box sets. A gather then only transforms cached pieces, as cheap as today.
+2. Do the refining **lazily within the frame budget**: a few hundred triangles a frame (about 0.1 ms), largest nodes first (side of 3 yalms or more; those are 59,097 of 95,630 triangles but nearly all the waste). A node not yet refined is drawn as today's coarse box, so the cube never has holes, only the coarse look it has now, and it sharpens within about a second or two when the player stands in a new place.
+3. Skip nodes that cannot be improved cheaply: a node whose triangles fit well already (about 90% of nodes at 100% fill) still gets one sweep when first seen but costs nothing afterwards.
+4. Keep the minimum drawn thickness for flat pieces, and cap pieces per node (for example 8; merge the closest two beyond that) so a scattered node cannot flood the box cap.
+5. Add a bridge check: for the sample region, refined boxes cover every ray hit that the coarse boxes did, and the share of boxes with a ray hit rises (here from 25% to 76% of the worst nodes).
+
+Limits to expect: a single big tilted triangle (a ramp, a roof) still has a large axis box, and the sweep cannot split inside one triangle; the node's local box plus #123's turn helps when the object is turned, not for a tilted plane. Ray-test misses on very thin sheets (a few centimetres) remain in any box-based approach. The mesh itself is still not drawn: triangles stay out of reach of the budget (#99).

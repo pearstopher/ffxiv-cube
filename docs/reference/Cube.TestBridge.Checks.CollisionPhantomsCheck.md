@@ -206,6 +206,32 @@ The collider the box came from.
 
  [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
+### <a id="Cube_TestBridge_Checks_CollisionPhantomsCheck_HasHitIn_System_Numerics_Vector3_System_Numerics_Vector3_FFXIVClientStructs_FFXIV_Common_Component_BGCollision_Collider__"></a> HasHitIn\(Vector3, Vector3, Collider\*\)
+
+The same ray test for a box given by its corners, for the #125 fit probe.
+
+```csharp
+internal static bool HasHitIn(Vector3 min, Vector3 max, Collider* collider)
+```
+
+#### Parameters
+
+`min` [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
+
+Low corner.
+
+`max` [Vector3](https://learn.microsoft.com/dotnet/api/system.numerics.vector3)
+
+High corner.
+
+`collider` Collider\*
+
+The collider the box came from.
+
+#### Returns
+
+ [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
 ### <a id="Cube_TestBridge_Checks_CollisionPhantomsCheck_Hits_System_Numerics_Vector3_System_Numerics_Vector3_System_Single_System_Numerics_Vector3_System_Numerics_Vector3_System_Numerics_Vector3_FFXIVClientStructs_FFXIV_Common_Component_BGCollision_Collider__"></a> Hits\(Vector3, Vector3, float, Vector3, Vector3, Vector3, Collider\*\)
 
 One raycast; true if it hits at a point inside the (slightly grown) box.
