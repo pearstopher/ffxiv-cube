@@ -147,6 +147,7 @@ public sealed class Plugin : IDalamudPlugin
             this.testBridge.Register(new TestBridge.Checks.CollisionSplitCheck());
             this.testBridge.Register(new TestBridge.Checks.CollisionSettingsCheck());
             this.testBridge.Register(new TestBridge.Checks.CollisionZoneChangesCheck());
+            this.testBridge.Register(new TestBridge.Checks.MeshStyleCheck(this.testBridge.Folder));
             this.testBridge.Register(new TestBridge.Checks.SoakCheck());
             this.testBridge.Register(new TestBridge.Checks.NoErrorsCaughtCheck(this.cubeWindow.Errors, this.settingsWindow.Errors, this.uiErrors));
         }

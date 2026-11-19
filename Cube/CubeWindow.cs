@@ -6,9 +6,7 @@ using Cube.Game;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Bindings.ImGuizmo;
 using Dalamud.Interface.Windowing;
-#if DEBUG
 using System.Diagnostics;
-#endif
 
 namespace Cube;
 
@@ -179,6 +177,33 @@ internal sealed class CubeWindow : Window
     /// The gathered collision boxes clipped to the last frame's cube, as drawn (#31). Read by the test bridge.
     /// </summary>
     internal ClippedCollision ClippedCollision { get; } = new();
+
+    /// <summary>
+    /// The collision triangles around the cube for the Mesh style (#100); only allocated and walked while that style is
+    /// chosen. Read by the test bridge.
+    /// </summary>
+    internal MeshReader Mesh { get; } = new();
+
+    /// <summary>The triangles' edges clipped to the cube and projected, as drawn in the Mesh style (#100). Read by the test bridge.</summary>
+    internal ClippedMesh ClippedMesh { get; } = new();
+
+    /// <summary>
+    /// How long a frame may spend rebuilding the clipped mesh, in clock ticks. The rest of a rebuild waits for the next
+    /// frame while the previous result keeps being drawn (PROJECT.md, "Collision style").
+    /// </summary>
+    private static readonly long MeshBuildTicks = (long)(1.5 * Stopwatch.Frequency / 1000.0);
+
+    /// <summary>The Mesh style's line opacity: the collision colour, fainter than the boxes' so a dense mesh stays readable.</summary>
+    private const float MeshAlpha = 0.45f;
+
+    /// <summary>The Mesh style's line colour, rebuilt with <see cref="Palette"/>.</summary>
+    internal uint MeshColour { get; private set; }
+
+    /// <summary>The most dropped edges already logged, so a larger overflow is logged again but a repeat isn't.</summary>
+    private int reportedEdgesDropped;
+
+    /// <summary>Whether the last frame drew the Mesh style (collision on and Mesh chosen).</summary>
+    internal bool LastDrewMesh { get; private set; }
 
     /// <summary>Whether the last frame found a local player to centre the cube on.</summary>
     internal bool LastHadLocalPlayer { get; private set; }
@@ -414,6 +439,7 @@ internal sealed class CubeWindow : Window
             this.Palette = settings.Palette();
             this.WireColour = settings.WithOpacity(WireRgb, WireAlpha);
             this.CollisionColour = settings.WithOpacity(CollisionCubes.Rgb, CollisionCubes.Alpha);
+            this.MeshColour = settings.WithOpacity(CollisionCubes.Rgb, MeshAlpha);
             this.view = settings.View;
             this.settingsRevision = settings.Revision;
         }
@@ -479,7 +505,10 @@ internal sealed class CubeWindow : Window
         this.Fakes.Offer(this.Players, space);
 #endif
 
-        if (settings.ShowCollision)
+        // The Mesh style (#100) replaces the boxes: while it is chosen the box cache stays empty, and while Boxes is
+        // chosen (or collision is off) the mesh buffers are released, so only one style's memory is ever in use.
+        var mesh = settings.ShowCollision && settings.CollisionStyle == CollisionStyle.Mesh;
+        if (settings.ShowCollision && !mesh)
         {
             // Gathered around the box, not the player: with the player off-centre the region shifts with it (#91).
             this.UpdateCollision(space.Centre, space.Size, settings.CollisionDetail);
@@ -491,6 +520,18 @@ internal sealed class CubeWindow : Window
             this.Collision.Cache.Clear();
         }
 
+        if (mesh)
+        {
+            this.UpdateMesh(space);
+        }
+        else if (this.Mesh.Cache.IsAllocated || this.ClippedMesh.IsAllocated)
+        {
+            this.Mesh.Release();
+            this.ClippedMesh.Release();
+            this.reportedEdgesDropped = 0;
+        }
+
+        this.LastDrewMesh = mesh;
         this.ClippedCollision.Update(space, this.Collision.Cache);
 
 #if DEBUG
@@ -505,7 +546,15 @@ internal sealed class CubeWindow : Window
         var submitStart = Stopwatch.GetTimestamp();
         this.BuildTicks += submitStart - buildStart;
 #endif
-        this.LastSubmitted = this.Submit(ImGui.GetWindowDrawList(), this.DrawList, this.Players.Items);
+        var drawList = ImGui.GetWindowDrawList();
+        if (mesh)
+        {
+            // The mesh goes first, so the cube's edges and the players are drawn over it.
+            this.ClippedMesh.Project(space, projection);
+            this.SubmitMesh(drawList);
+        }
+
+        this.LastSubmitted = this.Submit(drawList, this.DrawList, this.Players.Items);
 #if DEBUG
         this.SubmitTicks += Stopwatch.GetTimestamp() - submitStart;
         this.ProbeDraw?.Invoke(ImGui.GetWindowDrawList());
@@ -557,6 +606,49 @@ internal sealed class CubeWindow : Window
 #else
         this.Collision.Update(centre, size, detail);
 #endif
+    }
+
+    /// <summary>
+    /// The Mesh style's frame work (#100): lets the reader gather its share of triangles, then lets the clipped mesh
+    /// rebuild its share, both within time budgets. In Debug builds a frame where either did work is timed on its own
+    /// like <see cref="UpdateCollision"/>, and kept out of the draw cost, since this is background gathering.
+    /// </summary>
+    /// <param name="space">This frame's cube.</param>
+    private void UpdateMesh(in CubeSpace space)
+    {
+#if DEBUG
+        var startBytes = GC.GetAllocatedBytesForCurrentThread();
+        var startTicks = Stopwatch.GetTimestamp();
+#endif
+        var gathered = this.Mesh.Update(space.Centre, space.Size);
+        var built = this.ClippedMesh.Update(space, this.Mesh.Cache, MeshBuildTicks);
+        if (this.ClippedMesh.Dropped > this.reportedEdgesDropped)
+        {
+            // PROJECT.md, "Collision style": never cut off silently.
+            this.reportedEdgesDropped = this.ClippedMesh.Dropped;
+            Plugin.Log.Warning($"Mesh collision: {this.ClippedMesh.Dropped} edges near the cube didn't fit the {ClippedMesh.DefaultEdgeCapacity}-edge buffer and are not drawn.");
+        }
+
+#if DEBUG
+        if (gathered || built || this.Mesh.Cache.IsGathering || this.ClippedMesh.IsBuilding)
+        {
+            this.gatherTicks = Stopwatch.GetTimestamp() - startTicks;
+            this.gatherBytes = GC.GetAllocatedBytesForCurrentThread() - startBytes;
+            this.GatherCost.Record(this.gatherTicks, this.gatherBytes);
+        }
+#endif
+    }
+
+    /// <summary>Issues one ImGui line per projected mesh edge (#100).</summary>
+    /// <param name="target">The window's ImGui draw list.</param>
+    private void SubmitMesh(ImDrawListPtr target)
+    {
+        var segments = this.ClippedMesh.Screen;
+        var colour = this.MeshColour;
+        for (var i = 0; i + 1 < segments.Length; i += 2)
+        {
+            target.AddLine(segments[i], segments[i + 1], colour, 1f);
+        }
     }
 
     /// <summary>

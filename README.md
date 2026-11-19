@@ -58,6 +58,7 @@ Type `/cube config` (or use the settings button in `/xlplugins`). Changes show s
 | Show enemies / Enemies | Whether hostile enemies are shown, and their colour. | On / red |
 | Show interactables / Interactables | Whether objects the game labels with words ("Entrance", "Placard", "Summoning Bell", ...) are shown, and their colour. At most 30 are drawn at once. | On / teal |
 | Show collision / Detail | Whether the collision boxes are shown, and how finely. **Full** draws the most boxes and follows the shapes most closely; **Medium** and **Coarse** draw fewer, bigger boxes that still cover everything Full does. At most 2000 boxes are kept. | On / Full |
+| Collision style | **Boxes** draws simplified boxes and is cheap. **Mesh (slower)** draws every collision triangle the game has as a thin wireframe, cut off exactly at the cube, with nothing simplified. It costs noticeably more than Boxes (a busy place can take a few milliseconds a frame), so it is off by default; Detail applies to Boxes only. | Boxes |
 | Opacity | How see-through everything in the window is. | 1.00 |
 | Reset to defaults | Puts every setting back. | |
 

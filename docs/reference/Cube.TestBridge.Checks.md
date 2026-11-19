@@ -135,6 +135,12 @@ Checks every other player in the cube gets exactly one name label showing their 
 top of it, and the local player gets one only while the own-name setting (#112) is on (PROJECT.md, "Features": other players are labelled with their names;
 "Labels": the name drawn next to the cube). Uses the standard fake players (#16) so it works with nobody around.
 
+ [MeshStyleCheck](Cube.TestBridge.Checks.MeshStyleCheck.md)
+
+Checks the Mesh collision style in the running game (#100; PROJECT.md, "Collision style"): the gathered triangles
+contain the game's own raycast hits, nothing is clipped or projected outside the cube at any yaw, the style's cost is
+measured and reported, it allocates nothing per frame, and a snapshot of the scene is written.
+
  [NamesAndTogglesCheck](Cube.TestBridge.Checks.NamesAndTogglesCheck.md)
 
 Checks #112 end to end through the window: each per-kind toggle removes exactly its kind of cube from the next frame
@@ -254,15 +260,15 @@ Counts from edge deduplication.
 
 Counts from reading.
 
+ [CollisionProbeCheck.Sample](Cube.TestBridge.Checks.CollisionProbeCheck.Sample.md)
+
+One frame's measurements.
+
  [PlayerHeightCheck.Sample](Cube.TestBridge.Checks.PlayerHeightCheck.Sample.md)
 
 One frame's measurements.
 
  [JumpHoldCheck.Sample](Cube.TestBridge.Checks.JumpHoldCheck.Sample.md)
-
-One frame's measurements.
-
- [CollisionProbeCheck.Sample](Cube.TestBridge.Checks.CollisionProbeCheck.Sample.md)
 
 One frame's measurements.
 
