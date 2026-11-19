@@ -83,6 +83,26 @@ internal sealed class CollisionReaderCheck : BridgeCheck
         context.Metric("merged", cache.Ready.Merged);
         context.Metric("dropped", cache.Ready.Dropped);
         context.Metric("invalid", cache.Ready.Invalid);
+
+        // #123 probe: how much space the turned boxes save at this real location (volume in cubic yalms, summed over
+        // the kept boxes; "axis" is what the world-axis boxes around them would cover).
+        var turned = 0;
+        double ownVolume = 0, axisVolume = 0;
+        foreach (var box in cache.Ready.Items)
+        {
+            var own = box.OwnHalfSize;
+            var axis = box.HalfSize;
+            ownVolume += 8.0 * own.X * own.Y * own.Z;
+            axisVolume += 8.0 * axis.X * axis.Y * axis.Z;
+            if (box.IsTurned)
+            {
+                turned++;
+            }
+        }
+
+        context.Metric("turnedBoxes", turned);
+        context.Metric("volumeOrientedYalms3", ownVolume);
+        context.Metric("volumeAxisYalms3", axisVolume);
         if (floor == Floor.NoRayHit)
         {
             yield return CheckStep.Fail(string.Create(

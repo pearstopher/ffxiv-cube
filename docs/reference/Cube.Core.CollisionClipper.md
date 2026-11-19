@@ -20,10 +20,11 @@ public static class CollisionClipper
 ## Remarks
 
 <p>
-The boxes are world-axis-aligned ([CollisionBox](Cube.Core.CollisionBox.md#Cube_Core_CollisionBox)) but the cube is turned by its yaw, so the overlap of
-a box and the cube is an upright prism: the height is cut exactly, and sideways the cube's square footprint is cut
-to the box's footprint (Sutherland–Hodgman against four axis lines), leaving a convex polygon of at most eight
-corners. That polygon is kept as the prism's footprint, so nothing drawn reaches outside the cube at any yaw (#93).
+The overlap of a box and the cube is an upright prism: the height is cut exactly, and sideways the cube's square
+footprint is cut to the box's footprint (Sutherland–Hodgman against four lines), leaving a convex polygon of at
+most eight corners. A box may itself be turned ([IsTurned](Cube.Core.CollisionBox.md#Cube_Core_CollisionBox_IsTurned), #123): its four lines are then
+its own edges, found by turning the cube's corners into the box's frame, cutting against its axis lines there and
+turning the result back, so the same cut serves both. Two turned rectangles still give at most eight corners. That polygon is kept as the prism's footprint, so nothing drawn reaches outside the cube at any yaw (#93).
 With the cube north up, at any multiple of 90°, or for a box wholly inside the cube's footprint, the polygon is the
 box's own rectangle and the result is marked [IsRectangle](Cube.Core.ClippedBox.md#Cube_Core_ClippedBox_IsRectangle), which draws as a plain box.
 </p>

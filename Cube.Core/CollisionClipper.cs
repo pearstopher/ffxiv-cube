@@ -9,10 +9,11 @@ namespace Cube.Core;
 /// </summary>
 /// <remarks>
 /// <para>
-/// The boxes are world-axis-aligned (<see cref="CollisionBox"/>) but the cube is turned by its yaw, so the overlap of
-/// a box and the cube is an upright prism: the height is cut exactly, and sideways the cube's square footprint is cut
-/// to the box's footprint (Sutherland–Hodgman against four axis lines), leaving a convex polygon of at most eight
-/// corners. That polygon is kept as the prism's footprint, so nothing drawn reaches outside the cube at any yaw (#93).
+/// The overlap of a box and the cube is an upright prism: the height is cut exactly, and sideways the cube's square
+/// footprint is cut to the box's footprint (Sutherland–Hodgman against four lines), leaving a convex polygon of at
+/// most eight corners. A box may itself be turned (<see cref="CollisionBox.IsTurned"/>, #123): its four lines are then
+/// its own edges, found by turning the cube's corners into the box's frame, cutting against its axis lines there and
+/// turning the result back, so the same cut serves both. Two turned rectangles still give at most eight corners. That polygon is kept as the prism's footprint, so nothing drawn reaches outside the cube at any yaw (#93).
 /// With the cube north up, at any multiple of 90°, or for a box wholly inside the cube's footprint, the polygon is the
 /// box's own rectangle and the result is marked <see cref="ClippedBox.IsRectangle"/>, which draws as a plain box.
 /// </para>
@@ -94,13 +95,14 @@ public static class CollisionClipper
             return false;
         }
 
-        // Cheap reject on the footprint's bounds before cutting polygons.
+        // Cheap reject on the footprint's bounds before cutting polygons (a turned box uses its world-axis box, so
+        // this is never stricter than for an axis box).
         if (box.Max.X < footprint.Min.X || box.Min.X > footprint.Max.X || box.Max.Z < footprint.Min.Y || box.Min.Z > footprint.Max.Y)
         {
             return false;
         }
 
-        if (footprint.IsAxisAligned)
+        if (footprint.IsAxisAligned && !box.IsTurned)
         {
             // North up or any multiple of 90°: the footprint is its own bounds, so the overlap is a plain box and no
             // polygon is needed (the common case in North up mode).
@@ -115,10 +117,38 @@ public static class CollisionClipper
         a[2] = footprint.C2;
         a[3] = footprint.C3;
         var n = 4;
-        n = Cut(a, n, b, axis: 0, box.Min.X, keepAbove: true);
-        n = Cut(b, n, a, axis: 0, box.Max.X, keepAbove: false);
-        n = Cut(a, n, b, axis: 1, box.Min.Z, keepAbove: true);
-        n = Cut(b, n, a, axis: 1, box.Max.Z, keepAbove: false);
+        var boxLo = new Vector2(box.Min.X, box.Min.Z);
+        var boxHi = new Vector2(box.Max.X, box.Max.Z);
+        if (box.IsTurned)
+        {
+            // Into the box's own frame, relative to its centre (small numbers keep the cut precise), where its sides
+            // are the axis lines at plus and minus its half-size.
+            var centre = new Vector2(box.Centre.X, box.Centre.Z);
+            var half = box.OwnHalfSize;
+            for (var i = 0; i < 4; i++)
+            {
+                var d = a[i] - centre;
+                a[i] = new Vector2((d.X * box.Cos) + (d.Y * box.Sin), (d.Y * box.Cos) - (d.X * box.Sin));
+            }
+
+            n = Cut(a, n, b, axis: 0, -half.X, keepAbove: true);
+            n = Cut(b, n, a, axis: 0, half.X, keepAbove: false);
+            n = Cut(a, n, b, axis: 1, -half.Z, keepAbove: true);
+            n = Cut(b, n, a, axis: 1, half.Z, keepAbove: false);
+            for (var i = 0; i < n; i++)
+            {
+                var q = a[i];
+                a[i] = centre + new Vector2((q.X * box.Cos) - (q.Y * box.Sin), (q.X * box.Sin) + (q.Y * box.Cos));
+            }
+        }
+        else
+        {
+            n = Cut(a, n, b, axis: 0, box.Min.X, keepAbove: true);
+            n = Cut(b, n, a, axis: 0, box.Max.X, keepAbove: false);
+            n = Cut(a, n, b, axis: 1, box.Min.Z, keepAbove: true);
+            n = Cut(b, n, a, axis: 1, box.Max.Z, keepAbove: false);
+        }
+
         if (n == 0)
         {
             return false;
@@ -133,8 +163,6 @@ public static class CollisionClipper
         }
 
         // The polygon lies inside the box's footprint up to rounding; clamp so the result never pokes past the box.
-        var boxLo = new Vector2(box.Min.X, box.Min.Z);
-        var boxHi = new Vector2(box.Max.X, box.Max.Z);
         lo = Vector2.Max(lo, boxLo);
         hi = Vector2.Min(hi, boxHi);
         var bounds = new CollisionBox(new Vector3(lo.X, minY, lo.Y), new Vector3(hi.X, maxY, hi.Y));

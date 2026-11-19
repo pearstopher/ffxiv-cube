@@ -451,6 +451,10 @@ Do it. The game already provides the rotation per collider, so the oriented box 
 2. `CollisionBox` keeps centre, half-size and yaw (with a pure-yaw check; tilted falls back to an axis box); reader builds it from `World`.
 3. `CollisionClipper` cuts against the box's own edges; tests as above; `collision-inside-cube` and `draw-within-budget` bridge checks pass.
 
+### Measured at a real location (#123)
+
+In-game probe (`collision-reader` metrics, housing ward): 219 of 376 kept boxes are turned. Total covered volume 22.35 million vs 22.45 million cubic yalms (0.4% less), because a few huge terrain boxes dominate the sum; the gain is per object (thin diagonal fences and walls), as the geometry table above predicts.
+
 ## Enemy and attacking detection (#111)
 
 Chosen reads, from FFXIVClientStructs (no hooks, no game calls beyond getters):

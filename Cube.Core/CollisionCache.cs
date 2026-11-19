@@ -10,7 +10,7 @@ namespace Cube.Core;
 /// <para>
 /// <b>Two sets, swapped.</b> A gather fills <see cref="building"/> while <see cref="Ready"/> keeps the last complete
 /// one, so the cube never shows a half-gathered area as if it were empty; when the walk reaches the end of the scene's
-/// list the two swap. Both are allocated once at the same capacity, so memory is fixed (2 × 48 KB by default) and
+/// list the two swap. Both are allocated once at the same capacity, so memory is fixed (2 × 64 KB by default) and
 /// nothing grows with time in game.
 /// </para>
 /// <para>

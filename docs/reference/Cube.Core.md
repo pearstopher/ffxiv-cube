@@ -188,8 +188,9 @@ the decision ([Blocks](Cube.Core.CollisionFilter.md#Cube_Core_CollisionFilter_Bl
 
  [CollisionBox](Cube.Core.CollisionBox.md)
 
-One piece of collision as a simplified, world-axis-aligned box (PROJECT.md, "Collision (phase 2)": each collider
-inside or crossing the cube is shown as a simplified box, not the game's model).
+One piece of collision as a simplified box (PROJECT.md, "Collision (phase 2)": each collider inside or crossing the
+cube is shown as a simplified box, not the game's model). Upright, but turned about the vertical axis to fit its
+object when the game's matrix says so (#123).
 
  [CubeOutline](Cube.Core.CubeOutline.md)
 
